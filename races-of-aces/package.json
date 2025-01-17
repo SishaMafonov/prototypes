@@ -1,0 +1,27 @@
+{
+  "name": "races-of-aces",
+  "version": "1.0.0",
+  "description": "Game prototype",
+  "main": "index.mjs",
+  "scripts": {
+    "clean": "npx rimraf ./static/src",
+    "build": "npx webpack --config webpack.config.js",
+    "serve": "http-server ./static --port=1234",
+    "test": "node index.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "null"
+  },
+  "keywords": [
+    "games",
+    "prototype"
+  ],
+  "author": "Sisha Mafonov",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "14.1.1",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
+  }
+}
