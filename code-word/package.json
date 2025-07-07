@@ -1,0 +1,21 @@
+{
+  "name": "code-word",
+  "version": "1.0.0",
+  "description": "Test code word",
+  "main": "index.js",
+  "scripts": {
+    "test": "node src/word.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "code",
+    "word",
+    "work",
+    "fun"
+  ],
+  "author": "Sisha aka Sisha",
+  "license": "ISC"
+}
