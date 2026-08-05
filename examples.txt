@@ -1,0 +1,84 @@
+// Path variant 1
+[0,1,0],
+[1,1,0],
+[0,0,0],
+
+// Path variant 2
+[0,1,0],
+[0,1,1],
+[0,0,0],
+
+// Path variant 3
+[0,0,0],
+[0,1,1],
+[0,1,0],
+
+// Path variant 4
+[0,0,0],
+[1,1,0],
+[0,1,0],
+
+// Path variant 5
+[0,1,0],
+[0,1,0],
+[0,1,0],
+
+// Path variant 6
+[0,0,0],
+[1,1,1],
+[0,0,0],
+
+// Path variant 7
+[0,1,0],
+[1,1,1],
+[0,0,0],
+
+// Path variant 8
+[0,0,0],
+[1,1,1],
+[0,1,0],
+
+// Path variant 9
+[0,1,0],
+[1,1,0],
+[0,1,0],
+
+// Path variant 10
+[0,1,0],
+[0,1,1],
+[0,1,0],
+
+// Path variant 11
+[0,1,0],
+[1,1,1],
+[0,1,0],
+
+
+/* Example of connecting paths */
+
+
+[0,1,0], [0,1,0], [0,0,0], [0,1,0], [0,1,0],
+[1,1,0], [1,1,1], [1,1,0], [1,1,0], [1,1,1],
+[0,0,0], [0,1,0], [0,1,0], [0,1,0], [0,1,0],
+
+[0,0,0], [0,0,0], [0,1,0], [0,1,0], [0,0,0],
+[1,1,1], [1,1,1], [1,1,0], [0,1,1], [1,1,1],
+[0,1,0], [0,0,0], [0,1,0], [0,0,0], [0,1,0],
+
+[0,1,0], [0,0,0], [0,1,0], [0,1,0], [0,0,0],
+[0,1,1], [1,1,0], [0,1,1], [1,1,1], [1,1,0],
+[0,0,0], [0,1,0], [0,1,0], [0,0,0], [0,1,0],
+
+[0,1,0], [0,1,0], [0,1,0], [0,1,0], [0,1,0],
+[0,1,0], [1,1,1], [1,1,0], [0,1,0], [1,1,0],
+[0,1,0], [0,0,0], [0,0,0], [0,1,0], [0,0,0],
+
+[0,0,0], [0,1,0], [0,1,0], [0,0,0], [0,1,0],
+[0,1,1], [1,1,0], [1,1,1], [0,1,1], [0,1,1],
+[0,1,0], [0,0,0], [0,1,0], [0,1,0], [0,1,0],
+
+// Each matrix represents a cell of the grid 5 x 5
+// Player should move by connected lines that represents as 1
+// Player could start moving from the left or the right side when there is connection with the side. In other word if 1 present to the left of right side of the matrix
+// Player is not able to start moving if all first or last (right side) vertical are zeroes
+// Player is able to start on any position connected by 1 
