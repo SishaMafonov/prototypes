@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#10182d" />
     <title>Capybara Crossing</title>
-    <script type="module" crossorigin src="/prototypes/assets/index-73zppgfl.js"></script>
-    <link rel="stylesheet" crossorigin href="/prototypes/assets/index-LZrCk7yF.css">
+    <script type="module" crossorigin src="/prototypes/assets/index-D0wE9dLx.js"></script>
+    <link rel="stylesheet" crossorigin href="/prototypes/assets/index-zF5GzduD.css">
   </head>
   <body>
     <main class="game-shell">
       <header>
         <div class="brand"><span>✦</span><div><h1>Capybara Crossing</h1><p>Find the paths. Bring the herd home.</p></div></div>
+        <div class="game-timer" aria-live="polite"><span>Trail time</span><b id="elapsed-time">00:00</b></div>
         <button id="new-game" class="quiet-button" type="button">New game</button>
       </header>
       <section class="game-layout">
@@ -22,7 +23,7 @@
           <div class="rule"><i></i><span>One rival can be bumped back to base. A herd of two or more blocks the trail.</span></div>
           <div class="rule"><i></i><span>Every fresh turn shifts the open trails—follow the glowing route.</span></div>
         </aside>
-        <section class="board-wrap">
+        <section id="board-wrap" class="board-wrap">
           <canvas id="game" aria-label="Capybara Crossing game board"></canvas>
           <div id="turn-banner" class="turn-banner">Roll to discover who begins</div>
           <div id="winner" class="winner hidden"><div><span>🏆</span><h2 id="winner-title">Blue herd wins!</h2><button id="play-again" type="button">Play again</button></div></div>
