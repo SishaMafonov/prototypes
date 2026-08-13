@@ -1,0 +1,27 @@
+{
+  "name": "grab-the-balls",
+  "version": "1.0.0",
+  "description": "A browser-game prototype.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "serve": "http-server dist --port 1234"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.16.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}
