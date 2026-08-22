@@ -83,12 +83,12 @@ const statistics: Statistics = { spins: 0, totalWin: 0, wildReshuffles: 0, bonus
 
 function randomSymbol(): SymbolKind {
   const roll = Math.floor(Math.random() * 10000);
-  if (roll <= 90) return "scatter";
-  if (roll <= 240) return "wild";
-  if (roll <= 2192) return "coin";
-  if (roll <= 4144) return "diamond";
-  if (roll <= 6096) return "gear";
-  if (roll <= 8048) return "map";
+  if (roll <= 449) return "scatter";
+  if (roll <= 999) return "wild";
+  if (roll <= 2999) return "coin";
+  if (roll <= 4999) return "diamond";
+  if (roll <= 6999) return "gear";
+  if (roll <= 8999) return "map";
   return "flag";
 }
 
@@ -300,19 +300,38 @@ function animateWildSuction(position: Position): void {
 async function activateWild(position: Position): Promise<void> {
   statistics.wildReshuffles += 1; updateStatistics();
   statusElement.textContent = "The Wild pulls every symbol into the maelstrom...";
-  render(); animateWildSuction(position); await wait(950);
-  board[position.row][position.column] = "spentWild";
-  const shuffled = shuffle(board.flat().filter((symbol): symbol is SymbolKind => symbol !== null));
-  board = Array.from({ length: ROWS }, () => Array<Cell>(COLUMNS).fill(null));
-  render();
-  statusElement.textContent = "Wild reshuffle! The tide deals a new board.";
+  animateWildSuction(position); await wait(950);
+
+  const reshuffled: SymbolKind[] = [];
   for (let row = 0; row < ROWS; row += 1) {
     for (let column = 0; column < COLUMNS; column += 1) {
-      board[row][column] = shuffled[row * COLUMNS + column];
-      render(new Set([`${row}-${column}`]), "spawn");
+      if (row === position.row && column === position.column) continue;
+      const symbol = board[row][column];
+      if (symbol !== null) reshuffled.push(symbol);
+      board[row][column] = null;
+      cellAt(row, column)?.remove();
+    }
+  }
+
+  const shuffled = shuffle(reshuffled);
+  statusElement.textContent = "Wild reshuffle! The tide bursts outward from the maelstrom.";
+  let nextSymbol = 0;
+  for (let row = 0; row < ROWS; row += 1) {
+    for (let column = 0; column < COLUMNS; column += 1) {
+      if (row === position.row && column === position.column) continue;
+      const symbol = shuffled[nextSymbol];
+      nextSymbol += 1;
+      board[row][column] = symbol;
+      const tile = createCell(symbol, row, column, "wild-throw");
+      tile.style.setProperty("--throw-x", `${(position.column - column) * 100}%`);
+      tile.style.setProperty("--throw-y", `${(position.row - row) * 100}%`);
+      gridElement.append(tile);
       await wait(90);
     }
   }
+  board[position.row][position.column] = "spentWild";
+  const transformedWild = createCell("spentWild", position.row, position.column, "wild-reveal");
+  cellAt(position.row, position.column)?.replaceWith(transformedWild);
   await wait(250);
 }
 

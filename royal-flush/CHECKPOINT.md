@@ -60,7 +60,7 @@ The game is a 5 × 5 `Board`, represented as `Cell[][]` in `src/main.ts`. `Cell`
 - Regular: `coin`, `diamond`, `gear`, `map`, `flag`.
 - The matching solver considers regular symbols plus `spentWild`; an untransformed `wild` is intentionally **not** a winning-line substitute.
 - Scatter never matches or destroys. It receives a pink frame that fully fades out then reaches bright full intensity over one second.
-- Wild receives the equivalent gold frame. Its initial animation is a whirl; when activated it draws every tile inward, marks itself as `spentWild`, shuffles the board, and re-deals cells from top-left to bottom-right.
+- Wild receives the equivalent gold frame. Its initial animation is a whirl; when activated it stays in its original cell, draws every other tile inward, shuffles those 24 tiles, launches them back out from its own cell, and only then becomes `spentWild` (W) in the same position.
 
 ### Current random weights
 
@@ -92,13 +92,13 @@ These retain the existing special-symbol thresholds and split the remaining pool
 4. `collapseAndRefill()` uses FLIP-style movement: only survivors that must move have their `gridRow`/`gridColumn` updated and translated into place. Unmoved old tiles remain untouched in the DOM.
 5. New symbols are appended directly to empty positions and use `.land` to fall from above. This behavior is intentional; do not replace it with a whole-grid `render()` during ordinary cascades.
 6. Repeat until no winning line remains.
-7. If any untransformed Wild remains, activate the top-leftmost Wild. Its reshuffle re-renders the board intentionally, because every symbol is being collected and re-dealt. Then return to matching.
+7. If any untransformed Wild remains, activate the top-leftmost Wild. It remains fixed while the other 24 symbols are collected, shuffled, and thrown outward from its cell; then it transforms into W in place. Return to matching.
 8. After all wins/Wilds resolve, show the two-second win popup if the round paid anything.
 9. Count Scatter tiles: exactly 3 gives 10 action points, 4 gives 15, 5 or more gives 20. Show the placeholder bonus modal; its button returns to a ready board. Bonus gameplay is not implemented.
 
 ## Implementation notes and safe editing guidance
 
-- `render()` performs a full board replacement. It is correct for the initial board, a new spin, and the Wild reshuffle sequence. Do not call it inside normal win removal/collapse flow.
+- `render()` performs a full board replacement. It is correct for the initial board and a new spin. Do not call it inside normal win removal/collapse flow or the Wild reshuffle sequence; both preserve/reuse the active DOM tiles.
 - `createCell()` is the one place that creates visible tiles. It assigns CSS grid coordinates and the accessibility label. Keep any new symbol type in its union type, label map, and CSS sprite rule.
 - `cellAt()` relies on `data-row` and `data-column`; maintain those attributes whenever moving tile elements.
 - `busy`, `currentRoundWin`, and `bonusModal.hidden` gate input. A future change to the flow should leave the game either ready (`setRoundReady(true)`) or intentionally blocked by the bonus modal.
