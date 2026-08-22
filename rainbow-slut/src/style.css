@@ -33,3 +33,4 @@ canvas:focus-visible { outline: 4px solid #fff; outline-offset: -8px; }
 .help { margin: .9rem 0 0; color: #c9bff3; font-size: .82rem; font-weight: 700; text-align: center; }
 @keyframes win-burst { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.35); } 14% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 32% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -68%) scale(1.08); } }
 @media (max-width: 620px) { .masthead { align-items: center; padding: 0 .25rem .75rem; } .bet-badge { min-width: 4.7rem; padding: .38rem .55rem; } .autoplay-control { top: .65rem; right: .65rem; padding: .42rem .55rem; font-size: .64rem; } .status-bar { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 620px) and (orientation: portrait) { .result { bottom: 3.25rem; } }
