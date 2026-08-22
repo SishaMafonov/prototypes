@@ -1,0 +1,17 @@
+{
+  "name": "chat-boty",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "serve": "vite preview --host 0.0.0.0 --port 1234"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}

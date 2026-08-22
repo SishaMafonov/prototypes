@@ -22,8 +22,8 @@ Most modern prototypes use Node.js, TypeScript, Vite, and `<canvas>`. Older prot
 
 ## Working rules
 
-- Repository-local Codex skills live in `.codex/skills/`. At the beginning of each session, discover and expose the skills in this directory in the session's available-skills catalog. Before taking task actions, select and initialize every local skill that is relevant to the requested project or workflow; read its `SKILL.md` in full and follow it. Do not initialize unrelated skills. Use `/project-init` when asked to create a new standalone browser-project directory.
-- `AGENTS.md` cannot itself register a skill with the client: each local skill must be a directory under `.codex/skills/` containing a valid `SKILL.md`, so session discovery can include it.
+- Repository-local Codex skills live in `.agents/skills/`. At the beginning of each session, discover and expose the skills in this directory in the session's available-skills catalog. Before taking task actions, select and initialize every local skill that is relevant to the requested project or workflow; read its `SKILL.md` in full and follow it. Do not initialize unrelated skills. Use `$project-init` when asked to create a new standalone browser-project directory.
+- `AGENTS.md` cannot itself register a skill with the client: each local skill must be a directory under `.agents/skills/` containing a valid `SKILL.md`, so session discovery can include it.
 - Start by locating the target project above and run commands from its directory. Do not run `npm install`, `pnpm install`, or build commands at the repository root; the root `package-lock.json` has no dependencies.
 - Respect package-local lockfiles and package managers. The three Vite TypeScript projects use `pnpm`; `races-of-aces` has an npm lockfile; the two script projects declare no dependencies.
 - Treat each project as a standalone client-only prototype. There are no server APIs, database schemas, authentication flows, or shared runtime packages to maintain.
