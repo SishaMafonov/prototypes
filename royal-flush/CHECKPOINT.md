@@ -80,7 +80,8 @@ These retain the existing special-symbol thresholds and split the remaining pool
 
 ### Payouts and matching
 
-- Current payout table: three = `0.10`, four = `0.50`, five = `1.00`.
+- Current regular-symbol payout table: three = `0.10`, four = `0.50`, five = `1.00`.
+- Scatter pays independently once a round settles: three Scatter = `1.00`, four = `3.00`, five or more = `10.00`. This payout is added before the win popup and before Scatter bonus action points are awarded.
 - `findWinningMatches()` checks horizontal and vertical contiguous runs. A transformed W can participate in more than one matching line, while Scatter and untransformed Wild cannot.
 - Each found matching line increments its corresponding statistics counter. The current round’s payout is shown only after all cascades and Wild effects settle.
 
@@ -94,7 +95,10 @@ These retain the existing special-symbol thresholds and split the remaining pool
 6. Repeat until no winning line remains.
 7. If any untransformed Wild remains, activate the top-leftmost Wild. It remains fixed while the other 24 symbols are collected, shuffled, and thrown outward from its cell; then it transforms into W in place. Return to matching.
 8. After all wins/Wilds resolve, show the two-second win popup if the round paid anything.
-9. Count Scatter tiles: exactly 3 gives 10 action points, 4 gives 15, 5 or more gives 20. Show the placeholder bonus modal; its button returns to a ready board. Bonus gameplay is not implemented.
+9. Count Scatter tiles: exactly 3 gives 10 action points, 4 gives 15, 5 or more gives 20. Show a confirmation popup that names the earned action points. Its Continue button opens the bonus navigation map.
+10. The bonus map overlays the reels as coordinates A–E by 1–5. It begins with the ship at C3 and 5–15 randomly distributed chests. Each chest is assigned a multiplier from `[x2, x2, x2, x2, x5, x5, x5, x8, x8, x10]`.
+11. Between bonus actions, previous chests smoothly sink/scale away and a fresh random 5–15-chest map rises from the water before the next compass decision. Each action then automatically selects a valid North/South/East/West move. A central map compass spins for two seconds and points to the selected direction. The CSS pirate ship animates smoothly into its next sector while drawing a persistent dotted nautical trail on the map, then collects/reveals any chest it reaches. A two-second x-multiplier reveal confirms every collected chest. A dedicated counter shows remaining free spins at all times, and the pause after each move is one second.
+12. The final bonus popup shows the collected multiplier sum, the base game-round win, the computed bonus win (`base × multiplier sum`), and the total round win. Closing it removes the map and returns the reels to ready state.
 
 ## Implementation notes and safe editing guidance
 
@@ -102,6 +106,7 @@ These retain the existing special-symbol thresholds and split the remaining pool
 - `createCell()` is the one place that creates visible tiles. It assigns CSS grid coordinates and the accessibility label. Keep any new symbol type in its union type, label map, and CSS sprite rule.
 - `cellAt()` relies on `data-row` and `data-column`; maintain those attributes whenever moving tile elements.
 - `busy`, `currentRoundWin`, and `bonusModal.hidden` gate input. A future change to the flow should leave the game either ready (`setRoundReady(true)`) or intentionally blocked by the bonus modal.
+- Bonus state lives in `bonusState`. Keep the map, chest multipliers, action count, and final settlement in sync; the bonus award is added to `statistics.totalWin` only at the end of the bonus voyage.
 - The game has no persistence; all session statistics reset on browser reload.
 - Keep it keyboard-accessible: the grid remains a focusable button-like element with Enter/Space activation and `aria-disabled` during an active round.
 

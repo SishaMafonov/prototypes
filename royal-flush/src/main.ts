@@ -17,6 +17,20 @@ interface Statistics {
   hits5: number;
 }
 
+type Direction = "North" | "South" | "East" | "West";
+type BonusModalMode = "intro" | "result" | null;
+
+interface BonusState {
+  actionPoints: number;
+  actionsTaken: number;
+  ship: Position;
+  chests: Map<string, number>;
+  multiplierPot: number;
+  baseWin: number;
+  lastDirection: Direction | null;
+  trails: Array<{ from: Position; to: Position }>;
+}
+
 const ROWS = 5;
 const COLUMNS = 5;
 const regularSymbols: RegularSymbol[] = ["coin", "diamond", "gear", "map", "flag"];
@@ -34,6 +48,17 @@ app.innerHTML = `
     <section class="stage-wrap" aria-label="Royal Flush game board">
       <div class="stage">
         <div id="grid" class="grid" role="button" tabindex="0" aria-label="Spin the Royal Flush reels" aria-disabled="false"></div>
+        <section id="bonus-overlay" class="bonus-overlay" aria-label="Bonus voyage navigation map" hidden>
+          <div id="bonus-map" class="bonus-map"></div>
+          <div id="bonus-compass" class="bonus-compass" aria-live="assertive" hidden>
+            <span class="compass-letter compass-north">N</span><span class="compass-letter compass-east">E</span>
+            <span class="compass-letter compass-south">S</span><span class="compass-letter compass-west">W</span>
+            <span id="bonus-needle" class="bonus-needle">▲</span>
+            <strong id="bonus-compass-choice">Choosing course…</strong>
+          </div>
+          <p id="bonus-counter" class="bonus-counter" aria-live="polite"></p>
+          <p id="bonus-hud" class="bonus-hud" aria-live="polite"></p>
+        </section>
         <p id="tap-prompt" class="tap-prompt is-ready" aria-live="polite">Tap the grid to start</p>
         <div id="win-popup" class="win-popup" role="status" aria-live="assertive" hidden></div>
       </div>
@@ -51,8 +76,8 @@ app.innerHTML = `
   </main>
   <div id="bonus-modal" class="bonus-modal" hidden>
     <section class="bonus-card" role="dialog" aria-modal="true" aria-labelledby="bonus-title">
-      <p class="eyebrow">Scatter treasure found</p><h2 id="bonus-title">Bonus round coming soon</h2>
-      <p id="bonus-copy"></p><button id="bonus-continue" type="button">Return to the reels</button>
+      <p class="eyebrow">Scatter treasure found</p><h2 id="bonus-title">Bonus voyage unlocked</h2>
+      <p id="bonus-copy"></p><button id="bonus-continue" type="button">Continue</button>
     </section>
   </div>
 `;
@@ -66,8 +91,16 @@ function element<T extends HTMLElement>(selector: string): T {
 const gridElement = element<HTMLDivElement>("#grid");
 const statusElement = element<HTMLParagraphElement>("#status");
 const bonusModal = element<HTMLDivElement>("#bonus-modal");
+const bonusTitle = element<HTMLHeadingElement>("#bonus-title");
 const bonusCopy = element<HTMLParagraphElement>("#bonus-copy");
 const continueButton = element<HTMLButtonElement>("#bonus-continue");
+const bonusOverlay = element<HTMLElement>("#bonus-overlay");
+const bonusMap = element<HTMLDivElement>("#bonus-map");
+const bonusCompass = element<HTMLDivElement>("#bonus-compass");
+const bonusNeedle = element<HTMLSpanElement>("#bonus-needle");
+const bonusCompassChoice = element<HTMLElement>("#bonus-compass-choice");
+const bonusCounter = element<HTMLParagraphElement>("#bonus-counter");
+const bonusHud = element<HTMLParagraphElement>("#bonus-hud");
 const tapPrompt = element<HTMLParagraphElement>("#tap-prompt");
 const winPopup = element<HTMLDivElement>("#win-popup");
 const statisticElements = {
@@ -79,6 +112,8 @@ const statisticElements = {
 let board = createSafeBoard();
 let busy = false;
 let currentRoundWin = 0;
+let bonusState: BonusState | null = null;
+let bonusModalMode: BonusModalMode = null;
 const statistics: Statistics = { spins: 0, totalWin: 0, wildReshuffles: 0, bonusGames: 0, hits3: 0, hits4: 0, hits5: 0 };
 
 function randomSymbol(): SymbolKind {
@@ -340,14 +375,254 @@ function bonusActionPoints(): number {
   if (scatters >= 5) return 20; if (scatters === 4) return 15; if (scatters === 3) return 10; return 0;
 }
 
+function scatterPayout(): number {
+  const scatters = board.flat().filter((symbol) => symbol === "scatter").length;
+  if (scatters >= 5) return 10;
+  if (scatters === 4) return 3;
+  if (scatters === 3) return 1;
+  return 0;
+}
+
 function showBonus(actionPoints: number): void {
   statistics.bonusGames += 1; updateStatistics();
-  bonusCopy.textContent = `Bonus round coming soon with ${actionPoints} action points.`;
+  bonusState = createBonusState(actionPoints);
+  bonusModalMode = "intro";
+  bonusTitle.textContent = "Bonus voyage unlocked";
+  bonusCopy.textContent = `You earned ${actionPoints} action points. Set sail to reveal the treasure map.`;
+  continueButton.textContent = "Continue to bonus round";
+  bonusModal.hidden = false;
+}
+
+function bonusKey(position: Position): string { return `${position.row}-${position.column}`; }
+
+function generateBonusChests(): Map<string, number> {
+  const positions = shuffle(
+    Array.from({ length: ROWS * COLUMNS }, (_, index) => ({ row: Math.floor(index / COLUMNS), column: index % COLUMNS })),
+  );
+  const chestCount = 5 + Math.floor(Math.random() * 11);
+  const prizes = [2, 2, 2, 2, 5, 5, 5, 8, 8, 10];
+  const chests = new Map<string, number>();
+  for (const position of positions.slice(0, chestCount)) {
+    chests.set(bonusKey(position), prizes[Math.floor(Math.random() * prizes.length)]);
+  }
+  return chests;
+}
+
+function createBonusState(actionPoints: number): BonusState {
+  return {
+    actionPoints,
+    actionsTaken: 0,
+    ship: { row: 2, column: 2 },
+    chests: generateBonusChests(),
+    multiplierPot: 0,
+    baseWin: currentRoundWin,
+    lastDirection: null,
+    trails: [],
+  };
+}
+
+function drawBonusTrail(from: Position, to: Position, animate = false): void {
+  const fromSector = bonusMap.querySelector<HTMLElement>(`.bonus-sector[data-row="${from.row}"][data-column="${from.column}"]`);
+  const toSector = bonusMap.querySelector<HTMLElement>(`.bonus-sector[data-row="${to.row}"][data-column="${to.column}"]`);
+  if (fromSector === null || toSector === null) return;
+  const mapBounds = bonusMap.getBoundingClientRect();
+  const fromBounds = fromSector.getBoundingClientRect();
+  const toBounds = toSector.getBoundingClientRect();
+  const startX = fromBounds.left + fromBounds.width / 2 - mapBounds.left;
+  const startY = fromBounds.top + fromBounds.height / 2 - mapBounds.top;
+  const endX = toBounds.left + toBounds.width / 2 - mapBounds.left;
+  const endY = toBounds.top + toBounds.height / 2 - mapBounds.top;
+  const distance = Math.hypot(endX - startX, endY - startY);
+  const trail = document.createElement("span");
+  trail.className = `bonus-trail${animate ? " trail-draw" : ""}`;
+  trail.style.left = `${startX}px`;
+  trail.style.top = `${startY}px`;
+  trail.style.width = `${distance}px`;
+  trail.style.setProperty("--trail-angle", `${Math.atan2(endY - startY, endX - startX)}rad`);
+  bonusMap.append(trail);
+}
+
+function renderBonusMap(chestAnimation = ""): void {
+  if (bonusState === null) return;
+  const fragment = document.createDocumentFragment();
+  const corner = document.createElement("div");
+  corner.className = "bonus-coordinate bonus-corner";
+  fragment.append(corner);
+  for (const letter of ["A", "B", "C", "D", "E"]) {
+    const label = document.createElement("div");
+    label.className = "bonus-coordinate";
+    label.textContent = letter;
+    fragment.append(label);
+  }
+  for (let row = 0; row < ROWS; row += 1) {
+    const rowLabel = document.createElement("div");
+    rowLabel.className = "bonus-coordinate";
+    rowLabel.textContent = String(row + 1);
+    fragment.append(rowLabel);
+    for (let column = 0; column < COLUMNS; column += 1) {
+      const sector = document.createElement("div");
+      const position = { row, column };
+      const chestMultiplier = bonusState.chests.get(bonusKey(position));
+      sector.className = "bonus-sector";
+      sector.dataset.row = String(row);
+      sector.dataset.column = String(column);
+      sector.setAttribute("aria-label", `${String.fromCharCode(65 + column)}${row + 1}`);
+      if (chestMultiplier !== undefined) {
+        const chest = document.createElement("span");
+        chest.className = "bonus-chest";
+        if (chestAnimation !== "") chest.classList.add(chestAnimation);
+        chest.textContent = "▣";
+        chest.setAttribute("aria-label", "Hidden treasure chest");
+        sector.append(chest);
+      }
+      if (bonusState.ship.row === row && bonusState.ship.column === column) {
+        sector.classList.add("has-ship");
+        const ship = document.createElement("span");
+        ship.className = "bonus-ship";
+        ship.textContent = "";
+        ship.setAttribute("aria-label", "Player ship");
+        sector.append(ship);
+      }
+      fragment.append(sector);
+    }
+  }
+  bonusMap.replaceChildren(fragment);
+  for (const trail of bonusState.trails) drawBonusTrail(trail.from, trail.to);
+  const direction = bonusState.lastDirection === null ? "Awaiting compass" : bonusState.lastDirection;
+  const remaining = bonusState.actionPoints - bonusState.actionsTaken;
+  bonusCounter.textContent = `FREE SPINS ${remaining} / ${bonusState.actionPoints}`;
+  bonusHud.textContent = `${direction} · Multiplier pot x${bonusState.multiplierPot}`;
+}
+
+async function animateBonusShipMove(from: Position, to: Position): Promise<void> {
+  const fromSector = bonusMap.querySelector<HTMLElement>(`.bonus-sector[data-row="${from.row}"][data-column="${from.column}"]`);
+  const toSector = bonusMap.querySelector<HTMLElement>(`.bonus-sector[data-row="${to.row}"][data-column="${to.column}"]`);
+  if (fromSector === null || toSector === null) {
+    await wait(1_000);
+    return;
+  }
+  const ship = fromSector.querySelector<HTMLElement>(".bonus-ship");
+  if (ship === null) {
+    await wait(1_000);
+    return;
+  }
+  const shipBounds = ship.getBoundingClientRect();
+  const targetBounds = toSector.getBoundingClientRect();
+  ship.style.setProperty("--sail-x", `${targetBounds.left + targetBounds.width / 2 - (shipBounds.left + shipBounds.width / 2)}px`);
+  ship.style.setProperty("--sail-y", `${targetBounds.top + targetBounds.height / 2 - (shipBounds.top + shipBounds.height / 2)}px`);
+  drawBonusTrail(from, to, true);
+  ship.classList.add("is-sailing");
+  await wait(1_000);
+}
+
+async function transitionBonusChests(): Promise<void> {
+  bonusOverlay.querySelectorAll<HTMLElement>(".bonus-chest").forEach((chest) => chest.classList.add("chest-sink"));
+  await wait(850);
+  if (bonusState === null) return;
+  bonusState.chests = generateBonusChests();
+  renderBonusMap("chest-rise");
+  bonusHud.textContent = `New treasure rises from the water… · Multiplier pot x${bonusState.multiplierPot}`;
+  await wait(950);
+}
+
+function showChestPrize(position: Position, multiplier: number): void {
+  const sector = bonusMap.querySelector<HTMLDivElement>(`.bonus-sector[data-row="${position.row}"][data-column="${position.column}"]`);
+  if (sector === null) return;
+  const prize = document.createElement("span");
+  prize.className = "bonus-prize-reveal";
+  prize.textContent = `x${multiplier}`;
+  sector.append(prize);
+}
+
+async function showBonusCompass(direction: Direction): Promise<void> {
+  const headings: Record<Direction, string> = { North: "0deg", East: "90deg", South: "180deg", West: "270deg" };
+  bonusCompass.hidden = false;
+  bonusNeedle.classList.remove("is-pointing");
+  bonusNeedle.classList.add("is-spinning");
+  bonusCompassChoice.textContent = "Choosing course…";
+  await wait(2_000);
+  bonusNeedle.classList.remove("is-spinning");
+  bonusNeedle.style.setProperty("--compass-heading", headings[direction]);
+  bonusNeedle.classList.add("is-pointing");
+  bonusCompassChoice.textContent = direction;
+  await wait(1_650);
+}
+
+function chooseBonusDirection(ship: Position): Direction {
+  const candidates: Array<{ direction: Direction; row: number; column: number }> = [
+    { direction: "North", row: ship.row - 1, column: ship.column },
+    { direction: "South", row: ship.row + 1, column: ship.column },
+    { direction: "West", row: ship.row, column: ship.column - 1 },
+    { direction: "East", row: ship.row, column: ship.column + 1 },
+  ];
+  const directions = candidates.filter(({ row, column }) => row >= 0 && row < ROWS && column >= 0 && column < COLUMNS);
+  return directions[Math.floor(Math.random() * directions.length)].direction;
+}
+
+async function takeBonusAction(): Promise<void> {
+  if (bonusState === null) return;
+  await transitionBonusChests();
+  if (bonusState === null) return;
+  const direction = chooseBonusDirection(bonusState.ship);
+  bonusState.lastDirection = null;
+  renderBonusMap();
+  bonusHud.textContent = `Compass is choosing a course… · Multiplier pot x${bonusState.multiplierPot}`;
+  await showBonusCompass(direction);
+  const movement: Record<Direction, Position> = {
+    North: { row: -1, column: 0 }, South: { row: 1, column: 0 }, West: { row: 0, column: -1 }, East: { row: 0, column: 1 },
+  };
+  const delta = movement[direction];
+  const previousShip = bonusState.ship;
+  const nextShip = { row: previousShip.row + delta.row, column: previousShip.column + delta.column };
+  await animateBonusShipMove(previousShip, nextShip);
+  bonusState.trails.push({ from: previousShip, to: nextShip });
+  bonusState.ship = nextShip;
+  bonusState.lastDirection = direction;
+  bonusState.actionsTaken += 1;
+  bonusCompass.hidden = true;
+  renderBonusMap();
+  await wait(1_000);
+
+  const chestKey = bonusKey(bonusState.ship);
+  const multiplier = bonusState.chests.get(chestKey);
+  if (multiplier !== undefined) {
+    bonusState.chests.delete(chestKey);
+    bonusState.multiplierPot += multiplier;
+    renderBonusMap();
+    showChestPrize(bonusState.ship, multiplier);
+    bonusHud.textContent = `${direction} · Treasure found: x${multiplier}! Pot x${bonusState.multiplierPot}`;
+    await wait(2_000);
+  }
+}
+
+async function startBonusRound(): Promise<void> {
+  if (bonusState === null) return;
+  bonusOverlay.hidden = false;
+  renderBonusMap();
+  statusElement.textContent = `Bonus voyage started with ${bonusState.actionPoints} action points.`;
+  await wait(2_100);
+  while (bonusState !== null && bonusState.actionsTaken < bonusState.actionPoints) await takeBonusAction();
+  if (bonusState === null) return;
+
+  const bonusWin = bonusState.baseWin * bonusState.multiplierPot;
+  statistics.totalWin += bonusWin;
+  updateStatistics();
+  bonusModalMode = "result";
+  bonusTitle.textContent = "Bonus voyage complete";
+  bonusCopy.textContent = `Multiplier pot x${bonusState.multiplierPot}. ${bonusState.baseWin.toFixed(2)} × x${bonusState.multiplierPot} = ${bonusWin.toFixed(2)} bonus win. Total round win: ${(bonusState.baseWin + bonusWin).toFixed(2)}.`;
+  continueButton.textContent = "Continue";
   bonusModal.hidden = false;
 }
 
 async function resolveRound(): Promise<void> {
   while (true) { await collectWins(); const wild = firstWild(); if (wild === null) break; await activateWild(wild); }
+  const scatterWin = scatterPayout();
+  if (scatterWin > 0) {
+    currentRoundWin += scatterWin;
+    statistics.totalWin += scatterWin;
+    updateStatistics();
+    statusElement.textContent = `Scatter win! ${scatterWin.toFixed(2)} collected.`;
+  }
   if (currentRoundWin > 0) await showWinPopup(currentRoundWin);
   const actionPoints = bonusActionPoints();
   if (actionPoints > 0) { statusElement.textContent = "Three or more scatters unlock the bonus round."; showBonus(actionPoints); return; }
@@ -365,8 +640,22 @@ async function startSpin(): Promise<void> {
 gridElement.addEventListener("click", () => void startSpin());
 gridElement.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); void startSpin(); } });
 continueButton.addEventListener("click", () => {
-  bonusModal.hidden = true; busy = false; setRoundReady(true);
-  statusElement.textContent = "Bonus saved for the next voyage. Tap the grid to spin again."; gridElement.focus();
+  if (bonusModalMode === "intro") {
+    bonusModal.hidden = true;
+    void startBonusRound();
+    return;
+  }
+  if (bonusModalMode === "result") {
+    bonusModal.hidden = true;
+    bonusOverlay.hidden = true;
+    bonusCompass.hidden = true;
+    bonusModalMode = null;
+    bonusState = null;
+    busy = false;
+    setRoundReady(true);
+    statusElement.textContent = "Bonus voyage complete. Tap the grid to spin again.";
+    gridElement.focus();
+  }
 });
 
 render();
