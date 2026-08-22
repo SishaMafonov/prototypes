@@ -1,0 +1,21 @@
+{
+  "name": "corners",
+  "version": "1.0.0",
+  "description": "A small browser prototype.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "serve": "http-server dist --port 1234",
+    "build:server": "npm run build && npm run server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}

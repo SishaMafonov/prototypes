@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Init"
+  short_description: "Scaffold a browser prototype"
+  default_prompt: "Use $project-init to create a new browser prototype."
