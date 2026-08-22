@@ -176,7 +176,7 @@ function drawClover(now: number): void {
   context.save(); context.translate(1060, 755); context.scale(scale, scale); context.rotate(rotation); context.shadowColor = '#d4ff66'; context.shadowBlur = spinning || now < celebrationUntil ? 42 : 20; context.fillStyle = '#4fba4c'
   for (let leaf = 0; leaf < 4; leaf += 1) { context.save(); context.rotate((Math.PI / 2) * leaf + Math.PI / 4); context.beginPath(); context.ellipse(0, -42, 31, 45, 0, 0, Math.PI * 2); context.fill(); context.restore() }
   context.shadowBlur = 0; context.fillStyle = '#2c8438'; context.beginPath(); context.arc(0, 0, 21, 0, Math.PI * 2); context.fill()
-  if (textProgress > 0) { context.save(); context.rotate(-rotation); context.scale(textProgress, textProgress); context.fillStyle = '#fffbe7'; context.font = '900 25px Inter, system-ui, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillText(`x${multiplier}`, 0, 2); context.restore() }
+  if (textProgress > 0) { context.save(); context.rotate(-rotation); context.scale(textProgress, textProgress); context.fillStyle = '#fffbe7'; context.font = '900 75px Inter, system-ui, sans-serif'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillText(`x${multiplier}`, 0, 2); context.restore() }
   context.restore()
 }
 function drawGoldenHorseshoe(now: number): void {
