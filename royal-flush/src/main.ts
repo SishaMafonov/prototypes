@@ -51,9 +51,6 @@ app.innerHTML = `
         <section id="bonus-overlay" class="bonus-overlay" aria-label="Bonus voyage navigation map" hidden>
           <div id="bonus-map" class="bonus-map"></div>
           <div id="bonus-compass" class="bonus-compass" aria-live="assertive" hidden>
-            <span class="compass-letter compass-north">N</span><span class="compass-letter compass-east">E</span>
-            <span class="compass-letter compass-south">S</span><span class="compass-letter compass-west">W</span>
-            <span id="bonus-needle" class="bonus-needle">▲</span>
             <strong id="bonus-compass-choice">Choosing course…</strong>
           </div>
           <p id="bonus-counter" class="bonus-counter" aria-live="polite"></p>
@@ -97,7 +94,6 @@ const continueButton = element<HTMLButtonElement>("#bonus-continue");
 const bonusOverlay = element<HTMLElement>("#bonus-overlay");
 const bonusMap = element<HTMLDivElement>("#bonus-map");
 const bonusCompass = element<HTMLDivElement>("#bonus-compass");
-const bonusNeedle = element<HTMLSpanElement>("#bonus-needle");
 const bonusCompassChoice = element<HTMLElement>("#bonus-compass-choice");
 const bonusCounter = element<HTMLParagraphElement>("#bonus-counter");
 const bonusHud = element<HTMLParagraphElement>("#bonus-hud");
@@ -445,20 +441,7 @@ function drawBonusTrail(from: Position, to: Position, animate = false): void {
 function renderBonusMap(chestAnimation = ""): void {
   if (bonusState === null) return;
   const fragment = document.createDocumentFragment();
-  const corner = document.createElement("div");
-  corner.className = "bonus-coordinate bonus-corner";
-  fragment.append(corner);
-  for (const letter of ["A", "B", "C", "D", "E"]) {
-    const label = document.createElement("div");
-    label.className = "bonus-coordinate";
-    label.textContent = letter;
-    fragment.append(label);
-  }
   for (let row = 0; row < ROWS; row += 1) {
-    const rowLabel = document.createElement("div");
-    rowLabel.className = "bonus-coordinate";
-    rowLabel.textContent = String(row + 1);
-    fragment.append(rowLabel);
     for (let column = 0; column < COLUMNS; column += 1) {
       const sector = document.createElement("div");
       const position = { row, column };
@@ -471,7 +454,6 @@ function renderBonusMap(chestAnimation = ""): void {
         const chest = document.createElement("span");
         chest.className = "bonus-chest";
         if (chestAnimation !== "") chest.classList.add(chestAnimation);
-        chest.textContent = "▣";
         chest.setAttribute("aria-label", "Hidden treasure chest");
         sector.append(chest);
       }
@@ -535,15 +517,15 @@ function showChestPrize(position: Position, multiplier: number): void {
 }
 
 async function showBonusCompass(direction: Direction): Promise<void> {
-  const headings: Record<Direction, string> = { North: "0deg", East: "90deg", South: "180deg", West: "270deg" };
   bonusCompass.hidden = false;
-  bonusNeedle.classList.remove("is-pointing");
-  bonusNeedle.classList.add("is-spinning");
+  delete bonusCompass.dataset.direction;
+  bonusCompass.classList.remove("is-pointing");
+  bonusCompass.classList.add("is-spinning");
   bonusCompassChoice.textContent = "Choosing course…";
   await wait(2_000);
-  bonusNeedle.classList.remove("is-spinning");
-  bonusNeedle.style.setProperty("--compass-heading", headings[direction]);
-  bonusNeedle.classList.add("is-pointing");
+  bonusCompass.classList.remove("is-spinning");
+  bonusCompass.classList.add("is-pointing");
+  bonusCompass.dataset.direction = direction;
   bonusCompassChoice.textContent = direction;
   await wait(1_650);
 }

@@ -9,7 +9,7 @@ This document is the source-of-truth handoff for future agents. Read it before c
 - Package manager: pnpm (`packageManager: pnpm@11.19.0`); do not install dependencies or run builds from `C:\git\prototypes`.
 - Main source files: `src/main.ts` (state, rules, DOM, animation sequencing) and `src/style.css` (layout, sprite crops, visual effects).
 - Entry page: `index.html` loads `/src/main.ts`.
-- Assets: `assets/RoyalFlush_grid.png` and `assets/RoyalFlush_symbols_sprite.png`.
+- Assets: `assets/RoyalFlush_grid.png`, `assets/RoyalFlush_symbols_sprite.png`, `assets/RoyalFlush_bonusmap.png`, `assets/RoyalFlush_ship.png`, `assets/RoyalFlush_compass.png`, and `assets/RoyalFlush_bonuschest.png`.
 - Generated directories: `node_modules/` and `dist/`; never hand-edit either.
 
 From this directory:
@@ -96,8 +96,8 @@ These retain the existing special-symbol thresholds and split the remaining pool
 7. If any untransformed Wild remains, activate the top-leftmost Wild. It remains fixed while the other 24 symbols are collected, shuffled, and thrown outward from its cell; then it transforms into W in place. Return to matching.
 8. After all wins/Wilds resolve, show the two-second win popup if the round paid anything.
 9. Count Scatter tiles: exactly 3 gives 10 action points, 4 gives 15, 5 or more gives 20. Show a confirmation popup that names the earned action points. Its Continue button opens the bonus navigation map.
-10. The bonus map overlays the reels as coordinates A–E by 1–5. It begins with the ship at C3 and 5–15 randomly distributed chests. Each chest is assigned a multiplier from `[x2, x2, x2, x2, x5, x5, x5, x8, x8, x10]`.
-11. Between bonus actions, previous chests smoothly sink/scale away and a fresh random 5–15-chest map rises from the water before the next compass decision. Each action then automatically selects a valid North/South/East/West move. A central map compass spins for two seconds and points to the selected direction. The CSS pirate ship animates smoothly into its next sector while drawing a persistent dotted nautical trail on the map, then collects/reveals any chest it reaches. A two-second x-multiplier reveal confirms every collected chest. A dedicated counter shows remaining free spins at all times, and the pause after each move is one second.
+10. The bonus overlay is the supplied `RoyalFlush_bonusmap.png`, which already draws the A–E × 1–5 navigation grid. The transparent DOM sector map is aligned to the illustrated sector bounds at `top: 27.35%`, `left: 17%`, width `71.75%`, height `48.2%`. It begins with the ship at C3 and 5–15 randomly distributed chests. Each chest is assigned a multiplier from `[x2, x2, x2, x2, x5, x5, x5, x8, x8, x10]`.
+11. Between bonus actions, the supplied `RoyalFlush_bonuschest.png` chest tiles smoothly sink/scale away and a fresh random 5–15-chest map rises from the water before the next compass decision. Each action then automatically selects a valid North/South/East/West move. The supplied `RoyalFlush_compass.png` stays fixed over the centre sector with a 25%-opaque backplate; only its direction-name label pulses while choosing, then reveals the selected direction at the matching compass edge (North top, West left, East right, South bottom). The supplied `RoyalFlush_ship.png` is placed at sector centres and animates smoothly into its next sector while drawing a persistent dotted nautical trail, then collects/reveals any chest it reaches. A two-second x-multiplier reveal confirms every collected chest. A dedicated counter shows remaining free spins at all times, and the pause after each move is one second.
 12. The final bonus popup shows the collected multiplier sum, the base game-round win, the computed bonus win (`base × multiplier sum`), and the total round win. Closing it removes the map and returns the reels to ready state.
 
 ## Implementation notes and safe editing guidance
