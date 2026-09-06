@@ -6,7 +6,8 @@ import diamondsUrl from './assets/symbols/diamonds.png';
 import clubsUrl from './assets/symbols/clubs.png';
 import jokerUrl from './assets/symbols/joker.png';
 import { BET, RANKS, SUITS, generateDeck, shuffle, uniqueRanks, findMatch, compactRows, compactBoard,
-  pairWin, drawMultiplier, finalWin, type Card, type Board, type Rank, type Suit } from './game';
+  pairWin, drawMultiplier, finalWin, drawHighCardsFeature, upgradeLowCards, drawGambleSuit, gamblePayout, isGambleEligible,
+  type Card, type Board, type Rank, type Suit, type GambleSuit } from './game';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `
@@ -26,12 +27,16 @@ app.innerHTML = `
     <p class="footnote">Prototype · Play units · Tap the reels or press Space to deal</p>
   </main>
   <dialog id="bonus"><span class="eyebrow">THE MAP IS COMPLETE</span><h2>Bonus unlocked</h2><p id="bonus-copy"></p><div class="bonus-icon">✦</div><p>Your next adventure is coming soon.<br>This is the bonus game placeholder.</p><button id="close-bonus">Back to the kingdoms</button></dialog>
+  <dialog id="gamble-offer" class="gamble-dialog"><span class="eyebrow">THE DECK IS EMPTY</span><h2>Double or Nothing</h2><p>Every match has been collected. Your <strong id="gamble-stake">0.00</strong>-unit win is ready.</p><div class="dialog-actions"><button id="gamble-collect" class="secondary-action">Collect</button><button id="gamble-start">Gamble</button></div></dialog>
+  <dialog id="gamble-choice" class="gamble-dialog"><span class="eyebrow">CHOOSE YOUR SUIT</span><h2>Hearts or Spades?</h2><p>Pick correctly and double <strong id="gamble-choice-stake">0.00</strong> units.</p><div class="suit-choices"><button id="pick-hearts" class="suit-choice hearts" aria-label="Pick Hearts"><span>♥</span><b>Hearts</b></button><button id="pick-spades" class="suit-choice spades" aria-label="Pick Spades"><span>♠</span><b>Spades</b></button></div></dialog>
   <dialog id="rules"><span class="eyebrow">A GAME OF DIAGONALS</span><h2>How to play</h2>
     <p>Each 1.00-unit round draws a 48-card deck. The top bar shows its unique ranks; the lower strip previews the next 16 cards.</p>
-    <p>Equal ranks match diagonally within rows 1–2, then rows 3–4. Descending diagonals are checked left to right before ascending diagonals right to left. Suits do not affect matches. Cards slide left, then up, and refill from the upcoming strip.</p>
+    <p>Random High Cards has a 10% chance before each deck is created. After a five-second announcement, all 2–6 sets become extra sets of J, Q, or K already in the deck. If no high ranks were drawn, J, Q, and K are eligible. Extra sets are shared evenly in a random order.</p>
+    <p>Equal ranks match diagonally within rows 1–2, then 2–3, then 3–4. Descending diagonals are checked left to right before ascending diagonals right to left. Suits do not affect matches. Cards slide left, then up, and refill from the upcoming strip. After each refill, checking starts again at the top.</p>
     <div class="paytable"><span>2–6 / pair</span><b>0.10</b><span>7–10 / pair</span><b>0.50</b><span>J–K / pair</span><b>1.00</b></div>
     <p>Wild matches Wild. Each collected pair reveals a multiplier; these add together and multiply the round’s base win. No Wild means ×1. Two or four collected Scatters unlock the bonus placeholder.</p>
-    <p class="muted">Draw weights: low 50, medium 40, high 30, Scatter 10, Wild 20, normalized across available groups. Each draw adds four cards; normal ranks include all four suits. At most one four-Scatter draw per deck. Counters show collected pairs. Statistics last for this page session.</p>
+    <p>Drain the deck and collect every available match to unlock Gamble Feature. Collect takes the current win. Gamble lets you choose Hearts or Spades; after a seven-second shuffle, the matching suit doubles the win and the other suit loses it.</p>
+    <p class="muted">Draw weights: low 60, medium 40, high 15, Scatter 5, Wild 10, normalized across available groups. Each draw adds four cards; normal ranks include all four suits. At most one four-Scatter draw per deck. Counters show collected pairs. Statistics last for this page session.</p>
     <button id="close-rules">Let’s play</button></dialog>`;
 
 const canvas = document.querySelector<HTMLCanvasElement>('canvas')!;
@@ -43,6 +48,8 @@ const rules = document.querySelector<HTMLDialogElement>('#rules')!;
 const money = (n: number) => n.toFixed(2);
 const W = 941, H = 990, CROP_Y = 450;
 const GAMEPLAY_DURATION_SCALE = 1.25;
+const FEATURE_ANNOUNCEMENT_MS = 5000;
+const GAMBLE_SHUFFLE_MS = 7000;
 interface Rect { x: number; y: number; w: number; h: number }
 interface Motion { card: Card; from: Rect; to: Rect; progress: number; fade?: boolean; inQueue?: boolean }
 const boardRect = (index: number): Rect => ({ x: 161 + (index % 4) * 157, y: 641 - CROP_Y + Math.floor(index / 4) * 156, w: 140, h: 137 });
@@ -64,6 +71,10 @@ let busy = false, ready = false, baseWin = 0, multiplier = 0, scatterCount = 0;
 let spins = 0, totalWin = 0;
 let floating = '', floatProgress = 0;
 let roundStarted = false;
+let featureProgress: number | null = null;
+let gambleShuffle: { progress: number; choice: GambleSuit; outcome: GambleSuit; showResult: boolean } | null = null;
+let gambleOfferResolver: ((choice: 'collect' | 'gamble') => void) | null = null;
+let gambleChoiceResolver: ((choice: GambleSuit) => void) | null = null;
 // Development-only reproducible rounds for manually checking rare cascades.
 const params = new URLSearchParams(location.search);
 const seedParam = import.meta.env.DEV ? params.get('seed') : null;
@@ -114,27 +125,20 @@ function drawMatchPayline() {
   const target = boardRect(highlighted[1]!);
   const start = { x: source.x + source.w / 2, y: source.y + source.h / 2 };
   const end = { x: target.x + target.w / 2, y: target.y + target.h / 2 };
-  const direction = Math.sign(end.x - start.x);
-  const entryX = direction > 0 ? 133 : 808;
   const angle = Math.atan2(end.y - start.y, end.x - start.x);
 
   ctx.save();
   ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.shadowColor = '#ffc44f'; ctx.shadowBlur = 18;
-  ctx.beginPath(); ctx.moveTo(entryX, start.y); ctx.lineTo(start.x, start.y); ctx.lineTo(end.x, end.y);
+  ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y);
   ctx.strokeStyle = '#41230c'; ctx.lineWidth = 13; ctx.stroke();
   ctx.strokeStyle = '#ffd065'; ctx.lineWidth = 7; ctx.stroke();
   ctx.strokeStyle = '#fff5ca'; ctx.lineWidth = 2; ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // The entry badge identifies the scan side; the traveling arrow points at the second card.
-  ctx.beginPath(); ctx.arc(entryX, start.y, 19, 0, Math.PI * 2);
+  // Endpoints stay at the symbol centres; the arrow travels from the upper card to the lower card.
+  ctx.beginPath(); ctx.arc(start.x, start.y, 6, 0, Math.PI * 2);
   ctx.fillStyle = '#24180f'; ctx.fill(); ctx.strokeStyle = '#ffe098'; ctx.lineWidth = 3; ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(entryX - direction * 5, start.y - 7);
-  ctx.lineTo(entryX + direction * 5, start.y);
-  ctx.lineTo(entryX - direction * 5, start.y + 7);
-  ctx.stroke();
 
   ctx.beginPath(); ctx.arc(end.x, end.y, 10, 0, Math.PI * 2);
   ctx.fillStyle = '#24180f'; ctx.fill(); ctx.stroke();
@@ -143,6 +147,59 @@ function drawMatchPayline() {
   ctx.rotate(angle);
   ctx.beginPath(); ctx.moveTo(13, 0); ctx.lineTo(-9, -10); ctx.lineTo(-5, 0); ctx.lineTo(-9, 10); ctx.closePath();
   ctx.fillStyle = '#fff5ca'; ctx.fill(); ctx.strokeStyle = '#7c4c15'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
+}
+
+function drawHighCardsAnnouncement() {
+  if (featureProgress === null) return;
+  const p = featureProgress;
+  const growth = p < .2 ? 1 - (1 - p / .2) ** 3 : p > .8 ? ((1 - p) / .2) ** 3 : 1;
+  const fade = Math.min(1, p / .05, (1 - p) / .05);
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  ctx.save();
+  ctx.fillStyle = `rgba(5, 9, 16, ${.86 * fade})`; ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2, H / 2);
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 410);
+  glow.addColorStop(0, '#df9f334d'); glow.addColorStop(1, '#df9f3300');
+  ctx.globalAlpha = fade; ctx.fillStyle = glow; ctx.fillRect(-W / 2, -H / 2, W, H);
+  const scale = reducedMotion ? 1 : growth;
+  ctx.scale(scale, scale);
+  panel({ x: -380, y: -112, w: 760, h: 224 }, '#16110df2', '#dca85c');
+  ctx.strokeStyle = '#dca85c'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-250, -82); ctx.lineTo(250, -82); ctx.moveTo(-250, 82); ctx.lineTo(250, 82); ctx.stroke();
+  ctx.font = 'bold 68px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const gold = ctx.createLinearGradient(0, -65, 0, 65);
+  gold.addColorStop(0, '#fff4ca'); gold.addColorStop(.55, '#ffda85'); gold.addColorStop(1, '#dca052');
+  ctx.fillStyle = gold; ctx.shadowColor = '#ffc95b'; ctx.shadowBlur = 18;
+  ctx.fillText('HIGH CARDS', 0, -34); ctx.fillText('FEATURE!', 0, 38);
+  ctx.restore();
+}
+
+function displayGambleSuit(progress: number, outcome: GambleSuit): GambleSuit {
+  if (progress >= .96) return outcome;
+  const fastPhase = 5 / 7;
+  if (progress < fastPhase) return Math.floor(progress * 35) % 2 === 0 ? 'hearts' : 'spades';
+  const lastTwoSeconds = (progress - fastPhase) / (1 - fastPhase);
+  const slowedTicks = Math.floor(35 + (1 - (1 - lastTwoSeconds) ** 2) * 5);
+  return slowedTicks % 2 === 0 ? 'hearts' : 'spades';
+}
+
+function drawGambleShuffle() {
+  if (!gambleShuffle) return;
+  const { progress, choice, outcome, showResult } = gambleShuffle;
+  const suit = displayGambleSuit(progress, outcome);
+  const won = choice === outcome;
+  ctx.save();
+  ctx.fillStyle = 'rgba(5, 9, 16, .9)'; ctx.fillRect(0, 0, W, H);
+  ctx.translate(W / 2, H / 2);
+  panel({ x: -340, y: -265, w: 680, h: 530 }, '#16110df5', '#dca85c');
+  text(showResult ? won ? 'DOUBLE WIN!' : 'THE HOUSE TAKES IT' : 'DOUBLE OR NOTHING', 0, -190, 31, '#fff0bd');
+  text(showResult ? won ? 'YOUR SUIT WON' : 'NO MATCH' : 'THE DECK DECIDES', 0, -150, 16, '#cbb891');
+  ctx.font = 'bold 245px Georgia, serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = suit === 'hearts' ? '#e25a55' : '#d6e0ed'; ctx.shadowColor = suit === 'hearts' ? '#d93535' : '#8ba2bc'; ctx.shadowBlur = 32;
+  ctx.fillText(suit === 'hearts' ? '♥' : '♠', 0, -5); ctx.shadowBlur = 0;
+  text(showResult ? won ? 'WINNINGS DOUBLED' : 'WINNINGS LOST' : progress < 5 / 7 ? 'SHUFFLING' : 'SLOWING DOWN', 0, 154, 22, '#f1d998');
+  text(showResult ? `${suit === 'hearts' ? '♥' : '♠'} ${suit.toUpperCase()}` : `YOUR PICK: ${choice.toUpperCase()}`, 0, 198, 16, '#cbb891');
   ctx.restore();
 }
 
@@ -193,6 +250,8 @@ function render() {
     panel({ x: 258, y: 430 - floatProgress * 35, w: 424, h: 65 }, '#11141aee', '#ffdc80');
     text(floating, W / 2, 464 - floatProgress * 35, 27); ctx.restore();
   }
+  drawHighCardsAnnouncement();
+  drawGambleShuffle();
 }
 
 function resize() {
@@ -200,11 +259,12 @@ function resize() {
   canvas.width = Math.round(rect.width * dpr); canvas.height = Math.round(rect.height * dpr); render();
 }
 
-function animate(duration: number, update: (progress: number) => void = () => {}) {
+function animate(duration: number, update: (progress: number) => void = () => {}, fixedDuration = false) {
   return new Promise<void>(resolve => {
     const start = performance.now();
     const frame = (now: number) => {
-      const progress = Math.min(1, (now - start) / (fast ? Math.min(duration, 45) : duration * GAMEPLAY_DURATION_SCALE));
+      const elapsedDuration = fixedDuration ? duration : fast ? Math.min(duration, 45) : duration * GAMEPLAY_DURATION_SCALE;
+      const progress = Math.min(1, (now - start) / elapsedDuration);
       update(progress); render();
       if (progress < 1) requestAnimationFrame(frame); else resolve();
     };
@@ -227,6 +287,47 @@ function updateStats() {
   document.querySelector('#spins')!.textContent = String(spins);
   document.querySelector('#total-win')!.textContent = money(totalWin);
   document.querySelector('#rtp')!.textContent = `${(spins ? totalWin / (spins * BET) * 100 : 0).toFixed(2)}%`;
+}
+
+function showGambleOffer(win: number) {
+  document.querySelector('#gamble-stake')!.textContent = money(win);
+  const dialog = document.querySelector<HTMLDialogElement>('#gamble-offer')!;
+  dialog.showModal();
+  return new Promise<'collect' | 'gamble'>(resolve => { gambleOfferResolver = resolve; });
+}
+
+function showGambleChoice(win: number) {
+  document.querySelector('#gamble-choice-stake')!.textContent = money(win);
+  const dialog = document.querySelector<HTMLDialogElement>('#gamble-choice')!;
+  dialog.showModal();
+  return new Promise<GambleSuit>(resolve => { gambleChoiceResolver = resolve; });
+}
+
+async function playGamble(win: number) {
+  const offer = await showGambleOffer(win);
+  if (offer === 'collect') return { payout: win, message: `${money(win)} collected` };
+  const choice = await showGambleChoice(win);
+  const outcome = drawGambleSuit(random);
+  gambleShuffle = { progress: 0, choice, outcome, showResult: false };
+  status.textContent = `Gambling on ${choice}…`;
+  await animate(GAMBLE_SHUFFLE_MS, progress => {
+    if (!gambleShuffle) return;
+    gambleShuffle.progress = progress;
+    if (import.meta.env.DEV) canvas.dataset.gamblePhase = progress < 5 / 7 ? 'shuffle' : 'slowdown';
+  }, true);
+  const payout = gamblePayout(win, choice, outcome);
+  gambleShuffle = { progress: 1, choice, outcome, showResult: true };
+  if (import.meta.env.DEV) canvas.dataset.gamblePhase = 'result';
+  status.textContent = payout ? `Correct: ${outcome} · ${money(payout)} won` : `Missed: ${outcome} · winnings lost`;
+  await animate(1500, () => {}, true);
+  gambleShuffle = null; delete canvas.dataset.gamblePhase;
+  return { payout, message: payout ? `${outcome} picked · ${money(payout)} won` : `${outcome} picked · winnings lost` };
+}
+
+function settleRound(win: number, message: string) {
+  totalWin = Math.round((totalWin + win) * 100) / 100; updateStats();
+  document.querySelector('#round-win')!.textContent = money(win);
+  document.querySelector('#win-detail')!.textContent = `${message} · paid`;
 }
 
 async function shiftBoard(next: Board) {
@@ -255,10 +356,23 @@ async function refill(initial = false) {
 async function startRound() {
   if (!ready || busy || bonus.open || rules.open) return;
   busy = true; spin.disabled = true; canvas.setAttribute('aria-disabled', 'true');
-  roundStarted = true; board = Array(16).fill(null); shoe = []; collected = {}; baseWin = 0; multiplier = 0; scatterCount = 0;
+  roundStarted = true; board = Array(16).fill(null); shoe = []; ranks = []; collected = {}; baseWin = 0; multiplier = 0; scatterCount = 0;
   spins++; updateStats();
-  const deck = generateDeck(random); ranks = uniqueRanks(deck);
-  updateWin(); status.textContent = 'Your current deck is revealed'; await animate(750);
+  updateWin();
+  const highCardsFeature = drawHighCardsFeature(random);
+  if (highCardsFeature) {
+    status.textContent = 'HIGH CARDS FEATURE!'; featureProgress = 0;
+    await animate(FEATURE_ANNOUNCEMENT_MS, progress => {
+      featureProgress = progress;
+      if (import.meta.env.DEV) canvas.dataset.featurePhase = progress < .2 ? 'grow' : progress < .8 ? 'hold' : 'shrink';
+    }, true);
+    featureProgress = null;
+    delete canvas.dataset.featurePhase;
+  }
+  const generatedDeck = generateDeck(random);
+  const deck = highCardsFeature ? upgradeLowCards(generatedDeck, random) : generatedDeck;
+  ranks = uniqueRanks(deck);
+  status.textContent = highCardsFeature ? 'High cards deck revealed · all low sets upgraded' : 'Your current deck is revealed'; await animate(750);
   shoe = shuffle(deck, random); status.textContent = 'Shuffling & dealing…'; await animate(250); await refill(true);
   while (true) {
     const match = findMatch(board);
@@ -285,13 +399,14 @@ async function startRound() {
     if (shoe.length) status.textContent = 'Dealing the next cards…';
     await refill(); await animate(170);
   }
-  const win = finalWin(baseWin, multiplier);
-  totalWin = Math.round((totalWin + win) * 100) / 100; updateStats();
-  updateWin(true);
-  status.textContent = `${board.every(card => !card) ? 'All cards collected' : 'No diagonal pairs remain'} · ${money(win)} won`;
+  const baseRoundWin = finalWin(baseWin, multiplier);
+  const gambleEligible = isGambleEligible(board, shoe);
+  const result = gambleEligible ? await playGamble(baseRoundWin) : { payout: baseRoundWin, message: `${money(baseRoundWin)} won` };
+  settleRound(result.payout, result.message);
+  status.textContent = `${gambleEligible ? 'Deck drained' : 'No diagonal pairs remain'} · ${result.message}`;
   busy = false; spin.disabled = false; spin.innerHTML = 'Deal again <span>↗</span>'; canvas.setAttribute('aria-disabled', 'false');
   if (scatterCount >= 2) {
-    document.querySelector('#bonus-copy')!.textContent = `${scatterCount} Scatters collected · Base-game win ${money(win)} units.`;
+    document.querySelector('#bonus-copy')!.textContent = `${scatterCount} Scatters collected · Settled win ${money(result.payout)} units.`;
     bonus.showModal();
   }
   render();
@@ -306,6 +421,7 @@ function play() {
 canvas.addEventListener('click', play); spin.addEventListener('click', play);
 document.addEventListener('keydown', event => {
   if ((event.code === 'Space' || event.code === 'Enter') && !event.repeat && !bonus.open && !rules.open &&
+      !document.querySelector<HTMLDialogElement>('#gamble-offer')!.open && !document.querySelector<HTMLDialogElement>('#gamble-choice')!.open &&
       (document.activeElement === document.body || document.activeElement === canvas)) {
     event.preventDefault(); play();
   }
@@ -313,6 +429,20 @@ document.addEventListener('keydown', event => {
 document.querySelector('.rules-button')!.addEventListener('click', () => rules.showModal());
 document.querySelector('#close-rules')!.addEventListener('click', () => rules.close());
 document.querySelector('#close-bonus')!.addEventListener('click', () => { bonus.close(); spin.focus(); });
+document.querySelector('#gamble-offer')!.addEventListener('cancel', event => event.preventDefault());
+document.querySelector('#gamble-choice')!.addEventListener('cancel', event => event.preventDefault());
+document.querySelector('#gamble-collect')!.addEventListener('click', () => {
+  document.querySelector<HTMLDialogElement>('#gamble-offer')!.close(); gambleOfferResolver?.('collect'); gambleOfferResolver = null;
+});
+document.querySelector('#gamble-start')!.addEventListener('click', () => {
+  document.querySelector<HTMLDialogElement>('#gamble-offer')!.close(); gambleOfferResolver?.('gamble'); gambleOfferResolver = null;
+});
+document.querySelector('#pick-hearts')!.addEventListener('click', () => {
+  document.querySelector<HTMLDialogElement>('#gamble-choice')!.close(); gambleChoiceResolver?.('hearts'); gambleChoiceResolver = null;
+});
+document.querySelector('#pick-spades')!.addEventListener('click', () => {
+  document.querySelector<HTMLDialogElement>('#gamble-choice')!.close(); gambleChoiceResolver?.('spades'); gambleChoiceResolver = null;
+});
 new ResizeObserver(resize).observe(canvas);
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', event => { fast = testMotion || event.matches; });
 

@@ -36,6 +36,18 @@ dialog h2 { font-size: 29px; margin: 12px 0; }
 dialog p { font-size: 13px; line-height: 1.7; color: #c5bda9; }
 dialog button { width: 100%; margin-top: 14px; }
 #bonus { text-align: center; }
+.gamble-dialog { text-align: center; }
+.gamble-dialog h2 { font-size: 34px; }
+.gamble-dialog strong { color: #ffdd93; font-variant-numeric: tabular-nums; }
+.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+.dialog-actions button { margin: 0; }
+.dialog-actions .secondary-action { background: #292a2a; border-color: #92794f; color: #f4e5c3; box-shadow: none; }
+.suit-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; }
+.suit-choice { display: grid; place-items: center; gap: 7px; min-height: 170px; margin: 0; padding: 16px; background: linear-gradient(145deg, #242b34, #11161d); border-color: #d8b36f; color: #f2e5c8; }
+.suit-choice span { font: 110px/1 Georgia, serif; text-shadow: 0 0 26px currentColor; }
+.suit-choice b { font-size: 14px; letter-spacing: .8px; text-transform: uppercase; }
+.suit-choice.hearts { color: #f16e67; }
+.suit-choice.spades { color: #d8e5f1; }
 .bonus-icon { font-size: 72px; color: #f4d28b; text-shadow: 0 0 40px #f6cd6766; }
 .paytable { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: 16px; border: 1px solid #9e804442; border-radius: 8px; font-size: 13px; }
 dialog .muted { font-size: 11px; color: #a69c85; }
