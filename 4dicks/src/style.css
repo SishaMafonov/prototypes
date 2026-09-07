@@ -4,7 +4,7 @@ body { margin: 0; min-width: 320px; min-height: 100svh; background: radial-gradi
 body::before { content: ''; position: fixed; inset: 0; z-index: -1; background: linear-gradient(#071017dd, #080e13f7), url('./assets/reels/main.png') center/cover; }
 button { font: inherit; cursor: pointer; }
 button:focus-visible, canvas:focus-visible { outline: 3px solid #ffdf93; outline-offset: 4px; }
-.game { width: min(880px, calc((100svh - 220px) * .95)); min-width: min(100%, 460px); margin: auto; padding: 0 12px; }
+.game { width: min(1200px, calc((100svh - 220px) * .95)); min-width: min(100%, 960px); margin: auto; padding: 0 12px; }
 header { display: flex; justify-content: space-between; align-items: center; min-height: 82px; padding: 12px 4px; }
 h1, h2 { font-family: Georgia, serif; font-weight: 500; }
 h1 { margin: 3px 0 0; font-size: clamp(24px, 3vw, 36px); line-height: 1.05; letter-spacing: -.8px; }
