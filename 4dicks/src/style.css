@@ -24,7 +24,7 @@ canvas { display: block; width: 100%; aspect-ratio: 941 / 990; touch-action: man
 #spin span { margin-left: 12px; }
 #spin:hover:enabled, dialog button:hover { filter: brightness(1.1); }
 #spin:disabled { cursor: wait; opacity: .45; }
-footer { display: grid; grid-template-columns: repeat(3, 1fr); padding: 13px 0; border-top: 1px solid #75634145; border-bottom: 1px solid #75634145; }
+footer { display: grid; grid-template-columns: repeat(4, 1fr); padding: 13px 0; border-top: 1px solid #75634145; border-bottom: 1px solid #75634145; }
 footer div { display: flex; align-items: center; flex-direction: column; gap: 5px; border-right: 1px solid #75634145; }
 footer div:last-child { border: 0; }
 footer span { font-size: 8px; letter-spacing: 1.3px; color: #a99c82; }
@@ -35,7 +35,8 @@ dialog::backdrop { background: #02070ddd; backdrop-filter: blur(5px); }
 dialog h2 { font-size: 29px; margin: 12px 0; }
 dialog p { font-size: 13px; line-height: 1.7; color: #c5bda9; }
 dialog button { width: 100%; margin-top: 14px; }
-#bonus { text-align: center; }
+.bonus-dialog { text-align: center; }
+.bonus-dialog h2 strong { color: #ffe098; font-variant-numeric: tabular-nums; }
 .gamble-dialog { text-align: center; }
 .gamble-dialog h2 { font-size: 34px; }
 .gamble-dialog strong { color: #ffdd93; font-variant-numeric: tabular-nums; }

@@ -11,6 +11,10 @@ export const HIGH_RANKS = ['J', 'Q', 'K'] as const;
 export const GAMBLE_SUITS = ['hearts', 'spades'] as const;
 export type GambleSuit = typeof GAMBLE_SUITS[number];
 export const MULTIPLIERS = [2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 5, 5, 5, 8, 8, 10];
+export const BONUS_GRID_SIZE = 8;
+export const BONUS_ANGLES = ['top-left', 'bottom-left', 'top-right', 'bottom-right'] as const;
+export type BonusAngle = typeof BONUS_ANGLES[number];
+export type BonusGrid = Array<number | null>;
 export const GROUPS: { ranks: readonly Rank[]; weight: number }[] = [
   { ranks: ['2', '3', '4', '5', '6'], weight: 70 },
   { ranks: ['7', '8', '9', '10'], weight: 30 },
@@ -113,6 +117,47 @@ export function drawMultiplier(random: Random = Math.random): number {
 
 export function finalWin(base: number, multiplier: number): number {
   return Math.round(base * (multiplier || 1) * 100) / 100;
+}
+
+/** Creates one bonus-spin grid with 1–64 distinct filled cells. */
+export function drawBonusGrid(random: Random = Math.random): BonusGrid {
+  const grid: BonusGrid = Array(BONUS_GRID_SIZE ** 2).fill(null);
+  const positions = Array.from({ length: grid.length }, (_, index) => index);
+  const filled = 1 + Math.min(63, Math.floor(random() * grid.length));
+  for (let index = 0; index < filled; index++) {
+    const pick = Math.floor(random() * positions.length);
+    const cell = positions.splice(pick, 1)[0]!;
+    grid[cell] = drawMultiplier(random);
+  }
+  return grid;
+}
+
+export function drawBonusAngle(random: Random = Math.random): BonusAngle {
+  return BONUS_ANGLES[Math.min(BONUS_ANGLES.length - 1, Math.floor(random() * BONUS_ANGLES.length))]!;
+}
+
+/** Returns the rectangular 90° quadrant extending from an entry cell to the chosen board corner.
+ * If either ray immediately points beyond the board, the marked entry cell stands alone. */
+export function bonusAngleCells(entry: number, angle: BonusAngle): number[] {
+  const row = Math.floor(entry / BONUS_GRID_SIZE), column = entry % BONUS_GRID_SIZE;
+  const rowStep = angle.startsWith('top') ? -1 : 1;
+  const columnStep = angle.endsWith('left') ? -1 : 1;
+  const hasRowSpace = row + rowStep >= 0 && row + rowStep < BONUS_GRID_SIZE;
+  const hasColumnSpace = column + columnStep >= 0 && column + columnStep < BONUS_GRID_SIZE;
+  if (!hasRowSpace || !hasColumnSpace) return [entry];
+  const cells: number[] = [];
+  for (let y = row; y >= 0 && y < BONUS_GRID_SIZE; y += rowStep) {
+    for (let x = column; x >= 0 && x < BONUS_GRID_SIZE; x += columnStep) cells.push(y * BONUS_GRID_SIZE + x);
+  }
+  return cells;
+}
+
+export function collectBonusMultipliers(grid: readonly (number | null)[], entry: number, angle: BonusAngle): number {
+  return bonusAngleCells(entry, angle).reduce((total, cell) => total + (grid[cell] || 0), 0);
+}
+
+export function bonusPayout(mainWin: number, bonusMultiplier: number): number {
+  return Math.round(mainWin * (bonusMultiplier || 1) * 100) / 100;
 }
 
 export function drawGambleSuit(random: Random = Math.random): GambleSuit {

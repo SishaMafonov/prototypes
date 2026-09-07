@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RANKS, SUITS, MULTIPLIERS, generateDeck, shuffle, uniqueRanks, findMatch,
   compactRows, compactBoard, pairWin, drawMultiplier, finalWin,
-  drawHighCardsFeature, upgradeLowCards, drawGambleSuit, gamblePayout, isGambleEligible } from '../src/game.ts';
+  drawHighCardsFeature, upgradeLowCards, drawGambleSuit, gamblePayout, isGambleEligible,
+  drawBonusGrid, drawBonusAngle, bonusAngleCells, collectBonusMultipliers, bonusPayout, BONUS_GRID_SIZE } from '../src/game.ts';
 
 function rng(seed) {
   return () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
@@ -41,6 +42,34 @@ test('Gamble is offered only after the deck is drained and all reel matches have
   const pendingMatch = Array(16).fill(null); pendingMatch[0] = card(0); pendingMatch[5] = card(5);
   assert.equal(isGambleEligible(pendingMatch, []), false);
   assert.equal(isGambleEligible(Array(16).fill(null), [card(0)]), false);
+});
+
+test('Bonus grid fills a random 1–64 distinct cells with approved multipliers', () => {
+  const oneCell = drawBonusGrid(() => 0);
+  assert.equal(oneCell.filter(Boolean).length, 1);
+  assert.equal(oneCell[0], 2);
+  const fullGrid = drawBonusGrid(() => .999999);
+  assert.equal(fullGrid.length, BONUS_GRID_SIZE ** 2);
+  assert.equal(fullGrid.filter(Boolean).length, BONUS_GRID_SIZE ** 2);
+  for (let seed = 1; seed <= 100; seed++) {
+    const grid = drawBonusGrid(rng(seed));
+    assert.ok(grid.filter(Boolean).length >= 1 && grid.filter(Boolean).length <= 64);
+    assert.ok(grid.every(value => value === null || MULTIPLIERS.includes(value)));
+  }
+});
+
+test('Bonus angle selection has four equal directions and gathers the matching quadrant', () => {
+  assert.deepEqual([0, .249999, .25, .499999, .5, .749999, .75, .999999].map(value => drawBonusAngle(() => value)),
+    ['top-left', 'top-left', 'bottom-left', 'bottom-left', 'top-right', 'top-right', 'bottom-right', 'bottom-right']);
+  assert.deepEqual([...bonusAngleCells(7, 'bottom-left')].sort((a, b) => a - b), Array.from({ length: 64 }, (_, index) => index));
+  assert.deepEqual(bonusAngleCells(0, 'top-left'), [0]);
+  assert.deepEqual(bonusAngleCells(7, 'top-left'), [7]);
+  assert.deepEqual(bonusAngleCells(63, 'bottom-right'), [63]);
+  const grid = Array(64).fill(null); grid[7] = 2; grid[16] = 3; grid[63] = 5;
+  assert.equal(collectBonusMultipliers(grid, 7, 'bottom-left'), 10);
+  assert.equal(collectBonusMultipliers(grid, 0, 'top-left'), 0);
+  assert.equal(bonusPayout(2.5, 10), 25);
+  assert.equal(bonusPayout(2.5, 0), 2.5);
 });
 
 const sets = ranks => ranks.flatMap((rank, set) => SUITS.map((suit, i) => card(set * 4 + i, rank, suit)));
