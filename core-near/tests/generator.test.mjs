@@ -55,8 +55,9 @@ test('64 seeded layouts stay connected, have separated islands, and play to full
   for (const seed of seeds) {
     const generated = generateBoard(seed), b = generated.board;
     assert.equal(b.width,20); assert.equal(b.height,20);
-    assert.ok(generated.notches>=6,`notches for seed ${seed}`);
-    assert.ok(generated.islands>=4,`islands for seed ${seed}`);
+    assert.ok(generated.notches>=10,`notches for seed ${seed}`);
+    assert.ok(generated.islands>=6,`islands for seed ${seed}`);
+    assert.ok(generated.corners>=100,`corner density for seed ${seed}`);
     assert.ok(b.playableCount>200 && b.playableCount<400);
     assert.equal(components(b.cells.filter(c=>!c.blocked)),1,`connected playable area for seed ${seed}`);
     assert.equal(components(b.cells.filter(c=>c.blocked)),generated.islands);

@@ -20,6 +20,11 @@ a { color: inherit; text-decoration: none; }
 .brand-mark { font-size: 31px; line-height: 1; margin-right: 11px; transform: rotate(-15deg); color: var(--green); }
 .edition { font-size: 9px; font-weight: 500; letter-spacing: 0; border: 1px solid #bcc4b8; border-radius: 3px; padding: 3px; margin-left: 9px; align-self: flex-start; }
 .header-meta { font-size: 9px; font-weight: 600; letter-spacing: 1.4px; display: flex; align-items: center; gap: 9px; color: #76816f; }
+.header-actions { display: flex; gap: 20px; align-items: center; }
+.header-actions .text-button { white-space: nowrap; }
+.theme-toggle { display: flex; gap: 7px; align-items: center; padding: 8px 10px; border: 1px solid #cad2c1; border-radius: 6px; background: transparent; color: #586650; font-size: 11px; white-space: nowrap; }
+.theme-toggle:hover { background: #e1e8db; }
+.theme-toggle span { font-size: 15px; line-height: 1; }
 .live-dot { width: 5px; height: 5px; background: #558067; border-radius: 50%; }
 .meta-divider { margin: 0 8px; color: #bac2b3; }
 .text-button { padding: 6px 0; background: none; border: 0; font-size: 12px; color: #586650; }
@@ -142,6 +147,8 @@ dialog>.primary-button { width: 100%; }
   .turn-card { padding: 17px; } .board-stamp { font-size: 7px; right: 10px; top: 10px; } .page-footer { font-size: 7px; }
 }
 @media(max-width:720px) {
+  .header-actions { gap: 12px; } .theme-toggle { padding: 7px 8px; font-size: 10px; }
+  .header-actions .text-button span { display: none; }
   .site-header { height: 70px; padding: 0 20px; } .wordmark { font-size: 17px; } main { padding: 0 16px; }
   .intro { padding: 29px 4px 26px; } h1 { font-size: 39px; letter-spacing: -2px; }
   .eyebrow { font-size: 8px; letter-spacing: 1.6px; } .intro-copy { font-size: 11px; }
@@ -164,8 +171,52 @@ dialog>.primary-button { width: 100%; }
   .result-panel h2 { font-size: 25px; }
 }
 @media(max-width:360px) {
+  .site-header { padding: 0 12px; gap: 10px; }
+  .header-actions { gap: 9px; } .header-actions .text-button { font-size: 10px; }
+  .header-actions .text-button span { display: none; } .edition { display: none; }
   .board-meta { display: none; }
   .score-card { display: block; padding: 12px; }
   .score-card strong { margin: 5px 0 0; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition: none!important; } }
+
+:root[data-theme=dark] {
+  color-scheme: dark; color: #dce6d9; background: #141d19;
+  --green: #89d6ae; --amber: #edc471; --muted: #9caf9b; --line: #344339;
+}
+[data-theme=dark] .board-card { background: #1d2922; border-color: #35483b; box-shadow: 0 4px 14px #0002; }
+[data-theme=dark] .board-toolbar, [data-theme=dark] .board-footer, [data-theme=dark] .board-options { border-color: #344339; }
+[data-theme=dark] .edition { border-color: #50654f; }
+[data-theme=dark] .theme-toggle { color: #c9d9c2; border-color: #50654f; }
+[data-theme=dark] .theme-toggle[aria-pressed=true] { background: #2c4333; }
+[data-theme=dark] .theme-toggle:hover { background: #36513e; }
+[data-theme=dark] .text-button { color: #b8cbb0; }
+[data-theme=dark] .text-button:hover { color: #e1edda; }
+[data-theme=dark] .header-meta, [data-theme=dark] .eyebrow, [data-theme=dark] .intro-copy,
+[data-theme=dark] .intro-note p, [data-theme=dark] .board-meta, [data-theme=dark] .board-number,
+[data-theme=dark] .board-footer, [data-theme=dark] .board-footer>span, [data-theme=dark] .board-options,
+[data-theme=dark] .section-heading>span, [data-theme=dark] .score-unit, [data-theme=dark] .launch-controls>label,
+[data-theme=dark] .last-move p, [data-theme=dark] .board-controls p, [data-theme=dark] .reset-controls .text-button,
+[data-theme=dark] .rule-number, [data-theme=dark] .rule-strip p span, [data-theme=dark] .page-footer { color: #9caf9b; }
+[data-theme=dark] .live-dot, [data-theme=dark] .hint-dot { background: #89b97d; }
+[data-theme=dark] .turn-card { background: #253c30; border-color: #3e5542; }
+[data-theme=dark] .turn-card[data-player=O] { background: #403a28; border-color: #665839; }
+[data-theme=dark] .turn-heading, [data-theme=dark] .current-player p, [data-theme=dark] .turn-message { color: #b1c4a4; }
+[data-theme=dark] .turn-status { border-color: #607852; }
+[data-theme=dark] .score-card { background: #213028; border-color: #3b5041; }
+[data-theme=dark] .score-card.player-o { background: #302d21; border-color: #514a31; }
+[data-theme=dark] .progress-track { background: #344339; }
+[data-theme=dark] .launch-controls select { background: #202e25; border-color: #3f5242; color: #c5d8bc; }
+[data-theme=dark] .primary-button { background: #8dc3a2; color: #14271c; }
+[data-theme=dark] .primary-button:hover:not(:disabled) { background: #aed7bb; }
+[data-theme=dark] .secondary-button { border-color: #495e47; color: #bfd1b4; }
+[data-theme=dark] .secondary-button:hover, [data-theme=dark] .new-board-button { background: #2c3c2d; }
+[data-theme=dark] .new-board-button:hover { background: #3b5040; }
+[data-theme=dark] .switch { background: #53614e; }
+[data-theme=dark] .switch-label input:checked+.switch { background: #80ad79; }
+[data-theme=dark] .result-panel { background: #1d2a21f5; border-color: #53634a; box-shadow: 0 10px 60px #0006; }
+[data-theme=dark] .result-panel p { color: #b1c4a4; }
+[data-theme=dark] dialog { background: #1d2a21; color: #dce6d9; border-color: #53634a; }
+[data-theme=dark] dialog::backdrop { background: #030b08aa; }
+[data-theme=dark] .dialog-heading button, [data-theme=dark] dialog li::marker { color: #aac497; }
+[data-theme=dark] .rules-note { background: #2a3b2d; color: #bfd1b4; }

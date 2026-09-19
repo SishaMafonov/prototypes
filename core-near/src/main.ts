@@ -8,13 +8,19 @@ import { winner } from './game/Scoring.js';
 import type { LaunchPoint, RaySimulation, StaticBoard } from './game/types.js';
 import { CanvasRenderer } from './render/CanvasRenderer.js';
 import { RayAnimator } from './render/RayAnimator.js';
+import { readTheme, saveTheme } from './render/Theme.js';
+
+let themeStorage: Storage | null = null;
+try { themeStorage = window.localStorage; } catch { /* Storage may be unavailable. */ }
+let theme = readTheme(themeStorage, window.matchMedia('(prefers-color-scheme: dark)').matches);
+document.documentElement.dataset.theme = theme;
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `
   <header class="site-header">
     <a class="wordmark" href="./" aria-label="Core Near home"><span class="brand-mark" aria-hidden="true">↳</span>CORE<span class="wordmark-light">NEAR</span><span class="edition">01</span></a>
     <div class="header-meta"><span class="live-dot"></span> LOCAL TWO-PLAYER <span class="meta-divider">/</span> A PAPER GAME, REIMAGINED</div>
-    <button class="text-button" id="how-to">How to play <span aria-hidden="true">↗</span></button>
+    <div class="header-actions"><button class="theme-toggle" id="theme-toggle" aria-pressed="false"><span aria-hidden="true">◐</span> Dark theme</button><button class="text-button" id="how-to">How to play <span aria-hidden="true">↗</span></button></div>
   </header>
   <main>
     <section class="intro" aria-labelledby="game-title">
@@ -82,7 +88,7 @@ function syncBoard() {
   }
   element('board-meta').textContent = `${board.width} × ${board.height} / ${board.playableCount} claimable cells`;
   element('board-number').textContent = `#${generated.seed.toString(16).padStart(8, '0').toUpperCase()}`;
-  element('board-details').textContent = `${generated.islands} islands · ${generated.notches} boundary notches`;
+  element('board-details').textContent = `${generated.islands} islands · ${generated.corners} corners`;
   element('path-info').textContent = `${board.launchPoints.length} starting points`;
 }
 function pathSummary(sim: RaySimulation): string {
@@ -178,7 +184,7 @@ function draw(now: number) {
     syncUI();
   }
   renderer.draw(game.state, { selected, preview: previewToggle.checked ? preview : null, active,
-    coordinates: coordinates.checked, captureKeys, captureTime, now });
+    coordinates: coordinates.checked, captureKeys, captureTime, now, theme });
   if (animator || now - captureTime < 450) requestDraw();
 }
 canvas.addEventListener('pointermove', event => { if (event.pointerType !== 'touch') select(renderer.hitTest(event.clientX, event.clientY)); });
@@ -198,10 +204,20 @@ launchButton.addEventListener('click', () => launch(selected));
 previewToggle.addEventListener('change', requestDraw); coordinates.addEventListener('change', requestDraw);
 element('restart').addEventListener('click', () => restart()); element('reset').addEventListener('click', () => restart(true));
 element('new-board').addEventListener('click', newBoard);
+function syncTheme() {
+  document.documentElement.dataset.theme = theme;
+  element('theme-toggle').setAttribute('aria-pressed', String(theme === 'dark'));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#141d19' : '#eeeee6');
+  requestDraw();
+}
+element('theme-toggle').addEventListener('click', () => {
+  theme = theme === 'light' ? 'dark' : 'light';
+  saveTheme(themeStorage, theme); syncTheme();
+});
 element('play-again').addEventListener('click', () => restart());
 element('how-to').addEventListener('click', () => rules.showModal());
 element('close-rules').addEventListener('click', () => rules.close()); element('got-it').addEventListener('click', () => rules.close());
 rules.addEventListener('click', event => { if (event.target === rules) { const r = rules.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) rules.close(); } });
 new ResizeObserver(() => { renderer.resize(); requestDraw(); }).observe(canvas);
 window.addEventListener('resize', () => { renderer.resize(); requestDraw(); });
-syncBoard(); renderer.resize(); syncUI(); requestDraw();
+syncBoard(); renderer.resize(); syncUI(); syncTheme(); requestDraw();

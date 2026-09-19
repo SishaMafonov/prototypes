@@ -3,7 +3,7 @@ import { adjacentCells, canTraverse, cellEdges, keyOfEdge, pointKey, quadrants, 
 import type { CellDefinition, Direction, GridPoint, LaunchPoint, StaticBoard, StaticEdge } from './types.js';
 
 export const BOARD_SIZE = 20;
-export interface GeneratedBoard { readonly board: StaticBoard; readonly seed: number; readonly islands: number; readonly notches: number }
+export interface GeneratedBoard { readonly board: StaticBoard; readonly seed: number; readonly islands: number; readonly notches: number; readonly corners: number }
 
 // Mulberry32: identical seeds reproduce identical layouts, including rejected candidates.
 function randomSource(seed: number) {
@@ -62,7 +62,21 @@ const islandShapes: readonly (readonly GridPoint[])[] = [
   [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0, y: 1 }],
   [{ x: 0, y: 0 }, { x: 0, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }],
   [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 1 }],
+  [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }],
+  [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 1 }],
 ];
+
+function countCorners(board: StaticBoard): number {
+  const axes = new Map<string, Set<string>>();
+  for (const edge of board.staticEdges) {
+    const axis = edge.x1 === edge.x2 ? 'vertical' : 'horizontal';
+    for (const key of [`${edge.x1},${edge.y1}`, `${edge.x2},${edge.y2}`]) {
+      if (!axes.has(key)) axes.set(key, new Set());
+      axes.get(key)!.add(axis);
+    }
+  }
+  return [...axes.values()].filter(directions => directions.size === 2).length;
+}
 
 export function generateBoard(seed: number): GeneratedBoard {
   if (!Number.isInteger(seed) || seed < 0 || seed > 0xffffffff) throw new Error('Board seed must be an unsigned 32-bit integer.');
@@ -87,12 +101,14 @@ export function generateBoard(seed: number): GeneratedBoard {
       }
     };
     let notches = 0, islands = 0;
-    const targetNotches = integer(8, 12), targetIslands = integer(6, 9);
-    for (let trial = 0; trial < 80 && notches < targetNotches; trial++) {
-      const side = trial % 4, length = integer(2, 5), depth = integer(1, 3);
+    const targetNotches = integer(12, 16), targetIslands = integer(8, 12);
+    for (let trial = 0; trial < 120 && notches < targetNotches; trial++) {
+      const side = trial % 4, length = integer(2, 4), depth = integer(1, 3);
       const start = integer(2, BOARD_SIZE - length - 2);
+      const stepAt = integer(1, length - 1);
+      const stepped = random() < 0.85;
       const cut = new Set<string>();
-      for (let along = start; along < start + length; along++) for (let inward = 0; inward < depth; inward++) {
+      for (let along = start; along < start + length; along++) for (let inward = 0; inward < depth + (stepped && along - start >= stepAt ? 1 : 0); inward++) {
         const p = side === 0 ? { x: along, y: inward } : side === 1 ? { x: BOARD_SIZE - 1 - inward, y: along } :
           side === 2 ? { x: along, y: BOARD_SIZE - 1 - inward } : { x: inward, y: along };
         cut.add(pointKey(p));
@@ -108,7 +124,7 @@ export function generateBoard(seed: number): GeneratedBoard {
       }
       if (clear && accept(cells.filter(c => !cut.has(pointKey(c))))) notches++;
     }
-    for (let trial = 0; trial < 120 && islands < targetIslands; trial++) {
+    for (let trial = 0; trial < 160 && islands < targetIslands; trial++) {
       const shape = islandShapes[integer(0, islandShapes.length - 1)];
       const rotation = integer(0, 3);
       const rotated = shape.map(p => rotation === 0 ? p : rotation === 1 ? { x: -p.y, y: p.x } :
@@ -127,7 +143,8 @@ export function generateBoard(seed: number): GeneratedBoard {
       const blocked = new Set(footprint.map(pointKey));
       if (accept(cells.map(c => blocked.has(pointKey(c)) ? { ...c, blocked: true } : c))) islands++;
     }
-    if (notches >= 6 && islands >= 4) return { board, seed, islands, notches };
+    const corners = countCorners(board);
+    if (notches >= 10 && islands >= 6 && corners >= 100) return { board, seed, islands, notches, corners };
   }
   throw new Error('Could not generate a fully claimable board. Please try a new board.');
 }
