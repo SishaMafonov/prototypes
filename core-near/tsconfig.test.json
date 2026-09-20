@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": false, "noEmitOnError": true, "outDir": ".test-build", "rootDir": "src" },
+  "include": ["src/game/**/*.ts", "src/data/**/*.ts", "src/render/**/*.ts"]
+}
