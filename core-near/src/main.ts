@@ -3,6 +3,8 @@ import { directionName } from './game/Board.js';
 import { generateBoard } from './game/BoardGenerator.js';
 import type { GeneratedBoard } from './game/BoardGenerator.js';
 import { Game } from './game/Game.js';
+import { AIPlayer, AITurnScheduler } from './game/AIPlayer.js';
+import { HighScoreStore, highScoreStorageKey } from './game/HighScore.js';
 import { pointKey } from './game/Geometry.js';
 import { winner } from './game/Scoring.js';
 import type { LaunchPoint, RaySimulation, StaticBoard } from './game/types.js';
@@ -10,36 +12,38 @@ import { CanvasRenderer } from './render/CanvasRenderer.js';
 import { RayAnimator } from './render/RayAnimator.js';
 import { readTheme, saveTheme } from './render/Theme.js';
 
-let themeStorage: Storage | null = null;
-try { themeStorage = window.localStorage; } catch { /* Storage may be unavailable. */ }
-let theme = readTheme(themeStorage, window.matchMedia('(prefers-color-scheme: dark)').matches);
+let browserStorage: Storage | null = null;
+try { browserStorage = window.localStorage; } catch { /* Storage may be unavailable. */ }
+let theme = readTheme(browserStorage, window.matchMedia('(prefers-color-scheme: dark)').matches);
+const highScores = new HighScoreStore(browserStorage);
+let newRecord = false;
 document.documentElement.dataset.theme = theme;
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `
   <header class="site-header">
     <a class="wordmark" href="./" aria-label="Core Near home"><span class="brand-mark" aria-hidden="true">↳</span>CORE<span class="wordmark-light">NEAR</span><span class="edition">01</span></a>
-    <div class="header-meta"><span class="live-dot"></span> LOCAL TWO-PLAYER <span class="meta-divider">/</span> A PAPER GAME, REIMAGINED</div>
+    <div class="header-meta"><span class="live-dot"></span> YOU vs COMPUTER <span class="meta-divider">/</span> A PAPER GAME, REIMAGINED</div>
     <div class="header-actions"><button class="theme-toggle" id="theme-toggle" aria-pressed="false"><span aria-hidden="true">◐</span> Dark theme</button><button class="text-button" id="how-to">How to play <span aria-hidden="true">↗</span></button></div>
   </header>
   <main>
     <section class="intro" aria-labelledby="game-title">
       <div><p class="eyebrow">A LITTLE GEOMETRY. A LITTLE STRATEGY.</p><h1 id="game-title">Find your angle.</h1><p class="intro-copy">Launch a line. Turn a corner. Make the space yours.</p></div>
-      <div class="intro-note"><span class="note-symbols">× <span>○</span></span><p>Two players.<br>One shared possibility.</p></div>
+      <div class="intro-note"><span class="note-symbols">× <span>○</span></span><p>You and the computer.<br>Every line matters.</p></div>
     </section>
     <div class="game-layout">
       <section class="board-card" aria-label="Game board">
         <div class="board-toolbar"><div><span class="small-caps">THE ISLANDS</span><span class="board-meta" id="board-meta">20 × 20</span></div><span class="board-number" id="board-number"></span></div>
         <div class="canvas-wrap">
           <canvas id="board" tabindex="0" aria-label="Core Near game board. Use arrow keys to select a boundary point and Enter or Space to launch. A launch selector is also available below." aria-describedby="canvas-help">Play using the launch-point selector and Launch ray button.</canvas>
-          <div class="result-panel" id="result" hidden><span class="eyebrow">ALL SPACES SPOKEN FOR</span><h2 id="result-title"></h2><p id="result-score"></p><button class="primary-button" id="play-again">Play again <span>↗</span></button></div>
+          <div class="result-panel" id="result" hidden><span class="eyebrow">ALL SPACES SPOKEN FOR</span><h2 id="result-title"></h2><p id="result-score"></p><p id="result-record"></p><button class="primary-button" id="play-again">Play again <span>↗</span></button></div>
         </div>
         <div class="board-footer"><p id="canvas-help"><span class="hint-dot"></span> Choose a boundary dot to launch.</p><span id="path-info"></span></div>
         <div class="board-options"><label class="switch-label"><input type="checkbox" id="preview" checked><span class="switch" aria-hidden="true"></span>Trajectory preview</label><label class="checkbox-label"><input type="checkbox" id="coordinates">Coordinates</label></div>
       </section>
       <aside class="sidebar" aria-label="Game controls and scores">
-        <section class="turn-card" id="turn-card"><div class="turn-heading"><span class="small-caps" id="turn-number">TURN 01</span><span class="turn-status" id="phase-label">YOUR MOVE</span></div><div class="current-player"><span id="current-symbol">×</span><div><h2 id="current-name">Player X</h2><p id="turn-instruction">The next line is yours.</p></div></div><p class="turn-message" id="turn-message" role="status" aria-live="polite">Pick any dot along the boundary. Your ray finds its own way.</p></section>
-        <section class="score-section" aria-label="Score"><div class="section-heading"><h2>Claimed spaces</h2><span id="claimed-total"></span></div><div class="score-grid"><div class="score-card player-x"><span class="score-player">× <span>PLAYER X</span></span><strong id="score-x">0</strong><span class="score-unit">cells</span></div><div class="score-card player-o"><span class="score-player">○ <span>PLAYER O</span></span><strong id="score-o">0</strong><span class="score-unit">cells</span></div></div><div class="progress-track" role="img" id="progress" aria-label="No cells claimed"><span id="progress-x"></span><span id="progress-o"></span></div></section>
+        <section class="turn-card" id="turn-card"><div class="turn-heading"><span class="small-caps" id="turn-number">TURN 01</span><span class="turn-status" id="phase-label">YOUR MOVE</span></div><div class="current-player"><span id="current-symbol">×</span><div><h2 id="current-name">You · X</h2><p id="turn-instruction">The next line is yours.</p></div></div><p class="turn-message" id="turn-message" role="status" aria-live="polite">Pick any dot along the boundary. Your ray finds its own way.</p></section>
+        <section class="score-section" aria-label="Score"><div class="section-heading"><h2>Claimed spaces</h2><span id="claimed-total"></span></div><div class="score-grid"><div class="score-card player-x"><span class="score-player">× <span>YOU</span></span><strong id="score-x">0</strong><span class="score-unit">cells</span></div><div class="score-card player-o"><span class="score-player">○ <span>COMPUTER</span></span><strong id="score-o">0</strong><span class="score-unit">cells</span></div></div><div class="progress-track" role="img" id="progress" aria-label="No cells claimed"><span id="progress-x"></span><span id="progress-o"></span></div><div class="high-score"><div><span class="small-caps">YOUR BEST WIN</span><p id="high-score-note">Win as X to set a record.</p></div><strong id="high-score-value">—</strong></div></section>
         <section class="launch-controls"><label for="launch-select" class="small-caps">POINT OF DEPARTURE</label><select id="launch-select"><option value="">Choose a dot or select a point</option></select><button class="primary-button" id="launch" disabled>Launch ray <span aria-hidden="true">↗</span></button></section>
         <section class="last-move"><div class="section-heading"><h2>Last move</h2><span id="last-player">—</span></div><p id="last-move">A blank page. Make the first move.</p></section>
         <section class="board-controls" aria-label="Board layout"><button id="new-board" class="secondary-button new-board-button">New Board <span aria-hidden="true">⤨</span></button><p id="board-details"></p></section>
@@ -49,7 +53,7 @@ app.innerHTML = `
     <section class="rule-strip" aria-label="Quick rules"><div><span class="rule-number">01</span><p><strong>Pick a starting point.</strong><span>Launch inward from any boundary dot.</span></p></div><div><span class="rule-number">02</span><p><strong>Let the corners lead.</strong><span>Corners turn your ray. Flat walls stop it.</span></p></div><div><span class="rule-number">03</span><p><strong>Close a square. Claim it.</strong><span>The fourth side earns you the space.</span></p></div></section>
     <footer class="page-footer"><span>OLD LINES ARE PATHS, NEVER WALLS.</span><span>CORE NEAR <span class="footer-cross">+</span> A SHARED-PAPER STRATEGY GAME</span></footer>
   </main>
-  <dialog id="rules-dialog"><div class="dialog-heading"><span class="eyebrow">THE RULES OF THE PAGE</span><button id="close-rules" aria-label="Close rules">×</button></div><h2>A line can change<br>everything.</h2><ol><li><strong>Take turns, X then O.</strong> Choose a dot on a straight outer boundary. Your ray launches perpendicular to the wall.</li><li><strong>Follow the fixed geometry.</strong> The ray turns 90° at a corner and stops at a flat wall. The dark islands are solid.</li><li><strong>Cross any old line.</strong> Traces from either player can be crossed or retraced. Claimed cells never block a ray.</li><li><strong>Finish a cell to claim it.</strong> All four sides must exist. Walls and either player's traces count. Every cell you close on your turn is yours permanently.</li><li><strong>Most cells wins.</strong> Turns always alternate, even after scoring or retracing. The game ends when every playable cell is claimed.</li></ol><div class="rules-note"><strong>At the keyboard</strong><p>Focus the board and use arrow keys to cycle launch points, then Enter or Space to launch. You can also use the selector.</p><strong>A new page, every time</strong><p>New Board creates a random 20 × 20 layout with boundary notches and interior islands. Restart Board replays the same layout. The claimable cell count varies with its shape.</p></div><button class="primary-button" id="got-it">Back to the board <span>↗</span></button></dialog>
+  <dialog id="rules-dialog"><div class="dialog-heading"><span class="eyebrow">THE RULES OF THE PAGE</span><button id="close-rules" aria-label="Close rules">×</button></div><h2>A line can change<br>everything.</h2><ol><li><strong>You are X. The computer is O.</strong> You go first. Choose a dot on a straight outer boundary. Your ray launches perpendicular to the wall, then the computer takes its turn automatically.</li><li><strong>Follow the fixed geometry.</strong> The ray turns 90° at a corner and stops at a flat wall. The dark islands are solid.</li><li><strong>Cross any old line.</strong> Traces from either player can be crossed or retraced. Claimed cells never block a ray.</li><li><strong>Finish a cell to claim it.</strong> All four sides must exist. Walls and either player's traces count. Every cell you close on your turn is yours permanently.</li><li><strong>Most cells wins.</strong> Turns always alternate, even after scoring or retracing. The game ends when every playable cell is claimed.</li></ol><div class="rules-note"><strong>Your best win</strong><p>When you win, your claimed-cell count can set a new high score. Your best winning score stays in this browser’s local storage across reloads, restarts and new boards, until this site’s data is cleared. Draws and losses never set a record.</p><strong>At the keyboard</strong><p>Focus the board and use arrow keys to cycle launch points, then Enter or Space to launch. You can also use the selector.</p><strong>A new page, every time</strong><p>New Board creates a random 20 × 20 layout with boundary notches and interior islands. Restart Board replays the same layout. The claimable cell count varies with its shape.</p></div><button class="primary-button" id="got-it">Back to the board <span>↗</span></button></dialog>
 `;
 
 function element<T extends HTMLElement>(id: string): T { return document.getElementById(id) as T; }
@@ -64,6 +68,8 @@ catch (error) {
   app.append(message); throw error;
 }
 let game = new Game(board);
+let ai = new AIPlayer(board);
+const aiTurns = new AITurnScheduler();
 const canvas = element<HTMLCanvasElement>('board');
 let renderer = new CanvasRenderer(canvas, board);
 const previewToggle = element<HTMLInputElement>('preview');
@@ -100,7 +106,7 @@ function pathSummary(sim: RaySimulation): string {
   return `${sim.edges.length} steps · ${turns} ${turns === 1 ? 'turn' : 'turns'}`;
 }
 function select(launch: LaunchPoint | null) {
-  if (game.state.phase !== 'ready') return;
+  if (game.state.phase !== 'ready' || game.state.currentPlayer !== 'X') return;
   selected = launch; preview = launch ? game.preview(launch) : null;
   selector.value = launch?.id ?? '';
   launchButton.disabled = !launch || preview?.termination !== 'flat-wall';
@@ -109,12 +115,14 @@ function select(launch: LaunchPoint | null) {
 }
 function syncUI() {
   const state = game.state, finished = state.phase === 'finished', busy = state.phase === 'animating';
+  const thinking = !finished && !busy && state.currentPlayer === 'O';
+  const humanReady = !finished && !busy && state.currentPlayer === 'X';
   element('turn-card').dataset.player = state.currentPlayer;
   element('turn-number').textContent = finished ? 'BOARD COMPLETE' : `TURN ${String(state.trajectories.length + 1).padStart(2, '0')}`;
-  element('phase-label').textContent = finished ? 'FINISHED' : busy ? 'IN MOTION' : 'YOUR MOVE';
+  element('phase-label').textContent = finished ? 'FINISHED' : busy ? 'IN MOTION' : thinking ? 'THINKING' : 'YOUR MOVE';
   element('current-symbol').textContent = state.currentPlayer === 'X' ? '×' : '○';
-  element('current-name').textContent = `Player ${state.currentPlayer}`;
-  element('turn-instruction').textContent = busy ? 'Watch the line unfold.' : 'The next line is yours.';
+  element('current-name').textContent = state.currentPlayer === 'X' ? 'You · X' : 'Computer · O';
+  element('turn-instruction').textContent = busy ? 'Watch the line unfold.' : thinking ? 'Looking for its next angle…' : 'The next line is yours.';
   element('turn-message').textContent = lastMessage;
   element('score-x').textContent = String(state.scoreX); element('score-o').textContent = String(state.scoreO);
   const total = state.scoreX + state.scoreO;
@@ -122,32 +130,40 @@ function syncUI() {
   element('progress').setAttribute('aria-label', `${total} of ${board.playableCount} cells claimed`);
   element('progress-x').style.width = `${state.scoreX / board.playableCount * 100}%`;
   element('progress-o').style.width = `${state.scoreO / board.playableCount * 100}%`;
-  selector.disabled = busy || finished;
-  launchButton.disabled = busy || finished || !selected || preview?.termination !== 'flat-wall';
-  canvas.setAttribute('aria-disabled', String(busy || finished));
-  element('canvas-help').innerHTML = `<span class="hint-dot"></span> ${finished ? 'Every cell has found its owner.' : busy ? 'Following the corners…' : 'Choose a boundary dot to launch.'}`;
+  selector.disabled = !humanReady;
+  launchButton.disabled = !humanReady || !selected || preview?.termination !== 'flat-wall';
+  canvas.setAttribute('aria-disabled', String(!humanReady));
+  canvas.style.cursor = humanReady && selected ? 'pointer' : 'default';
+  element('canvas-help').innerHTML = `<span class="hint-dot"></span> ${finished ? 'Every cell has found its owner.' : busy ? 'Following the corners…' : thinking ? 'Computer O is choosing a ray…' : 'Choose a boundary dot to launch.'}`;
+  const best = highScores.best;
+  element('high-score-value').textContent = best ? String(best.score) : '—';
+  element('high-score-note').textContent = best ? `Cells in a win · ${highScores.persistent ? 'saved on this browser' : 'this session only'}` :
+    highScores.persistent ? 'Win as X to set a record.' : 'Storage unavailable · records last this session.';
   const last = state.trajectories.at(-1);
-  element('last-player').textContent = last ? `PLAYER ${last.player}` : '—';
+  element('last-player').textContent = last ? last.player === 'X' ? 'YOU · X' : 'COMPUTER · O' : '—';
   element('last-move').textContent = last ? `Point ${last.launchId.slice(1)} · ${last.edges.length} steps · ${last.captured === 0 ? 'no cells claimed' : `+${last.captured} ${last.captured === 1 ? 'cell' : 'cells'} claimed`}` : 'A blank page. Make the first move.';
   element('result').hidden = !finished;
   if (finished) {
-    const result = winner(state.scoreX, state.scoreO), title = result === 'draw' ? 'A perfect draw.' : `Player ${result} wins.`;
+    const result = winner(state.scoreX, state.scoreO), title = result === 'draw' ? 'A perfect draw.' : result === 'X' ? 'You win!' : 'Computer O wins.';
     element('current-name').textContent = title; element('current-symbol').textContent = result === 'draw' ? '=' : result === 'X' ? '×' : '○';
     element('turn-card').dataset.player = result === 'draw' ? 'X' : result;
     element('turn-instruction').textContent = 'A page well played.'; element('result-title').textContent = title;
-    element('result-score').textContent = `X claimed ${state.scoreX} · O claimed ${state.scoreO}`;
+    element('result-score').textContent = `You claimed ${state.scoreX} · Computer claimed ${state.scoreO}`;
+    element('result-record').textContent = newRecord ? `New high score: ${best!.score} cells!${highScores.persistent ? '' : ' Saved for this session only.'}` :
+      best ? `Your best win: ${best.score} cells.` : 'Win a game to set your first record.';
   }
 }
-function launch(launchPoint: LaunchPoint | null) {
-  if (!launchPoint || game.state.phase !== 'ready') return;
+function launch(launchPoint: LaunchPoint | null, automated = false) {
+  if (!launchPoint || game.state.phase !== 'ready' || game.state.currentPlayer !== (automated ? 'O' : 'X')) return;
   const pending = game.beginMove(launchPoint);
   if (!pending) { lastMessage = 'That ray cannot finish at a flat wall. Choose another point.'; syncUI(); return; }
   animator = new RayAnimator(pending.simulation, performance.now()); animationToken = pending.token;
   selected = null; preview = null; selector.value = '';
-  lastMessage = `Player ${pending.player} launched from point ${launchPoint.id.slice(1)}. Corners choose the way.`;
+  lastMessage = `${pending.player === 'X' ? 'You' : 'Computer O'} launched from point ${launchPoint.id.slice(1)}. Corners choose the way.`;
   element('path-info').textContent = pathSummary(pending.simulation); syncUI(); requestDraw();
 }
 function restart(resetSettings = false) {
+  aiTurns.cancel(); newRecord = false;
   animator = null; animationToken = null; game.restart(); captureKeys.clear(); captureTime = -Infinity;
   if (resetSettings) { previewToggle.checked = true; coordinates.checked = false; }
   lastMessage = 'A fresh page. Player X, choose your point of departure.'; select(null); syncUI(); requestDraw();
@@ -158,9 +174,10 @@ function newBoard() {
     let seed = randomSeed();
     if (seed === generated.seed) seed = (seed + 1) >>> 0;
     const next = generateBoard(seed);
+    aiTurns.cancel(); newRecord = false;
     animator = null; animationToken = null; game.restart();
     generated = next; board = next.board;
-    game = new Game(board); renderer = new CanvasRenderer(canvas, board);
+    game = new Game(board); ai = new AIPlayer(board); renderer = new CanvasRenderer(canvas, board);
     captureKeys.clear(); captureTime = -Infinity;
     syncBoard(); renderer.resize();
     lastMessage = 'New corners, new possibilities. Player X, find your angle.';
@@ -179,19 +196,27 @@ function draw(now: number) {
     captureKeys = new Set(captured?.map(pointKey) ?? []); captureTime = now;
     animator = null; animationToken = null; active = null;
     const count = captured?.length ?? 0;
-    lastMessage = game.state.phase === 'finished' ? `All ${board.playableCount} cells are claimed. The page is complete.` :
-      count ? `Player ${mover} claimed ${count} ${count === 1 ? 'cell' : 'cells'}. Player ${game.state.currentPlayer}, your move.` : `No new cells this time. Player ${game.state.currentPlayer}, find your angle.`;
+    if (game.state.phase === 'finished') {
+      aiTurns.cancel();
+      newRecord = highScores.recordWin(game.state, board);
+      const outcome = winner(game.state.scoreX, game.state.scoreO);
+      lastMessage = `${outcome === 'X' ? 'You win!' : outcome === 'O' ? 'Computer O wins.' : 'A draw!'} All ${board.playableCount} cells are claimed.${newRecord ? ' A new personal high score.' : ''}`;
+    } else {
+      const nextTurn = game.state.currentPlayer === 'O' ? 'Computer O is choosing its next ray.' : 'Your move. Find your angle.';
+      lastMessage = count ? `${mover === 'X' ? 'You' : 'Computer O'} claimed ${count} ${count === 1 ? 'cell' : 'cells'}. ${nextTurn}` : `No new cells this time. ${nextTurn}`;
+      if (game.state.currentPlayer === 'O') aiTurns.schedule(game, ai, point => launch(point, true));
+    }
     syncUI();
   }
   renderer.draw(game.state, { selected, preview: previewToggle.checked ? preview : null, active,
-    coordinates: coordinates.checked, captureKeys, captureTime, now, theme });
+    coordinates: coordinates.checked, captureKeys, captureTime, now, theme, interactive: game.state.currentPlayer === 'X' });
   if (animator || now - captureTime < 450) requestDraw();
 }
 canvas.addEventListener('pointermove', event => { if (event.pointerType !== 'touch') select(renderer.hitTest(event.clientX, event.clientY)); });
 canvas.addEventListener('pointerleave', () => { if (document.activeElement !== selector) select(null); });
 canvas.addEventListener('click', event => launch(renderer.hitTest(event.clientX, event.clientY)));
 canvas.addEventListener('keydown', event => {
-  if (game.state.phase !== 'ready') return;
+  if (game.state.phase !== 'ready' || game.state.currentPlayer !== 'X') return;
   if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].includes(event.key)) {
     event.preventDefault();
     const direction = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
@@ -212,7 +237,10 @@ function syncTheme() {
 }
 element('theme-toggle').addEventListener('click', () => {
   theme = theme === 'light' ? 'dark' : 'light';
-  saveTheme(themeStorage, theme); syncTheme();
+  saveTheme(browserStorage, theme); syncTheme();
+});
+window.addEventListener('storage', event => {
+  if (event.key === highScoreStorageKey || event.key === null) { highScores.refresh(); newRecord = false; syncUI(); }
 });
 element('play-again').addEventListener('click', () => restart());
 element('how-to').addEventListener('click', () => rules.showModal());

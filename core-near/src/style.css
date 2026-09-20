@@ -89,6 +89,11 @@ canvas { display: block; width: 100%; height: clamp(400px,51vw,660px); touch-act
 .progress-track { height: 4px; border-radius: 4px; overflow: hidden; background: #dce1d4; margin-top: 12px; display: flex; }
 .progress-track span { transition: width .35s; background: var(--green); }
 .progress-track span+span { background: var(--amber); }
+.high-score { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 14px 0 0; }
+.high-score .small-caps { font-size: 8px; color: var(--green); }
+.high-score p { margin: 5px 0 0; color: #778073; font-size: 10px; line-height: 1.5; }
+.high-score strong { font-size: 26px; font-weight: 500; color: var(--green); }
+#result-record { font-weight: 600; color: var(--green); }
 .launch-controls { display: flex; flex-direction: column; gap: 10px; }
 .launch-controls>label { font-size: 8px; color: #7a846f; }
 .launch-controls select { width: 100%; min-height: 36px; padding: 9px 8px; background: #f7f8f0; border: 1px solid #d5dccd; color: #647158; border-radius: 5px; font-size: 10px; }
@@ -206,6 +211,7 @@ dialog>.primary-button { width: 100%; }
 [data-theme=dark] .score-card { background: #213028; border-color: #3b5041; }
 [data-theme=dark] .score-card.player-o { background: #302d21; border-color: #514a31; }
 [data-theme=dark] .progress-track { background: #344339; }
+[data-theme=dark] .high-score p { color: #9caf9b; }
 [data-theme=dark] .launch-controls select { background: #202e25; border-color: #3f5242; color: #c5d8bc; }
 [data-theme=dark] .primary-button { background: #8dc3a2; color: #14271c; }
 [data-theme=dark] .primary-button:hover:not(:disabled) { background: #aed7bb; }

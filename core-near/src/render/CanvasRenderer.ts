@@ -8,6 +8,7 @@ interface View {
   selected: LaunchPoint | null; preview: RaySimulation | null; active: AnimationFrame | null;
   coordinates: boolean; captureKeys: ReadonlySet<string>; captureTime: number; now: number;
   theme?: Theme;
+  interactive?: boolean;
 }
 export class CanvasRenderer {
   private readonly ctx: CanvasRenderingContext2D;
@@ -103,7 +104,7 @@ export class CanvasRenderer {
     if (state.phase !== 'finished') for (const launch of this.board.launchPoints) {
       const p = this.pixel(launch), selected = state.phase === 'ready' && launch.id === view.selected?.id;
       if (selected) this.circle(p, Math.min(16, s * 0.4), `${color}18`);
-      this.circle(p, selected ? dotRadius * 1.5 : dotRadius, selected ? color : palette.cell, state.phase === 'animating' ? palette.inactive : color, Math.min(2, traceWidth));
+      this.circle(p, selected ? dotRadius * 1.5 : dotRadius, selected ? color : palette.cell, state.phase === 'animating' || view.interactive === false ? palette.inactive : color, Math.min(2, traceWidth));
       if (selected) {
         const v = vectors[launch.direction], length = Math.min(29, s * 0.8), wing = Math.min(4, s * 0.15);
         const tip = { x: p.x + v.x * length, y: p.y + v.y * length };
