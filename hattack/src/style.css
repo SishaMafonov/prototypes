@@ -63,8 +63,11 @@ canvas[aria-disabled='true'] { cursor: wait; }
   border-radius: 14px;
   background: #23071dee;
 }
+[hidden] { display: none !important; }
+.bonus-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .stats-bar > div { grid-column: span 2; min-width: 0; text-align: center; }
 .stats-bar > div:nth-last-child(-n+2) { grid-column: span 3; }
+.bonus-stats > div, .bonus-stats > div:nth-last-child(-n+2) { grid-column: auto; }
 .stats-bar dt { color: #dba1bc; font-size: 10px; text-transform: uppercase; letter-spacing: 0.7px; }
 .stats-bar dd {
   margin: 4px 0 0;
@@ -93,6 +96,7 @@ button {
   min-height: 40px;
 }
 button:hover { color: #fff; }
+button:disabled { opacity: 0.45; cursor: default; }
 button:focus-visible { outline: 2px solid #ffdb92; outline-offset: 3px; }
 
 dialog {
@@ -107,6 +111,15 @@ dialog {
   box-shadow: 0 24px 100px #0009;
 }
 dialog::backdrop { background: #100610cf; backdrop-filter: blur(8px); }
+.feature-dialog { text-align: center; padding: 32px; border-color: #f0b96c; }
+.feature-heart { font-size: 70px; color: #ff65a8; text-shadow: 0 0 35px #ff3b8d99; margin-top: 12px; }
+.feature-dialog #bonus-dialog-copy { color: #ffe4a4; font-size: 24px; font-weight: 700; line-height: 1.35; }
+.continue-button {
+  background: linear-gradient(135deg, #ffe39d, #e89b4d);
+  color: #441122; border-radius: 24px; padding: 12px 38px;
+  font-weight: 700; font-size: 16px; min-width: 180px; margin-top: 10px;
+}
+.continue-button:hover { color: #441122; filter: brightness(1.1); }
 .dialog-heading { display: flex; align-items: center; justify-content: space-between; }
 .eyebrow { color: #ffa9cd; font-size: 11px; letter-spacing: 2px; }
 #close-rules { font-size: 28px; width: 40px; }
@@ -141,6 +154,7 @@ h2 { font-size: 18px; margin: 24px 0 12px; }
   footer { gap: 32px; font-size: 13px; }
   .stats-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 12px; }
   .stats-bar > div, .stats-bar > div:nth-last-child(-n+2) { grid-column: auto; }
+  .bonus-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .stats-bar dt { font-size: 11px; }
   .stats-bar dd { font-size: 22px; }
 }

@@ -4,6 +4,15 @@ import lowUrl from './assets/symbols/low.png';
 import midUrl from './assets/symbols/mid.png';
 import highUrl from './assets/symbols/high.png';
 import bonusUrl from './assets/symbols/bonus.png';
+import bonusBackgroundUrl from './assets/background/bonus.png';
+import bonusArrowUrl from './assets/symbols/arrow.png';
+import bonusHeartUrl from './assets/symbols/heart.png';
+import {
+  BONUS_SIZE, createBonus, freeSpinsForScatters, beginBonusSpin,
+  drawBonusArrowCount, drawBonusArrowRows, bonusLineCells, collectBonusCell,
+  takeBonusHeart, bonusWinCents, parkedBonusHearts,
+} from './bonus';
+import type { BonusState, BonusCell, BonusCollection, BonusSymbol, BonusHeart } from './bonus';
 import {
   REEL_COUNT, ROW_COUNT, SYMBOLS, TOTAL_WAYS, evaluateWays, generateOpeningReels,
   generateReels, symbolAt, visibleGrid, createCascade, heartsForResult, placeHeartWilds,
@@ -28,6 +37,12 @@ app.innerHTML = `
         <div><dt title="Win accumulated in the current or most recent round">Win / round</dt><dd id="stat-win">0.00</dd></div>
         <div><dt title="Total win divided by total bets">RTP</dt><dd id="stat-rtp">0.00%</dd></div>
       </dl>
+      <dl id="bonus-stats" class="stats-bar bonus-stats" aria-label="Free spin statistics" hidden>
+        <div><dt>Free spin</dt><dd id="bonus-current">0</dd></div>
+        <div><dt>Remaining</dt><dd id="bonus-remaining">0</dd></div>
+        <div><dt>Multiplier</dt><dd id="bonus-multiplier">×1</dd></div>
+        <div><dt>Coins</dt><dd id="bonus-coins">0</dd></div>
+      </dl>
     </div>
     <footer><span>1,024 ways to fall in love</span><button id="rules-button" type="button">How to play <span aria-hidden="true">↗</span></button></footer>
     <p id="game-status" class="sr-only" role="status" aria-live="polite"></p>
@@ -38,15 +53,25 @@ app.innerHTML = `
       <p>Match the same symbol on <strong>3, 4 or 5 consecutive reels, starting at the left</strong>. Any row counts. Matching positions multiply together: 2 × 1 × 3 is 6 winning ways.</p>
       <p><strong>Wins cascade.</strong> Winning symbols disappear, the symbols above fall down, and new symbols fill the top. Each refill gets another win check. The round continues until no winning combinations remain.</p>
       <p><strong>Hearts release Wilds.</strong> Only Mid and High wins charge the bottom hearts. The longest qualifying match across 3, 4 or 5 consecutive reels lights that many hearts. Once those cascades finish, each lit heart turns one random regular symbol into a Wild. New Mid or High wins can charge the hearts again. Low and standalone Wild wins still cascade, but do not charge hearts.</p>
-      <p><strong>Love meter arrows.</strong> Each winning board lights one of the ten cells, from the bottom up. After cascades and heart Wilds finish, the meter fires: 1–5 cells fire 1–3 arrows, 6–8 fire 3–5, 9 fire 5–10, and 10 clear every regular symbol. Wilds and Scatters are protected. Charge stays lit. If the refill creates new wins, resolve their cascades and heart awards, then fire again. Repeat until an arrow refill produces no win. Each new spin resets the meter.</p>
-      <div class="rule-cards"><div><strong>WILD</strong><p>Up to three per generated reel strip, with additional Wilds from lit hearts. Cascade refills do not draw new Wilds. Substitutes for every regular symbol. Three or more consecutive Wild reels also win.</p></div><div><strong>SCATTER</strong><p>At most one per reel, including cascade refills. Reserved for the next phase: three or more anywhere form its trigger signal. Scatters stay on the reels through cascades and arrows, pay nothing, and do not charge hearts or the love meter. Wilds do not substitute for Scatters.</p></div></div>
+      <p><strong>Love meter arrows.</strong> Each winning board lights one of the ten cells, from the bottom up. After cascades and heart Wilds finish, the meter fires: 1–5 cells fire 1–3 arrows, 6–8 fire 3–8, 9 fire 8–15, and 10 clear every regular symbol. Wilds and Scatters are protected. Charge stays lit. If the refill creates new wins, resolve their cascades and heart awards, then fire again. Repeat until an arrow refill produces no win. Each new spin resets the meter.</p>
+      <div class="rule-cards"><div><strong>WILD</strong><p>Up to three per generated reel strip, with additional Wilds from lit hearts. Cascade refills do not draw new Wilds. Substitutes for every regular symbol. Three or more consecutive Wild reels also win.</p></div><div><strong>SCATTER</strong><p>At most one per reel, including cascade refills. After the round settles, 3, 4 or 5 Scatters award 10, 15 or 20 free spins. Scatters stay on the reels through cascades and arrows, pay nothing, and do not charge hearts or the love meter.</p></div></div>
+      <p><strong>Bonus arrows.</strong> Each free spin fills 25 cells: Empty 35%, Coin 25%, ×2 20%, ×3 10%, Heart 7%, Scatter 3%. The three-number reel selects 1–5 arrows with relative weights 20:15:12:5:3. Each arrow crosses a different random row: a row can be shot only once per free spin. Coins are worth your bet; ×2/×3 add to a bonus-wide multiplier starting at ×1. The final bonus win is all coins × bet × multiplier. A collected Scatter adds one free spin.</p>
+      <p><strong>Bonus hearts.</strong> A collected heart rises to the top of its column, then sweeps downward to collect it. An empty column keeps its heart visible above the reels through the start of the next spin, until its sweep begins. After the final spin, Continue returns to the base reels that triggered the feature.</p>
       <h2>Payout per winning way</h2>
       <table class="paytable"><thead><tr><th scope="col">Symbol</th><th scope="col">3 reels</th><th scope="col">4 reels</th><th scope="col">5 reels</th></tr></thead>
         <tbody>${(['low', 'mid', 'high'] as const).map((category) => `<tr><th scope="row">${category}</th>${([3, 4, 5] as const).map((length) => `<td>${(PAYOUT_CENTS[category][length] / 100).toFixed(2)}</td>`).join('')}</tr>`).join('')}</tbody>
       </table>
       <p>Each winning way pays the listed amount at a fixed bet of <strong>1.00</strong>. Cascade and heart-Wild wins add to the same round. Wild substitutes use the matched symbol's payout. Standalone Wild ways have no payout. Scatters are trigger symbols, not winning combinations.</p>
       <p><strong>Session statistics:</strong> rounds count each spin once. Win / round shows the current or most recent round's total. RTP is total win divided by rounds × 1.00, shown as a percentage. Statistics update as wins appear and reset when you reload.</p>
-      <p class="fine-print">5 reels × 4 rows = ${TOTAL_WAYS.toLocaleString()} ways. All amounts are prototype credits; there are no cash bets or bonus rounds.</p>
+      <p class="fine-print">5 reels × 4 rows = ${TOTAL_WAYS.toLocaleString()} ways. Bonus: 5 × 5 cells. All amounts are prototype credits; there are no cash bets.</p>
+    </dialog>
+    <dialog id="bonus-dialog" class="feature-dialog" aria-labelledby="bonus-dialog-title" aria-describedby="bonus-dialog-copy">
+      <span class="eyebrow">HEART ATTACK · BONUS GAME</span>
+      <div class="feature-heart" aria-hidden="true">♥</div>
+      <h1 id="bonus-dialog-title">Love takes aim!</h1>
+      <p id="bonus-dialog-copy"></p>
+      <p id="bonus-dialog-detail"></p>
+      <button id="bonus-continue" class="continue-button" type="button">Continue</button>
     </dialog>
   </main>`;
 
@@ -63,6 +88,17 @@ const stats = {
   win: document.querySelector<HTMLElement>('#stat-win')!,
   rtp: document.querySelector<HTMLElement>('#stat-rtp')!,
 };
+const mainStatsBar = document.querySelector<HTMLElement>('.stats-bar')!;
+const bonusStatsBar = document.querySelector<HTMLElement>('#bonus-stats')!;
+const bonusStats = {
+  current: document.querySelector<HTMLElement>('#bonus-current')!,
+  remaining: document.querySelector<HTMLElement>('#bonus-remaining')!,
+  multiplier: document.querySelector<HTMLElement>('#bonus-multiplier')!,
+  coins: document.querySelector<HTMLElement>('#bonus-coins')!,
+};
+const bonusDialog = document.querySelector<HTMLDialogElement>('#bonus-dialog')!;
+const bonusContinue = document.querySelector<HTMLButtonElement>('#bonus-continue')!;
+bonusDialog.addEventListener('cancel', (event) => event.preventDefault());
 const dialog = document.querySelector<HTMLDialogElement>('#rules')!;
 const rulesButton = document.querySelector<HTMLButtonElement>('#rules-button')!;
 rulesButton.addEventListener('click', () => dialog.showModal());
@@ -110,12 +146,15 @@ function getScene() {
 let scene = getScene();
 const sprites = new Map<string, HTMLCanvasElement>();
 let background: HTMLImageElement;
+let bonusBackground: HTMLImageElement;
+let bonusArrowSprite: HTMLCanvasElement;
+let bonusHeartSprite: HTMLCanvasElement;
 let reels: Reel[] = [];
 let board: SlotSymbol[][] = [];
 let result: Result;
 let ready = false;
 let spinning = false;
-type Phase = 'idle' | 'spinning' | 'celebrating' | 'removing' | 'falling' | 'adding-wilds' | 'firing-arrows';
+type Phase = 'idle' | 'spinning' | 'celebrating' | 'removing' | 'falling' | 'adding-wilds' | 'firing-arrows' | 'bonus-ready' | 'bonus' | 'bonus-complete';
 let phase: Phase = 'idle';
 let phaseStarted = 0;
 let cascade: Cascade | undefined;
@@ -135,6 +174,24 @@ let wildsAdded = 0;
 let round = 0;
 let totalWinCents = 0;
 let roundWinCents = 0;
+let roundBonusWinCents = 0;
+let bonusTriggered = false;
+let bonusActive = false;
+let bonusState: BonusState | undefined;
+type BonusStep = 'filling' | 'arrow-roll' | 'row-aim' | 'row-shot' | 'heart-rise' | 'heart-fall' | 'collecting' | 'spin-end';
+let bonusStep: BonusStep = 'filling';
+let bonusStepStarted = 0;
+let bonusArrowCount = 1;
+let bonusArrowRows: number[] = [];
+let bonusArrowIndex = 0;
+let bonusArrowRolled = false;
+let bonusActiveHeart: BonusHeart | undefined;
+let bonusHeartReady = false;
+let bonusLine: BonusCell[] = [];
+let bonusLineIndex = 0;
+let bonusFlights: (BonusCollection & { started: number })[] = [];
+let bonusPaid = false;
+const fastBonusPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get('bonus-preview') === 'fast';
 let lastWinAt = 0;
 let frameId = 0;
 let pointer = { x: ART.width / 2, y: ART.height / 2 };
@@ -151,6 +208,30 @@ interface Motion {
   settled: boolean;
 }
 let motions: Motion[] = [];
+
+// Development-only entry lets the full feature be checked without changing real spin odds.
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('bonus-preview')) {
+  for (const carried of [false, true]) {
+    const preview = document.createElement('button');
+    preview.id = carried ? 'bonus-hearts-preview' : 'bonus-preview';
+    preview.textContent = carried ? 'Preview carried hearts' : 'Preview 3-Scatter bonus';
+    preview.addEventListener('click', () => {
+      if (!ready || phase !== 'idle') return;
+      const scatter = SYMBOLS.find((symbol) => symbol.category === 'scatter')!;
+      const regular = SYMBOLS.find((symbol) => symbol.category === 'low')!;
+      board = board.map((column, index) => column.map((symbol, row) =>
+        index < 3 && row === 3 ? scatter : symbol.category === 'scatter' ? regular : symbol));
+      result = evaluateWays(board);
+      if (round === 0) round = 1;
+      dialog.close();
+      updateStatistics();
+      openBonus(result.scatterCount, performance.now());
+      if (carried && bonusState) bonusState.waitingHearts = [0, 2, 2];
+      requestDraw();
+    });
+    dialog.append(preview);
+  }
+}
 
 async function loadImage(url: string): Promise<HTMLImageElement> {
   const image = new Image();
@@ -192,6 +273,225 @@ function buildSymbolMap(sheets: Record<SlotSymbol['sheet'], HTMLImageElement>): 
       (sprite.width - width * scale) / 2, (sprite.height - height * scale) / 2, width * scale, height * scale);
     sprites.set(symbol.id, sprite);
   }
+}
+
+function trimmedSprite(image: HTMLImageElement, frames = 1): HTMLCanvasElement {
+  const source = document.createElement('canvas');
+  source.width = Math.floor(image.naturalWidth / frames);
+  source.height = image.naturalHeight;
+  const sourceCtx = source.getContext('2d')!;
+  sourceCtx.drawImage(image, 0, 0, source.width, source.height, 0, 0, source.width, source.height);
+  const data = sourceCtx.getImageData(0, 0, source.width, source.height).data;
+  let left = source.width, right = 0, top = source.height, bottom = 0;
+  for (let y = 0; y < source.height; y++) for (let x = 0; x < source.width; x++) {
+    if (data[(y * source.width + x) * 4 + 3] > 24) {
+      left = Math.min(left, x); right = Math.max(right, x);
+      top = Math.min(top, y); bottom = Math.max(bottom, y);
+    }
+  }
+  const sprite = document.createElement('canvas');
+  sprite.width = right - left + 1;
+  sprite.height = bottom - top + 1;
+  sprite.getContext('2d')!.drawImage(source, left, top, sprite.width, sprite.height, 0, 0, sprite.width, sprite.height);
+  return sprite;
+}
+
+function bonusGeometry() {
+  return scene.wide ? {
+    frame: { x: 625, y: 196, width: 875, rowHeight: 135 },
+    grid: { x: 645, y: 212, pitchX: 168.5, pitchY: 135, width: 150, height: 114 },
+    selector: { x: 1060, y: 80, width: 340, height: 66 },
+    arrow: { x: 1060, y: 150, width: 245 },
+    message: { x: 303, y: 553, width: 530 },
+  } : {
+    frame: { x: 86, y: 836, width: 774, rowHeight: 132 },
+    grid: { x: 104, y: 851, pitchX: 149, pitchY: 132, width: 134, height: 113 },
+    selector: { x: 471, y: 698, width: 408, height: 80 },
+    arrow: { x: 471, y: 786, width: 270 },
+    message: { x: 471, y: 1571, width: 810 },
+  };
+}
+
+function bonusCellPoint(cell: BonusCell) {
+  const grid = bonusGeometry().grid;
+  return { x: grid.x + cell.column * grid.pitchX + grid.width / 2,
+    y: grid.y + cell.row * grid.pitchY + grid.height / 2 };
+}
+
+function drawFitted(sprite: CanvasImageSource & { width: number; height: number }, x: number, y: number, width: number, height: number) {
+  const scale = Math.min(width / sprite.width, height / sprite.height);
+  ctx.drawImage(sprite, x - sprite.width * scale / 2, y - sprite.height * scale / 2, sprite.width * scale, sprite.height * scale);
+}
+
+function drawBonusSymbol(symbol: BonusSymbol, x: number, y: number, size: number, alpha = 1): void {
+  if (symbol === 'empty') return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.shadowColor = symbol === 'coin' ? '#ffcf4f' : '#ff72bd';
+  ctx.shadowBlur = 12;
+  if (symbol === 'heart') drawFitted(bonusHeartSprite, x, y, size, size);
+  else if (symbol === 'scatter') drawFitted(sprites.get('scatter')!, x, y, size, size);
+  else {
+    const gradient = ctx.createRadialGradient(x - size * 0.2, y - size * 0.2, 0, x, y, size * 0.5);
+    gradient.addColorStop(0, symbol === 'coin' ? '#fff1a6' : '#faacf1');
+    gradient.addColorStop(0.55, symbol === 'coin' ? '#efba34' : '#a72b97');
+    gradient.addColorStop(1, symbol === 'coin' ? '#9b490c' : '#410d50');
+    ctx.fillStyle = gradient;
+    ctx.strokeStyle = '#ffe6a5';
+    ctx.lineWidth = Math.max(2, size * 0.035);
+    ctx.beginPath();
+    if (symbol === 'coin') ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+    else ctx.roundRect(x - size * 0.43, y - size * 0.35, size * 0.86, size * 0.7, size * 0.2);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.textBaseline = 'middle';
+    text(symbol === 'coin' ? '1.00' : symbol === 'x2' ? '×2' : '×3', x, y, size * (symbol === 'coin' ? 0.25 : 0.44), symbol === 'coin' ? '#6a2d07' : '#fff5d9');
+  }
+  ctx.restore();
+}
+
+function bonusProgress(now: number, duration: number): number {
+  return Math.min(1, Math.max(0, (now - bonusStepStarted) / (reducedMotion.matches || fastBonusPreview ? 100 : duration)));
+}
+
+function bonusArrowsLeft(): number {
+  // Reveal the count only once the number reel finishes selecting the award.
+  return bonusArrowRolled && bonusStep !== 'arrow-roll' ? Math.max(0, bonusArrowCount - bonusArrowIndex) : 0;
+}
+
+function bonusStepMessage(): string {
+  if (bonusStep === 'filling') return 'A fresh chance in every cell';
+  if (bonusStep === 'arrow-roll') return 'How many arrows will love send?';
+  if (bonusStep === 'row-aim') return `Arrow ${bonusArrowIndex + 1} of ${bonusArrowCount} · aiming at row ${bonusArrowRows[bonusArrowIndex] + 1}`;
+  if (bonusStep === 'row-shot') return `Arrow ${bonusArrowIndex + 1} of ${bonusArrowCount} · collecting row ${bonusArrowRows[bonusArrowIndex] + 1}`;
+  if (bonusStep === 'heart-rise') return bonusHeartReady ? 'Heart rising · a column of love' : 'Heart saved for the next free spin';
+  if (bonusStep === 'heart-fall') return 'Heart sweep · collecting the column';
+  if (bonusStep === 'collecting') return 'Bringing your treasures home';
+  return bonusState?.remainingSpins ? 'The next free spin is on its way' : 'Your bonus win is ready';
+}
+
+function drawBonus(now: number): void {
+  if (!bonusState) return;
+  const geometry = bonusGeometry();
+  const grid = geometry.grid;
+  if (scene.wide) {
+    ctx.drawImage(bonusBackground, 80, 1260, 780, 412, 0, 0, scene.width, scene.height);
+    ctx.fillStyle = '#25091bca'; ctx.fillRect(0, 0, scene.width, scene.height);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(24, 24, 554, 416, 26); ctx.clip();
+    ctx.drawImage(bonusBackground, 0, 0, 941, 705, 24, 24, 554, 416);
+    ctx.restore();
+  } else {
+    ctx.drawImage(bonusBackground, 0, 0, ART.width, ART.height);
+    // Cover the original four-row area before composing five rows from the same art.
+    ctx.drawImage(bonusBackground, 0, 1282, 941, 390, 0, 625, 941, 1047);
+    const fade = ctx.createLinearGradient(0, 625, 0, 836);
+    fade.addColorStop(0, '#23071ddd'); fade.addColorStop(1, '#23071d44');
+    ctx.fillStyle = fade; ctx.fillRect(65, 625, 810, 211);
+  }
+  // Only supplied row artwork is used. The extra middle row repeats the third;
+  // the first/last slices retain the original outer frame. No grid cells are drawn.
+  const bands = [{ y: 699, height: 142 }, { y: 841, height: 141 },
+    { y: 982, height: 144 }, { y: 982, height: 144 }, { y: 1126, height: 158 }];
+  bands.forEach((band, row) => ctx.drawImage(bonusBackground, 86, band.y, 774, band.height,
+    geometry.frame.x, geometry.frame.y + row * geometry.frame.rowHeight, geometry.frame.width, geometry.frame.rowHeight));
+  const reveal = bonusStep === 'filling' ? bonusProgress(now, 650) : 1;
+  bonusState.grid.forEach((row, rowIndex) => row.forEach((symbol, column) => {
+    const point = bonusCellPoint({ row: rowIndex, column });
+    const alpha = reducedMotion.matches ? 1 : Math.min(1, Math.max(0, reveal * 2 - (rowIndex * 5 + column) / 25));
+    drawBonusSymbol(symbol, point.x, point.y + (1 - alpha) * -20, Math.min(grid.width, grid.height) * 0.82, alpha);
+  }));
+  const selector = geometry.selector;
+  text('ARROWS THIS FREE SPIN', selector.x, selector.y - selector.height * 0.7, scene.wide ? 20 : 24, '#ffe2ab');
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(selector.x - selector.width / 2, selector.y - selector.height / 2, selector.width, selector.height, 18); ctx.clip();
+  ctx.fillStyle = '#23071df2'; ctx.fillRect(selector.x - selector.width / 2, selector.y - selector.height / 2, selector.width, selector.height);
+  const rolling = bonusStep === 'arrow-roll' && !reducedMotion.matches;
+  const center = rolling ? Math.floor((now - bonusStepStarted) / 75) % 5 + 1 : bonusArrowCount;
+  for (let index = -1; index <= 1; index++) {
+    const x = selector.x + index * selector.width / 3;
+    ctx.textBaseline = 'middle';
+    text(String((center + index + 4) % 5 + 1), x, selector.y, index === 0 ? 52 : 33, index === 0 ? '#ffe799' : '#ba809c');
+  }
+  ctx.restore();
+  ctx.strokeStyle = '#ffe599'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect(selector.x - selector.width / 6, selector.y - selector.height / 2, selector.width / 3, selector.height, 14); ctx.stroke();
+  drawFitted(bonusArrowSprite, geometry.arrow.x, geometry.arrow.y, geometry.arrow.width, 70);
+  const arrowsLeft = bonusArrowsLeft();
+  if (arrowsLeft > 0) {
+    const left = geometry.frame.x;
+    const y = geometry.frame.y - 64;
+    ctx.save();
+    ctx.fillStyle = '#23071dee';
+    ctx.strokeStyle = '#ffe599bb';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(left, y - 26, 180, 52, 16); ctx.fill(); ctx.stroke();
+    drawFitted(bonusArrowSprite, left + 64, y, 112, 36);
+    ctx.textBaseline = 'middle';
+    text(`×${arrowsLeft}`, left + 147, y, 32, '#ffe799');
+    ctx.restore();
+  }
+  const waiting = new Map<number, number>();
+  const parked = parkedBonusHearts(bonusState);
+  // An empty-column heart is already in waitingHearts while its rise animates.
+  // Let the moving sprite represent it until it reaches the parked position.
+  if (bonusStep === 'heart-rise' && bonusActiveHeart && !bonusHeartReady) {
+    const index = parked.indexOf(bonusActiveHeart.column);
+    if (index >= 0) parked.splice(index, 1);
+  }
+  for (const column of parked) waiting.set(column, (waiting.get(column) ?? 0) + 1);
+  for (const [column, count] of waiting) {
+    const point = bonusCellPoint({ row: 0, column });
+    const pulse = reducedMotion.matches ? 1 : 1 + Math.sin(now / 230) * 0.07;
+    drawFitted(bonusHeartSprite, point.x, grid.y - 25, 40 * pulse, 40 * pulse);
+    if (count > 1) text(`×${count}`, point.x + 25, grid.y - 23, 17);
+  }
+  if (bonusStep === 'row-aim' || bonusStep === 'row-shot') {
+    const row = bonusArrowRows[bonusArrowIndex];
+    const point = bonusCellPoint({ row, column: 0 });
+    const progress = bonusStep === 'row-aim' ? 0 : bonusProgress(now, 1150);
+    ctx.save();
+    ctx.fillStyle = '#ffe18a20';
+    ctx.fillRect(grid.x, grid.y + row * grid.pitchY, grid.pitchX * 4 + grid.width, grid.height);
+    const start = grid.x - 100;
+    const end = grid.x + grid.pitchX * 4 + grid.width + 100;
+    drawFitted(bonusArrowSprite, start + (end - start) * progress, point.y, scene.wide ? 190 : 160, 62);
+    ctx.restore();
+  }
+  if ((bonusStep === 'heart-rise' || bonusStep === 'heart-fall') && bonusActiveHeart) {
+    const point = bonusCellPoint(bonusActiveHeart.row < 0 ? { ...bonusActiveHeart, row: 0 } : bonusActiveHeart);
+    const top = grid.y - 25;
+    const rise = bonusProgress(now, 650);
+    const fall = bonusProgress(now, 1100);
+    const y = bonusStep === 'heart-rise' ? (bonusActiveHeart.row < 0 ? top : point.y + (top - point.y) * rise)
+      : top + (grid.pitchY * 4 + grid.height + 80) * fall;
+    const pulse = reducedMotion.matches ? 1 : 1 + Math.sin(now / 90) * 0.12;
+    ctx.save(); ctx.shadowColor = '#ff5bab'; ctx.shadowBlur = 25;
+    drawFitted(bonusHeartSprite, point.x, y, 96 * pulse, 96 * pulse); ctx.restore();
+  }
+  bonusFlights = bonusFlights.filter((flight) => now - flight.started < 550);
+  for (const flight of bonusFlights) {
+    const progress = reducedMotion.matches ? 1 : Math.min(1, (now - flight.started) / 550);
+    const from = bonusCellPoint(flight);
+    const target = { x: scene.width * (flight.symbol === 'x2' || flight.symbol === 'x3' ? 0.62 : flight.symbol === 'scatter' ? 0.38 : 0.84), y: scene.height - 18 };
+    drawBonusSymbol(flight.symbol, from.x + (target.x - from.x) * progress,
+      from.y + (target.y - from.y) * progress - Math.sin(progress * Math.PI) * 85,
+      70 * (1 - progress * 0.55), 1 - progress * 0.25);
+  }
+  const message = geometry.message;
+  ctx.save();
+  ctx.fillStyle = '#23071de8';
+  const panelHeight = scene.wide ? 230 : 106;
+  ctx.beginPath(); ctx.roundRect(message.x - message.width / 2, message.y - 37, message.width, panelHeight, 24); ctx.fill();
+  text(`FREE SPIN ${bonusState.currentSpin} · ${bonusState.remainingSpins} LEFT`, message.x, message.y, scene.wide ? 29 : 28, '#ffe3aa');
+  const copy = phase === 'bonus-complete' ? 'Your love story is complete' : bonusStepMessage();
+  ctx.font = '700 25px "Trebuchet MS", sans-serif';
+  const size = Math.min(25, 25 * (message.width - 30) / Math.max(1, ctx.measureText(copy).width));
+  text(copy, message.x, message.y + 43, size, '#ffc3da');
+  if (scene.wide) {
+    text(`${bonusState.coins} coins × ${bonusState.multiplier}`, message.x, message.y + 101, 37);
+    text(`${(bonusWinCents(bonusState) / 100).toFixed(2)} credits`, message.x, message.y + 150, 29, '#ffe3aa');
+  }
+  ctx.restore();
 }
 
 function resize(): void {
@@ -507,6 +807,7 @@ function draw(now: number): void {
   ctx.setTransform(canvas.width / scene.width, 0, 0, canvas.height / scene.height, 0, 0);
   ctx.clearRect(0, 0, scene.width, scene.height);
   if (!ready) return;
+  if (bonusActive) { drawBonus(now); return; }
   drawBackground();
   drawLoveMeter(now);
   for (let column = 0; column < REEL_COUNT; column++) drawReel(column, now);
@@ -537,7 +838,174 @@ function announceResult(): void {
   canvas.dataset.spinning = 'false';
   if (round > 0) status.textContent += ` Round win ${(roundWinCents / 100).toFixed(2)} credits. Session total ${(totalWinCents / 100).toFixed(2)} credits. RTP ${(returnToPlayer(totalWinCents, round) * 100).toFixed(2)} percent.`;
   if (round > 0) status.textContent += ` Love meter ${loveCharge} of 10. ${arrowBursts ? `${arrowBursts} arrow ${arrowBursts === 1 ? 'burst' : 'bursts'}. ${arrowTargetsCleared} arrow targets cleared.` : ''} The next spin resets the meter.`;
+  if (roundBonusWinCents > 0) status.textContent += ` Bonus win ${(roundBonusWinCents / 100).toFixed(2)} credits included.`;
 }
+
+function updateBonusStats(): void {
+  if (!bonusState) return;
+  bonusStats.current.textContent = String(bonusState.currentSpin);
+  bonusStats.remaining.textContent = String(bonusState.remainingSpins);
+  bonusStats.multiplier.textContent = `×${bonusState.multiplier}`;
+  bonusStats.coins.textContent = String(bonusState.coins);
+  canvas.dataset.bonusStep = bonusStep;
+  canvas.dataset.bonusSpin = String(bonusState.currentSpin);
+  canvas.dataset.bonusRemaining = String(bonusState.remainingSpins);
+  canvas.dataset.bonusCoins = String(bonusState.coins);
+  canvas.dataset.bonusMultiplier = String(bonusState.multiplier);
+  canvas.dataset.bonusWaitingHearts = String(bonusState.waitingHearts.length);
+  canvas.dataset.bonusParkedHearts = parkedBonusHearts(bonusState).join(',');
+  canvas.dataset.bonusArrowRows = bonusArrowRows.join(',');
+  canvas.dataset.bonusArrowCount = String(bonusArrowCount);
+  canvas.dataset.bonusArrowsFired = String(bonusArrowIndex);
+  canvas.dataset.bonusArrowsLeft = String(bonusArrowsLeft());
+}
+
+function openBonus(scatterCount: number, now: number): void {
+  if (freeSpinsForScatters(scatterCount) === 0) return;
+  bonusTriggered = true;
+  bonusPaid = false;
+  bonusState = createBonus(scatterCount);
+  rulesButton.disabled = true;
+  setPhase('bonus-ready', now);
+  document.querySelector('#bonus-dialog-title')!.textContent = 'Love takes aim!';
+  document.querySelector('#bonus-dialog-copy')!.textContent = `${scatterCount} Scatters · ${bonusState.initialSpins} free spins`;
+  document.querySelector('#bonus-dialog-detail')!.textContent = 'Collect coins, build your multiplier, and let hearts sweep whole columns. Your base reels will be waiting when you return.';
+  status.textContent = `Bonus triggered by ${scatterCount} Scatters. ${bonusState.initialSpins} free spins awarded. Press Continue to begin.`;
+  bonusDialog.showModal();
+  bonusContinue.focus();
+}
+
+function finishBaseRound(now: number): void {
+  if (round > 0 && !bonusTriggered && result.scatterTrigger) openBonus(result.scatterCount, now);
+  else { setPhase('idle', now); announceResult(); }
+}
+
+function setBonusStep(step: BonusStep, now: number): void {
+  bonusStep = step;
+  bonusStepStarted = now;
+  updateBonusStats();
+  const copy = `Free spin ${bonusState?.currentSpin}. ${bonusStepMessage()}. ${bonusArrowRolled && step !== 'arrow-roll' ? `${bonusArrowsLeft()} arrows left. ` : ''}${bonusState?.remainingSpins} spins remaining. ${bonusState?.coins} coins, multiplier ${bonusState?.multiplier}.`;
+  status.textContent = copy;
+  canvas.setAttribute('aria-label', `Heart Attack bonus. ${copy}`);
+}
+
+function startBonusSpin(now: number): void {
+  if (!bonusState || bonusState.remainingSpins <= 0) { completeBonus(now); return; }
+  bonusState = beginBonusSpin(bonusState);
+  bonusArrowCount = 1;
+  bonusArrowRows = [];
+  bonusArrowIndex = 0;
+  bonusArrowRolled = false;
+  bonusActiveHeart = undefined;
+  bonusFlights = [];
+  setBonusStep('filling', now);
+}
+
+function nextBonusWork(now: number): void {
+  if (!bonusState) return;
+  if (bonusState.heartQueue.length > 0) {
+    const outcome = takeBonusHeart(bonusState);
+    bonusState = outcome.state;
+    bonusActiveHeart = outcome.heart;
+    bonusHeartReady = outcome.ready;
+    setBonusStep('heart-rise', now);
+  } else if (!bonusArrowRolled) {
+    bonusArrowCount = drawBonusArrowCount();
+    bonusArrowRows = drawBonusArrowRows(bonusArrowCount);
+    bonusArrowRolled = true;
+    setBonusStep('arrow-roll', now);
+  } else if (bonusArrowIndex < bonusArrowCount) {
+    setBonusStep('row-aim', now);
+  } else {
+    setBonusStep('spin-end', now);
+  }
+}
+
+function startBonusLine(axis: 'row' | 'column', index: number, now: number): void {
+  bonusLine = bonusLineCells(axis, index);
+  bonusLineIndex = 0;
+  setBonusStep(axis === 'row' ? 'row-shot' : 'heart-fall', now);
+}
+
+function collectAlongBonusLine(now: number, progress: number): void {
+  if (!bonusState) return;
+  const grid = bonusGeometry().grid;
+  while (bonusLineIndex < bonusLine.length) {
+    const cell = bonusLine[bonusLineIndex];
+    const point = bonusCellPoint(cell);
+    const threshold = bonusStep === 'row-shot'
+      ? (point.x - (grid.x - 100)) / (grid.pitchX * 4 + grid.width + 200)
+      : (point.y - (grid.y - 25)) / (grid.pitchY * 4 + grid.height + 80);
+    if (progress < threshold) break;
+    const outcome = collectBonusCell(bonusState, cell);
+    bonusState = outcome.state;
+    if (outcome.collected) {
+      // Hearts rise themselves rather than flying to the counters.
+      if (outcome.collected.symbol !== 'heart') bonusFlights.push({ ...outcome.collected, started: now });
+      updateBonusStats();
+    }
+    bonusLineIndex++;
+  }
+}
+
+function tickBonus(now: number): void {
+  if (bonusStep === 'filling' && bonusProgress(now, 650) === 1) nextBonusWork(now);
+  else if (bonusStep === 'arrow-roll' && bonusProgress(now, 900) === 1) nextBonusWork(now);
+  else if (bonusStep === 'row-aim' && bonusProgress(now, 280) === 1) startBonusLine('row', bonusArrowRows[bonusArrowIndex], now);
+  else if (bonusStep === 'row-shot' || bonusStep === 'heart-fall') {
+    const progress = bonusProgress(now, bonusStep === 'row-shot' ? 1150 : 1100);
+    collectAlongBonusLine(now, progress);
+    if (progress === 1) {
+      if (bonusStep === 'row-shot') bonusArrowIndex++;
+      setBonusStep('collecting', now);
+    }
+  } else if (bonusStep === 'heart-rise' && bonusProgress(now, 650) === 1) {
+    if (bonusHeartReady && bonusActiveHeart) startBonusLine('column', bonusActiveHeart.column, now);
+    else nextBonusWork(now);
+  } else if (bonusStep === 'collecting' && bonusProgress(now, 600) === 1) nextBonusWork(now);
+  else if (bonusStep === 'spin-end' && bonusProgress(now, 800) === 1) startBonusSpin(now);
+}
+
+function completeBonus(now: number): void {
+  if (!bonusState) return;
+  if (!bonusPaid) {
+    roundBonusWinCents = bonusWinCents(bonusState);
+    roundWinCents += roundBonusWinCents;
+    totalWinCents += roundBonusWinCents;
+    bonusPaid = true;
+    updateStatistics();
+  }
+  setPhase('bonus-complete', now);
+  updateBonusStats();
+  document.querySelector('#bonus-dialog-title')!.textContent = 'A love story worth keeping';
+  document.querySelector('#bonus-dialog-copy')!.textContent = `Bonus win ${(roundBonusWinCents / 100).toFixed(2)} credits`;
+  document.querySelector('#bonus-dialog-detail')!.textContent = `${bonusState.currentSpin} free spins · ${bonusState.coins} coins × ${(BET_CENTS / 100).toFixed(2)} bet × ${bonusState.multiplier} multiplier. Continue to return to your base reels.`;
+  status.textContent = `Bonus complete. Total win ${(roundBonusWinCents / 100).toFixed(2)} credits. Press Continue to return to the triggering reels.`;
+  bonusDialog.showModal();
+  bonusContinue.focus();
+}
+
+bonusContinue.addEventListener('click', () => {
+  if (phase === 'bonus-ready') {
+    bonusDialog.close();
+    bonusActive = true;
+    mainStatsBar.hidden = true;
+    bonusStatsBar.hidden = false;
+    setPhase('bonus', performance.now());
+    startBonusSpin(performance.now());
+    resize();
+  } else if (phase === 'bonus-complete') {
+    bonusDialog.close();
+    bonusActive = false;
+    mainStatsBar.hidden = false;
+    bonusStatsBar.hidden = true;
+    rulesButton.disabled = false;
+    setPhase('idle', performance.now());
+    announceResult();
+    canvas.focus();
+    resize();
+  }
+});
 
 function setPhase(next: Phase, now: number): void {
   phase = next;
@@ -556,6 +1024,7 @@ function setPhase(next: Phase, now: number): void {
   canvas.dataset.removalSource = removalSource;
   canvas.dataset.scatterCount = String(next === 'spinning' ? 0 : result.scatterCount);
   canvas.dataset.scatterTrigger = String(next !== 'spinning' && result.scatterTrigger);
+  canvas.dataset.baseBoard = board.map((column) => column.map((symbol) => symbol.id).join(',')).join('|');
   canvas.setAttribute('aria-disabled', String(next !== 'idle'));
   if (next !== 'idle') canvas.setAttribute('aria-label', `Heart Attack. ${next === 'spinning' ? 'Reels spinning' : next === 'adding-wilds' ? `Releasing ${wildRelease?.placements.length ?? 0} heart Wilds` : next === 'firing-arrows' ? `Firing ${loveArrows?.targets.length ?? 0} love ${loveArrows?.targets.length === 1 ? 'arrow' : 'arrows'}` : `Cascade ${cascadeCount + (next === 'celebrating' ? 1 : 0)} ${next}`}`);
 }
@@ -598,17 +1067,21 @@ function checkBoard(now: number): void {
       setPhase('firing-arrows', now);
       status.textContent = `Love meter ${loveCharge} of 10. ${loveArrows.charge === LOVE_METER_MAX ? 'Full love clears every regular symbol.' : `Firing ${loveArrows.targets.length} ${loveArrows.targets.length === 1 ? 'arrow' : 'arrows'}.`} Wilds and Scatters are protected.`;
     } else {
-      setPhase('idle', now);
-      announceResult();
+      finishBaseRound(now);
     }
   } else {
-    setPhase('idle', now);
-    announceResult();
+    finishBaseRound(now);
   }
 }
 
 function tick(now: number): void {
   frameId = 0;
+  if (phase === 'bonus') {
+    tickBonus(now);
+    draw(now);
+    if (phase === 'bonus') requestDraw();
+    return;
+  }
   if (spinning) {
     for (const motion of motions) {
       const progress = Math.max(0, Math.min(1, (now - motion.start) / motion.duration));
@@ -655,7 +1128,8 @@ function tick(now: number): void {
   }
   draw(now);
   const celebrating = result && result.totalWays > 0 && now - lastWinAt < 4000;
-  if (phase !== 'idle' || ripple || (celebrating && !reducedMotion.matches)) requestDraw();
+  const animating = phase !== 'idle' && phase !== 'bonus-ready' && phase !== 'bonus-complete';
+  if (animating || ripple || (celebrating && !reducedMotion.matches)) requestDraw();
 }
 
 function requestDraw(): void {
@@ -663,7 +1137,7 @@ function requestDraw(): void {
 }
 
 function spin(): void {
-  if (!ready || phase !== 'idle' || dialog.open) return;
+  if (!ready || phase !== 'idle' || dialog.open || bonusDialog.open) return;
   const oldGrid = board;
   reels = generateReels();
   const now = performance.now();
@@ -695,6 +1169,9 @@ function spin(): void {
   removedKeys.clear();
   round++;
   roundWinCents = 0;
+  roundBonusWinCents = 0;
+  bonusTriggered = false;
+  bonusState = undefined;
   updateStatistics();
   setPhase('spinning', now);
   ripple = { ...pointer, started: now };
@@ -723,9 +1200,13 @@ reducedMotion.addEventListener('change', requestDraw);
 
 async function initialize(): Promise<void> {
   try {
-    const images = await Promise.all([backgroundUrl, lowUrl, midUrl, highUrl, bonusUrl].map(loadImage));
+    const images = await Promise.all([backgroundUrl, lowUrl, midUrl, highUrl, bonusUrl,
+      bonusBackgroundUrl, bonusArrowUrl, bonusHeartUrl].map(loadImage));
     background = images[0];
     buildSymbolMap({ low: images[1], mid: images[2], high: images[3], bonus: images[4] });
+    bonusBackground = images[5];
+    bonusArrowSprite = trimmedSprite(images[6]);
+    bonusHeartSprite = trimmedSprite(images[7], 3);
     reels = generateOpeningReels();
     board = visibleGrid(reels);
     result = evaluateWays(board);

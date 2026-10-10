@@ -24,8 +24,9 @@ const names = {
 
 // Weights apply to the whole category, rather than to each individual frame.
 // Cascade refills never draw Wilds; generated strips use their own weights below.
+// These are relative weights (currently totaling 1.07), normalized on every draw.
 export const CATEGORY_WEIGHTS: Readonly<Record<Category, number>> = {
-  low: 0.8, mid: 0.11, high: 0.065, wild: 0, scatter: 0.025,
+  low: 0.8, mid: 0.11, high: 0.095, wild: 0, scatter: 0.065,
 };
 export const REEL_CATEGORY_WEIGHTS: Readonly<Record<Category, number>> = {
   ...CATEGORY_WEIGHTS, low: 0.775, wild: 0.025,
@@ -119,7 +120,7 @@ export function selectLoveArrows(
     symbol.category === 'wild' || symbol.category === 'scatter' ? [] : [{ reel, row }],
   ));
   if (level === LOVE_METER_MAX) return { charge: level, targets: eligible };
-  const [min, max] = level <= 5 ? [1, 3] : level <= 8 ? [3, 5] : [5, 10];
+  const [min, max] = level <= 5 ? [1, 3] : level <= 8 ? [3, 8] : [8, 15];
   const count = Math.min(eligible.length, randomInteger(min, max, random));
   for (let index = 0; index < count; index++) {
     const pick = randomInteger(index, eligible.length - 1, random);

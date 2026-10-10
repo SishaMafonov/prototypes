@@ -6,6 +6,8 @@ canvas and press Space/Enter. Consecutive reels stop from left to right.
 
 Agents: read [AGENTS.md](AGENTS.md) for working rules and [CONTEXT.md](CONTEXT.md)
 for the current implementation, accepted decisions and verification baseline.
+For a shareable player guide, full paytable and promo-image brief, use
+[GAME_RULES_AND_PAYTABLE.md](GAME_RULES_AND_PAYTABLE.md).
 
 ## Run
 
@@ -36,17 +38,19 @@ are trimmed before the symbol is fitted inside its cell, preserving proportions.
 
 | Sheet | Dimensions | Frames, left to right | Reel draw weight | Cascade refill weight |
 | --- | --- | --- | --- | --- |
-| `low.png` | 2172 × 724 | `low-0` … `low-5` | 77.5% | 80% |
-| `mid.png` | 2172 × 724 | `mid-0` … `mid-5` | 11% | 11% |
-| `high.png` | 2172 × 724 | `high-0` … `high-5` | 6.5% | 6.5% |
-| `bonus.png` | 1774 × 887 | Wild, Scatter | Wild 2.5%; Scatter 2.5% | Wild 0%; Scatter 2.5% |
+| `low.png` | 2172 × 724 | `low-0` … `low-5` | 72.43% | 74.77% |
+| `mid.png` | 2172 × 724 | `mid-0` … `mid-5` | 10.28% | 10.28% |
+| `high.png` | 2172 × 724 | `high-0` … `high-5` | 8.88% | 8.88% |
+| `bonus.png` | 1774 × 887 | Wild, Scatter | Wild 2.34%; Scatter 6.07% | Wild 0%; Scatter 6.07% |
 
 Regular frames are selected equally within their category. The map and weights
 are in `src/game.ts`; symbol identities combine the filename and frame index.
-Weights describe probabilities, rather than guaranteed counts on a given strip.
-Each strip contains at most one Scatter (zero is allowed). The 2.5% Scatter
+The user-tuned relative weights total 107: strips use 77.5/11/9.5/2.5/6.5
+for Low/Mid/High/Wild/Scatter; refills use 80/11/9.5/0/6.5. The table shows
+normalized draw probabilities before caps, rather than guaranteed strip counts.
+Each strip contains at most one Scatter (zero is allowed). The 6.07% Scatter
 chance applies until its first appearance. Each generated strip also contains
-zero to three Wilds, drawn with a base 2.5% chance. Once either cap is reached,
+zero to three Wilds, drawn with a base 2.34% chance. Once either cap is reached,
 exclude that special symbol and renormalize the remaining eligible weights.
 Wilds are excluded from cascade/arrow refills; existing Wilds can survive gravity.
 The bottom hearts can add further Wilds beyond the initial strip cap.
@@ -73,14 +77,13 @@ This prototype uses a minimum of three reels. Matching counts multiply across
 the longest consecutive run for each symbol; the same run is not awarded again
 for its shorter prefixes. Wild substitutes for regular symbols, and pure Wild
 combinations are counted once under Wild. Scatters never form winning
-combinations. Three or more anywhere set a separate `scatterTrigger` signal for
-the next phase; its gameplay has not yet been defined. `scatterCount` and
-`scatterCells` remain available for that feature. This signal does not start a
+combinations. Three or more anywhere set a separate `scatterTrigger` signal.
+After the base round's cascades, heart awards and earned arrow bursts settle,
+3/4/5 Scatters award 10/15/20 free spins. The signal itself does not start a
 cascade, pay, or charge hearts/the love meter.
 
 Results show winning-way counts and highlight only matching ways cells. Scatters
-have no win highlight. The bet is fixed at 1.00 prototype credits; no cash or bonus round
-is implemented.
+have no win highlight. The bet is fixed at 1.00 prototype credits; there are no cash bets.
 
 Each regular-symbol way pays once for its longest consecutive match:
 
@@ -136,8 +139,8 @@ an arrow burst. Arrow counts are uniform within these inclusive ranges:
 | Charged cells | Regular symbols removed |
 | --- | --- |
 | 1–5 | 1–3 |
-| 6–8 | 3–5 |
-| 9 | 5–10 |
+| 6–8 | 3–8 |
+| 9 | 8–15 |
 | 10 | Every regular symbol |
 
 The original request overlapped at five cells; five belongs to the first tier.
@@ -158,6 +161,55 @@ stops. Input is ignored through the spin, cascades, heart Wild releases and arro
 bursts. Reduced-motion settings replace scrolling, falling, flying Wilds and
 arrows with short waits and direct reveals.
 
+## Free-spin bonus
+
+The entry dialog announces the award; **Continue** starts automatic free spins.
+The bonus uses `src/assets/background/bonus.png`, with its existing row artwork
+reused for a fifth row, as requested. Mobile retains the portrait title and art;
+desktop uses the landscape composition with a larger board. The 25 bonus cells
+are separate from the preserved base reels.
+
+Each free spin fills every cell independently:
+
+| Symbol | Draw chance | When collected |
+| --- | --- | --- |
+| Empty | 35% | No award |
+| Coin | 25% | One coin worth the 1.00 bet |
+| ×2 | 20% | Add 2 to the feature multiplier |
+| ×3 | 10% | Add 3 to the feature multiplier |
+| Heart | 7% | Sweep its column or wait above it |
+| Scatter | 3% | Add one remaining free spin |
+
+Above the grid, a three-cell number reel selects 1–5 arrows with relative weights
+**20:15:12:5:3**. The supplied weights sum to 55, so they are normalized over 55;
+there is no zero-arrow outcome. Each arrow selects a random unused row from the five;
+no row can be shot twice in the same free spin. The supplied arrow asset animates left to
+right, collecting symbols as it crosses each cell. Already collected cells are
+empty and cannot pay again. Unhit symbols do not contribute to the feature win.
+After selection, a small arrow icon and remaining count appear above the grid's
+top-left corner. The count decreases after each shot finishes, stays visible
+during intervening heart sweeps, and disappears when no arrows remain.
+
+A collected heart pulses and rises to the top of its column, then sweeps downward
+to collect remaining symbols. Hearts found during a sweep queue another sweep.
+If the column is empty, the heart stays above it and attempts collection at the
+beginning of the next free spin, before the new arrows. It remains visible during
+the new grid reveal and while other carried hearts are sweeping. Multiple waiting hearts
+can occupy a column; an empty next-spin column keeps them parked. Waiting hearts
+do not themselves grant spins and expire when the feature finishes.
+
+The bottom bar shows the current free spin, remaining spins, collected coins and
+cumulative multiplier. The multiplier starts at **×1** and adds collected ×2/×3
+face values across the whole feature. The final bonus win is:
+**collected coins × 1.00 bet × cumulative multiplier**. A collected bonus Scatter
+adds one spin immediately, including on the last scheduled spin.
+
+When all remaining spins finish, a results dialog shows the total bonus win.
+It is credited once to the triggering round and session total. Free spins do not
+increment the paid-round counter. **Continue** returns to the exact settled base
+board that triggered the bonus, with its feature counters preserved. Those same
+Scatters do not immediately retrigger; the next player spin starts a new round.
+
 ## Verification
 
 `npm test` covers the weighted distribution, symbol/frame mapping, inclusive reel
@@ -177,4 +229,15 @@ Heart tests cover every Mid/High frame at 3–5 reels, mixed wins, Wild substitu
 and Low/standalone Wild wins earning no heart award while retaining normal clearing.
 Arrow-chain tests cover retained charge, fresh wins enabling repeat bursts,
 resolution order, and losing/Scatter-only refills ending the chain.
+Bonus tests cover the awards, symbol and arrow probabilities, unique and uniformly sampled row
+selection, single collection, overlaps, additive payout, held hearts, chained
+heart sweeps, last-spin extensions and 50 complete seeded bonuses.
 `npm run build` performs strict TypeScript checking and bundles the app with Vite.
+
+For a development smoke test, open `/?bonus-preview=1` on the Vite server, then
+How to play → Preview 3-Scatter bonus. This creates a three-Scatter fixture and
+opens the entry dialog without changing real spin odds. `/?bonus-preview=fast`
+also shortens bonus steps to 100ms for complete-flow checks. The additional
+Preview carried hearts button supplies three waiting hearts (two stacked in one
+column) to verify visibility during filling and queued sweeps. Both controls exist
+only in development; they are omitted from the production build.

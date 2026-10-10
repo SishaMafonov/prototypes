@@ -13,7 +13,7 @@ Most modern prototypes use Node.js, TypeScript, Vite, and `<canvas>`. Older prot
 | `capybara-crossing/` | Two-player, dynamic-path board-race game; human Blue versus automated Red | `src/main.ts`, `src/style.css`; read `capybara-crossing/AGENTS.md` before editing | `pnpm install`, `pnpm dev`, `pnpm build` |
 | `planet-pulse-football/` | Voice-powered canvas football game with planetary gravity, AI, timed matches, and optional microphone input | `src/main.ts`, `src/style.css` | `pnpm install`, `pnpm dev`, `pnpm build` |
 | `slot-template/` | Canvas card-slot-machine prototype with three animated reels | `src/main.ts`, `src/style.css` | `pnpm install`, `pnpm dev`, `pnpm build` |
-| `hattack/` | Heart Attack canvas video slot: 5 × 4 ways, cascades, heart Wilds, love-meter arrows, payouts and session statistics | Read `hattack/AGENTS.md` and `hattack/CONTEXT.md`; rules in `src/game.ts`, rendering/state in `src/main.ts` | `npm ci`, `npm run dev`, `npm test`, `npm run build`, `npm run serve` |
+| `hattack/` | Heart Attack canvas video slot: 5 × 4 ways, cascades, heart Wilds, love-meter arrows and a 5 × 5 free-spin bonus | Read `hattack/AGENTS.md` and `hattack/CONTEXT.md`; rules in `src/game.ts` / `src/bonus.ts`, rendering/state in `src/main.ts` | `npm ci`, `npm run dev`, `npm test`, `npm run build`, `npm run serve` |
 | `races-of-aces/` | Browser card-racing game: card suits advance aces while side cards alter the race | `index.mjs`, `src/`, `static/index.html`, `static/css/main.css` | `npm install`, `npm run build`, `npm run serve` |
 | `video-slots/swirl-animation/` | Legacy Phaser 3.10 five-reel slot experiment with a swirl feature animation | `main.js`, `config.js`, `index.html`, `assets/` | Serve the directory with a static web server; Phaser is loaded from a CDN |
 | `rps/` | Node.js rock-paper-scissors Monte Carlo/statistics script (100 million rounds) | `src/*.mjs` | `npm run run` |
@@ -50,7 +50,7 @@ This is a strict TypeScript Vite canvas prototype. `src/main.ts` defines the car
 
 ### Heart Attack (`hattack`)
 
-Read [`hattack/AGENTS.md`](hattack/AGENTS.md) for working rules and [`hattack/CONTEXT.md`](hattack/CONTEXT.md) for the current handoff. This is an independent npm/TypeScript 7/Vite canvas project. Pure rules and payouts live in `src/game.ts`; `src/main.ts` handles the round state machine, art, animations and statistics. Mobile layout is the priority. Initial strips allow up to three Wilds per reel; Mid/High heart awards add more. RTP is knowingly uncalibrated and accepted for this demo; do not rebalance it without a user request.
+Read [`hattack/AGENTS.md`](hattack/AGENTS.md) for working rules and [`hattack/CONTEXT.md`](hattack/CONTEXT.md) for the current handoff. This is an independent npm/TypeScript 7/Vite canvas project. Pure rules and payouts live in `src/game.ts` and `src/bonus.ts`; `src/main.ts` handles both state machines, art, animations and statistics. Mobile layout is the priority. Initial strips allow up to three Wilds per reel; Mid/High heart awards add more. Settled 3/4/5 Scatters trigger 10/15/20 free spins on a separate 5 × 5 bonus board, then return to the preserved base reels. RTP is knowingly uncalibrated and accepted for this demo; do not rebalance it without a user request.
 
 ### Races of Aces
 

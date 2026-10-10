@@ -10,7 +10,7 @@ or the verification baseline changes.
 - Work from `hattack/`. This is an independent client-only prototype, with no
   framework, backend, database, cash transactions or cross-project dependencies.
 - Use npm and the existing `package-lock.json`. Use Node.js 24; tests import
-  `src/game.ts` directly using native TypeScript support.
+  `src/game.ts` and `src/bonus.ts` directly using native TypeScript support.
 - For a fresh checkout, run `npm ci`. With dependencies present, avoid needless
   reinstalls. Use `npm run dev` for source preview; `npm run build` generates
   `dist/`; `npm run serve` serves that build on port 1234.
@@ -24,12 +24,13 @@ or the verification baseline changes.
 | Concern | File / entry points |
 | --- | --- |
 | Symbols, weights, strips, stops, ways, cascades, hearts, love-meter targets, payouts | `src/game.ts` |
+| Free-spin awards, bonus draws, collections, held hearts and bonus payout | `src/bonus.ts` |
 | Round orchestration, input, accessible announcements, statistics | `src/main.ts`: `spin`, `checkBoard`, `tick`, `setPhase`, `updateStatistics` |
 | Artwork slicing, geometry and canvas animation | `src/main.ts`: `buildSymbolMap`, `getScene`, `drawReel`, `drawHeartBar`, `drawHeartWilds`, `drawLoveMeter`, `drawLoveArrows` |
 | Page, responsive statistics bar and rules dialog | `src/style.css`; HTML is created in `src/main.ts` |
-| Deterministic rules verification | `tests/game.test.mjs` |
+| Deterministic rules verification | `tests/game.test.mjs`, `tests/bonus.test.mjs` |
 
-Keep DOM-free rules in `game.ts`, with injectable `RandomSource` for deterministic
+Keep DOM-free rules in `game.ts` / `bonus.ts`, with injectable `RandomSource` for deterministic
 tests. Keep state and animation orchestration in `main.ts`.
 
 ## Preserve these decisions
@@ -41,7 +42,8 @@ tests. Keep state and animation orchestration in `main.ts`.
   during every cascade, Wild release and arrow burst. Preserve reduced-motion handling and
   accessibility labels/status text.
 - Generated reel strips allow zero to three Wilds each, using
-  `REEL_CATEGORY_WEIGHTS` (Wild 2.5%, Low 77.5%, Mid 11%, High 6.5%, Scatter 2.5%).
+  `REEL_CATEGORY_WEIGHTS`: relative Low/Mid/High/Wild/Scatter weights
+  77.5/11/9.5/2.5/6.5, normalized over 107 before caps.
   Cap Wilds across the entire strip, not just the four visible rows; renormalize
   eligible weights after either special-symbol cap. Cascade/arrow refills use
   `CATEGORY_WEIGHTS` and never draw new Wilds. Mid/High heart awards can add
@@ -51,9 +53,9 @@ tests. Keep state and animation orchestration in `main.ts`.
   Generate at most one Scatter per entire reel strip. Cascade/arrow refills also
   allow at most one per visible column, accounting for survivors and earlier
   incoming cells. Exclude Scatter after the first; renormalize regular weights.
-  `Result.scatterTrigger` is a separate three-or-more signal reserved for the
-  next phase; its gameplay is undefined. Do not reintroduce `scatterWin` or
-  invent a bonus phase without a user request.
+  `Result.scatterTrigger` is a separate three-or-more signal. After all base
+  cascades/hearts/earned arrows settle, 3/4/5 Scatters award 10/15/20 free spins.
+  Do not reintroduce `scatterWin` or trigger the bonus repeatedly during cascades.
 - Only Mid and High ways wins charge the bottom hearts, using their longest
   consecutive reel count (3–5) across the cascade sequence. Low, Scatter and
   standalone Wild results earn no hearts; Wild substitution in Mid/High ways
@@ -68,12 +70,28 @@ tests. Keep state and animation orchestration in `main.ts`.
   Keep charge between bursts. Fresh post-arrow wins enable another burst after
   their cascades/hearts finish. Stop when a refill has no win; charge alone must
   never retrigger arrows. Track burst/target totals for the whole player round.
-  Keep five cells in the 1–3-arrow tier, six to eight in 3–5, nine in 5–10, and
+  Keep five cells in the 1–3-arrow tier, six to eight in 3–8, nine in 8–15, and
   ten as a clear of all regular symbols. Arrow targets never include Wilds or
   Scatters. Arrow removals share `createRemovalCascade` with normal cascades;
   only subsequent evaluated wins pay. Post-arrow wins use normal hearts/rules.
 - Credit each evaluated winning board once. Accumulate payouts in integer cents.
   Only starting a spin increments rounds; cascades and Wild releases do not.
+- Bonus play uses a separate row-major 5 × 5 grid. Preserve the settled base
+  board and base feature counters through the bonus; Continue gates entry and
+  exit. Reuse the supplied bonus background's row artwork for the fifth row,
+  as explicitly requested. Do not draw replacement cell frames.
+- Bonus symbols draw independently: Empty 35%, Coin 25%, ×2 20%, ×3 10%, Heart
+  7%, Scatter 3%. Arrow counts 1–5 use relative weights 20:15:12:5:3 (the stated
+  weights total 55); sample rows without replacement, so each row is shot at most
+  once per free spin.
+  The small top-left arrow badge shows shots remaining after selection, decreases
+  after completed shots, persists through heart sweeps, and disappears at zero.
+  Collect each cell once. A collected Scatter adds one spin; a heart sweeps its
+  column or waits for the next spin if empty. Keep carried hearts visible through
+  filling and while queued behind another heart; drain them before new arrows.
+  Multipliers add their face values to a bonus-wide ×1 starting value. Final
+  payout is all collected coins × fixed bet × cumulative multiplier, credited
+  once to the triggering paid round. Free spins do not increment paid rounds.
 - RTP is uncalibrated and explicitly accepted for the demo. Do not silently
   retune probabilities, reduce payouts, cap rounds, or change feature rules to
   reach an assumed target RTP.

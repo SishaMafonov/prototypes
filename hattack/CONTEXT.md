@@ -1,271 +1,216 @@
 # Heart Attack — Current Agent Context
 
-Snapshot: **2026-10-09**. Read [AGENTS.md](AGENTS.md) for working rules and
-[README.md](README.md) for the full feature description. Source code is the
-authority if this snapshot becomes stale.
+Snapshot: **2026-10-10**. Read [AGENTS.md](AGENTS.md) for working rules and
+[README.md](README.md) for user-facing rules. Source is authoritative if this
+handoff becomes stale.
 
-## User intent and current status
+## Current status and accepted decisions
 
-The user built this demo incrementally and approved its appearance and mechanics.
-Mobile presentation is the priority; desktop should use most of the available
-screen with larger symbols and the original right-side love meter visible.
-Mid/High were made much rarer. Random Wilds were previously removed; the user now
-requests their return to initial reel generation, up to three per whole strip.
-The Wild spin weight is 2.5%, taken from Low. The latest request raises both Mid
-and High by five percentage points: Mid 6% → 11%, High 1.5% → 6.5% for both
-strips and refills. Low supplies the extra ten points (77.5% strips, 80% refills).
-Wild/Scatter weights and special-symbol caps are unchanged.
-This supersedes the earlier heart-only Wild rule. The user said RTP is off
-but **does not matter for the demo**. The latest feature activates the right love
-meter: one charge per winning board and an arrow clear after cascades/hearts.
-For reset timing, the user's latest clarification was **"reset after every
-player action"**; this supersedes their earlier suggestion to carry charge
-between spins. Implemented as reset at the start of each player spin. The user
-now requests repeated arrow bursts when refills create wins and clarified:
-**"Keep charge; new wins allow another burst"**. This supersedes the one-burst
-guard. Complete each win/cascade/heart sequence before firing again, and stop
-when an arrow refill produces no win. Charge alone never restarts the feature.
-There is no target RTP.
+The base game and the free-spin bonus are implemented. Mobile is the priority;
+desktop uses a larger landscape composition. The user explicitly approved
+reusing the bonus background's existing row artwork for the fifth row, retaining
+**25 cells** even though the original image has only four rows.
 
-Heart rule: **only Mid and High wins charge the bottom hearts**. Use the
-longest qualifying 3–5 consecutive reel match across a cascade sequence. Low and
-standalone Wild wins earn no heart Wilds, while retaining their existing payout,
-clearing and love-meter behavior. Wild substitution in Mid/High ways qualifies.
-Heart awards still convert any eligible regular cell; only the charge source changed.
+Base-game RTP is uncalibrated and accepted for this demo. The user now permits
+weight balancing and has raised High/Scatter relative weights plus love-arrow
+tiers. This update preserves their tuning, syncing its tests and documentation.
+Do not reduce payouts or cap feature chains without a request. Earlier decisions remain:
+Mid/High weights were increased by five percentage points; generated strips
+allow up to three Wilds and one Scatter each; only Mid/High wins award heart
+Wilds; love charge resets at each player spin and is retained between earned
+bursts. The user's repeat-burst clarification is **"Keep charge; new wins allow
+another burst"**. A losing arrow refill cannot restart arrows from charge alone.
 
-Scatters have **at most one per entire generated reel strip**
-(zero is allowed), and at most one per visible column during cascade/arrow
-refills. Once a Scatter is present, draw only regular symbols with their weights
-renormalized. Surviving Scatters and newly drawn ones both consume that column's
-allowance. Normal play therefore has at most five visible Scatters.
+Bonus implementation choices communicated to the user:
+- Trigger once from the final settled base board, after cascades, heart awards
+  and earned love-meter bursts finish.
+- The arrow weights listed as out of 60 sum to 55. Normalize the five positive
+  outcomes over 55, with no zero-arrow outcome.
+- Multipliers accumulate additively: start at ×1, add each collected ×2/×3 face
+  value, then multiply all collected coins by this final feature multiplier.
+  These two defaults were presented in optional questions; no contrary answer
+  had arrived at verification time. They are also stated in the in-game rules.
 
-Scatters were also removed from winning combinations. They
-remain on the reels as next-phase trigger symbols. The existing three-or-more
-threshold is kept as `Result.scatterTrigger`, separate from ways wins; next-phase
-gameplay has not been defined. Scatters no longer clear, pay, highlight as wins,
-or charge hearts/the love meter.
-
-At this snapshot, `git status --short` showed `?? hattack/`: the entire new
-prototype had not been committed. This handoff is documentation, not a Git
-checkpoint. Recheck status rather than assuming that remains true. The project
-has its own `.gitignore` excluding `node_modules/` and `dist/`.
+At this handoff the existing prototype is tracked. Bonus source/tests and the
+supplied bonus background, arrow and heart assets are newly untracked; existing
+main/style/config/documentation files have changes. No commit was requested or
+created for this feature. Recheck Git status before a checkpoint and preserve
+user changes. The project ignores `node_modules/` and `dist/`.
 
 ## Runtime and source map
 
-- npm, `typescript ^7.0.2`, `vite ^8.3.4`, `http-server ^14.1.1`.
-- Strict TypeScript, ES2022/DOM, ES modules, bundler resolution, no compiler emit.
-- `src/game.ts`: pure rules, symbol identities, RNG, payouts and transformations.
-- `src/main.ts`: injected UI, asset loading, canvas renderer, state machine,
-  keyboard/pointer input and in-memory session counters.
-- `src/style.css`: portrait/landscape sizing, stats bar, footer, rules dialog.
-- `tests/game.test.mjs`: Node 24 test runner, seeded/injected RNG, direct TS import.
-- `index.html`: Vite entry. `package-lock.json`: npm dependency lock.
+Independent npm project; Node.js 24; TypeScript ^7.0.2; Vite ^8.3.4;
+http-server ^14.1.1. Run commands from this directory. Use `npm ci` for a fresh
+checkout, `npm run dev` for Vite, `npm test`, `npm run build`, then
+`npm run serve` for the last built dist on port 1234.
+Strict ES2022/DOM, bundler resolution, noEmit and allowImportingTsExtensions.
+The explicit `./game.ts` import in bonus.ts supports Node's native TS test runner.
 
-## Current game rules
+| File | Responsibility |
+| --- | --- |
+| `src/game.ts` | Pure base rules, injectable RNG, payouts and transformations |
+| `src/bonus.ts` | Pure bonus awards, weighted draws, collections, held hearts, payout |
+| `src/main.ts` | UI, asset loading, canvas, both state machines, input, statistics |
+| `src/style.css` | Responsive canvas/stats and rules/feature dialogs |
+| `GAME_RULES_AND_PAYTABLE.md` | Standalone player rules, paytable and promo-image brief; keep synchronized with gameplay |
+| `tests/game.test.mjs` | 48 deterministic/seeded base tests |
+| `tests/bonus.test.mjs` | 13 bonus tests, including 50 complete seeded features |
 
-The board has **five reels and four rows** (1,024 ways). Its representation is
-`grid[reel][row]`, with row 0 at the top. Each spin generates five independent
-strips, uniformly sized 30–110, and uniformly selected stops. Visible rows wrap
-around the strip, so a last-index stop shows `[last, first, second, third]`.
-The opening screen is conditioned on no ways win and no Scatter trigger; ordinary
-player spins are unrestricted. Opening generation has a bounded fallback.
+## Base rules
 
-### Draw weights and symbols
+Five reels × four rows, `grid[reel][row]`; 1,024 ways. Each player spin generates
+five independent circular strips, uniformly sized 30–110 and uniformly stopped.
+Boundary stops wrap from the end to the beginning. Opening reels are conditioned
+on no ways win and fewer than three Scatters, with a bounded fallback.
 
-| Category | Reel draw chance | Cascade refill chance | Frames |
+| Category | Strip weight | Refill weight | Frames |
 | --- | --- | --- | --- |
-| Low | 77.5% | 80% | 6 equally likely |
-| Mid | 11% | 11% | 6 equally likely |
-| High | 6.5% | 6.5% | 6 equally likely |
-| Scatter | 2.5% | 2.5% | 1 |
-| Wild | 2.5% | 0% | 1; also awarded by hearts |
+| Low | 72.43% | 74.77% | 6 equally likely |
+| Mid | 10.28% | 10.28% | 6 equally likely |
+| High | 8.88% | 8.88% | 6 equally likely |
+| Wild | 2.34% | 0% | 1 |
+| Scatter | 6.07% | 6.07% | 1 |
 
-`REEL_CATEGORY_WEIGHTS` applies to generated strips: zero to three Wilds and
-zero to one Scatter per entire strip. `MAX_REEL_WILDS=3`. After either cap,
-exclude that category and renormalize remaining weights. `CATEGORY_WEIGHTS`
-continues to apply to cascade/arrow refills: no new Wilds, at most one Scatter
-per column including survivors. Sampling directly avoids rejection loops.
-Existing Wilds can survive gravity. Heart awards can add Wilds beyond the initial
-strip cap, following their existing rules.
+These are normalized probabilities before caps. Relative weights total 107:
+strips 77.5/11/9.5/2.5/6.5; refills 80/11/9.5/0/6.5 (Low/Mid/High/Wild/Scatter).
+`REEL_CATEGORY_WEIGHTS` caps each whole strip at three Wilds and one Scatter;
+renormalize eligible categories when a cap is reached. `CATEGORY_WEIGHTS`
+refills generate no Wilds and allow at most one Scatter per visible column,
+counting survivors and incoming cells. Heart awards can exceed the strip Wild cap.
 
-Ways start at the left and require the same symbol on 3–5 consecutive reels,
-in any row. Counts multiply across matching positions. Only the longest run
-per symbol pays, not its shorter prefixes. Wild substitutes for regular symbols;
-pure-Wild combinations count once under Wild. Scatters do not substitute.
-Three or more Scatters anywhere set `scatterTrigger`, reserved for the next phase.
-`scatterCount` and `scatterCells` retain the current board's data. This signal is
-not a win, and the next phase is not implemented yet.
+Ways match regular symbols on 3–5 consecutive reels from the left, in any row.
+Multiply matching counts across reels; pay only the longest run per symbol.
+Wild substitutes; standalone Wild ways count once and pay zero. Scatters never
+substitute, win, clear or charge either feature. They survive gravity and arrows.
 
-### Cascades and hearts
+Credit each board once in integer cents, then remove winning cells (shared cells
+once), preserve survivor order and refill only the top gaps. Continue until no
+wins. Charge hearts by the longest Mid/High winning reel count in the cascade
+sequence; Low or standalone Wild wins earn none. After natural cascades finish,
+convert that many distinct random regular cells to Wild, consume the award, and
+reevaluate. Multiple placements may share a reel.
 
-1. Evaluate the stopped board, credit its payout once, and highlight wins.
-2. Remove all ways-winning cells, including shared Wilds only once. Never remove
-   Scatters. Survivors fall within their own column, preserving relative order.
-   Weighted new symbols fill only the vacant top cells.
-3. Evaluate again and continue natural cascades until there is no win.
-4. Throughout this cascade sequence, retain the maximum Mid/High winning reel
-   length: 3, 4 or 5 lights that many hearts. Low, standalone Wild and Scatter
-   results earn no hearts. Wild substitution in Mid/High ways qualifies. A later
-   Low win does not erase an already earned award or increase it.
-5. If charged, each heart converts a distinct random regular cell to Wild.
-   Existing Wilds and Scatters are preserved; multiple placements can share a reel.
-   At most five are added, limited by eligible cells. Animate flight from hearts.
-6. Consume the award, then evaluate the modified board. New wins begin another
-   cascade sequence; only new Mid/High wins earn a fresh heart award. A losing release proceeds to the
-   pending love-meter burst, if charged. Otherwise the round ends.
+Every ways-winning board adds one love cell, capped at ten, and sets
+`arrowsPending`. Resolve wins → heart awards → pending arrows → settled board.
+Consume pending before a burst, retain charge, and allow fresh post-arrow wins
+to earn another burst. Charge alone cannot fire. Tiers: 1–5 cells remove 1–3
+regular symbols, 6–8 remove 3–8, 9 remove 8–15; 10 clears all regular cells.
+Targets are distinct, limited by availability, and protect Wild/Scatter.
+Arrow clears do not pay; only subsequent evaluated wins do. No chain cap exists.
 
-### Love meter and arrows
+Bet is 1.00. Per-way payouts for 3/4/5 reels: Low 0.05/0.10/0.25,
+Mid 0.25/0.50/0.75, High 0.75/1.00/2.00. Stats are paid rounds, total win,
+current/last round win and observed RTP = total win / (rounds × bet), as percent.
+Only paid spins increment rounds. Everything is in memory and resets on reload;
+there is no balance, stake deduction, persistence or cash transaction.
 
-- Every ways-winning board (including unpaid pure Wild wins)
-  adds one cell, capped at ten. Multiple wins on one board add only one cell.
-- Fill bottom to top. Reset at the start of a new player spin. Leave charge
-  visible at round end; it is not persistent across spins or reloads.
-- Every fresh win sets `arrowsPending`. After natural cascades and heart-Wild
-  cycles settle, a no-win board with no charged hearts triggers `selectLoveArrows`
-  if charge is positive and pending. Consume pending before evaluating the refill;
-  retain charge. A zero-target burst ends safely with no removal animation.
-- Levels 1–5 choose 1–3 arrows, 6–8 choose 3–5, 9 chooses 5–10 (uniform inclusive
-  count); 10 targets all regular cells. The fifth cell was in overlapping ranges
-  in the request and is assigned to the first tier.
-- Select distinct regular cells, limited by availability. Never target Wild or
-  Scatter. Animate flight from the current meter plaque, then removal, gravity
-  and weighted top refill. Full charge can clear up to all 20 regular symbols.
-- `createCascade` delegates to `createRemovalCascade`, which also handles arrows.
-  Arrow removal is not a paid win. Evaluate only after refill: new wins pay,
-  cascade and trigger hearts normally. They further light the meter and enable
-  another burst after resolving those wins/hearts. Without a fresh win, a losing
-  refill ends the round even at 10/10. `nextBoardAction` enforces win → hearts →
-  pending arrows → idle priority. Burst counts and cleared targets accumulate.
+## Bonus rules and orchestration
 
-There is no fixed limit on winning cascades, heart cycles or earned arrow bursts.
-Long rounds are possible with these weights/feature rules.
+`finishBaseRound` opens the entry dialog if the settled board has 3/4/5
+Scatters, awarding 10/15/20 free spins. `bonusTriggered` guards the paid round.
+Continue switches renderers and stats. The original board, strips, stops, meter,
+hearts and base feature counters are retained throughout the feature.
 
-### Payouts and statistics
+The bonus has a separate row-major `grid[row][column]`, 5 × 5. Each free spin
+deducts one remaining spin, increments its own current counter, and draws 25
+independent symbols: Empty 35%, Coin 25%, ×2 20%, ×3 10%, Heart 7%, Scatter 3%.
+Saved hearts collect first; then the three-number selector picks 1–5 arrows with
+relative weights 20:15:12:5:3. Sample uniformly from remaining rows 0–4;
+each row can be shot at most once per free spin. Arrows cross left to right, collecting crossed cells once.
+Unhit symbols contribute nothing; overlaps see already empty cells.
+After the number selector settles, a compact arrow-sprite badge above the grid's
+top-left corner shows remaining shots. It derives from total minus completed
+shots, updates after each row flight, persists through intervening heart sweeps,
+and disappears at zero. Filling and the number roll do not show it.
 
-Fixed bet: **1.00 prototype credits**. Multiply each amount below by its winning
-ways; accumulate all cascade and heart-Wild wins for the same round.
+Coins accumulate across spins, each worth the bet. ×2/×3 add 2/3 to a feature
+multiplier starting at 1. Collected Scatters immediately add one remaining spin,
+including on the last scheduled spin. Hearts pulse, rise above their column,
+then descend and collect remaining symbols vertically. Hearts collected by
+another heart queue further sweeps. An empty column parks its heart for the
+beginning of the next spin, before arrows; if still empty, keep it waiting.
+`parkedBonusHearts` combines waiting hearts with queued carried hearts (row -1),
+so markers remain visible during filling and while earlier hearts sweep. An
+active rising heart replaces its own parked marker to avoid drawing it twice.
+Multiple held hearts per column are supported. They do not grant spins and
+expire when no spins remain.
 
-| Category | 3 reels | 4 reels | 5 reels |
-| --- | --- | --- | --- |
-| Low | 0.05 | 0.10 | 0.25 |
-| Mid | 0.25 | 0.50 | 0.75 |
-| High | 0.75 | 1.00 | 2.00 |
+`nextBonusWork` prioritizes queued hearts, arrow selector, next arrow, spin end.
+`collectAlongBonusLine` updates the pure state at each crossing and adds symbol
+flights to counters. Final payout is `coins × BET_CENTS × multiplier`;
+`bonusPaid` credits it once to the original round and session. The results
+dialog requires Continue, which restores base rendering/stats/input and the
+same settled board. There is no immediate retrigger from those old Scatters.
 
-`BET_CENTS` and `PAYOUT_CENTS` store integer cents. Wild-substituted ways use the
-regular symbol's payout. Standalone Wild ways pay zero because their amounts
-were never specified; they still clear and charge the love meter, but earn no hearts.
-Scatters are unpaid trigger symbols and never participate in win clearing or
-feature charging, even with three or more on the board.
+Phase adds `bonus-ready | bonus | bonus-complete` to base phases
+`idle | spinning | celebrating | removing | falling | adding-wilds | firing-arrows`.
+Bonus steps: filling, arrow-roll, row-aim, row-shot, heart-rise, heart-fall,
+collecting, spin-end. A single requestAnimationFrame loop drives both games.
+Reduced motion shortens steps and reveals directly. Busy input is locked;
+Continue dialogs prevent Escape dismissal. Canvas labels and live status report
+feature progress and stats.
 
-The bottom bar displays bet, started rounds, session total win, current/most
-recent round win, and observed session RTP as a percentage:
-`total win / (rounds × 1.00) × 100`. It shows 0.00% before any round. Statistics
-update as results appear, so a running round is included. Starting the next spin
-resets only the round win. Reload resets everything. There is no balance,
-bankroll, cash transaction, stake deduction or persistent storage.
-Observed session RTP is not a calibrated theoretical RTP and may exceed 100%.
+## Rendering, inspection and development preview
 
-## State machine and rendering details
+Base background `main.png`: 941 × 1672. Portrait grid:
+x41/y594, pitch150 × 159, cell138 × 148. Six-frame Low/Mid/High sheets are
+2172 × 724; base Wild/Scatter sheet `symbols/bonus.png` is 1774 × 887.
+Split frames before trimming alpha margins. Desktop breakpoint: width >=760
+and aspect >=1; 1600 × 900 scene with separate title/board/love-meter crops.
+Keep projected meter plaques, symbol cells, hearts and flights aligned.
 
-`Phase` is `idle | spinning | celebrating | removing | falling | adding-wilds |
-firing-arrows`.
-`spin()` generates strips and resets round counters; `tick()` moves animations
-between phases; `checkBoard()` evaluates/credits once and selects the next phase.
-After cascades, `board` is the authoritative displayed grid rather than the old
-reel stops. The next spin starts its outgoing animation from that final board.
+Bonus background `background/bonus.png` is also 941 × 1672. `bonusGeometry`
+defines portrait and landscape transforms. `drawBonus` reuses row bands from
+the source art (including one repeated interior row), drawing no new cell frames.
+Symbols are canvas badges/coins plus trimmed heart/Scatter sprites.
+`symbols/arrow.png` is one transparent 2172 × 724 arrow.
+`symbols/heart.png` has three frames; only the first whole-heart frame is used.
+Both base/bonus stats are responsive DOM below the canvas, switched with hidden.
 
-Normal timings: celebrate 900ms, remove 330ms, fall 650ms, heart release 1,050ms,
-arrow flight 1,200ms (180ms reduced motion).
-Reduced motion uses short waits/direct reveals. `requestDraw()` schedules frames
-only while animation/feedback needs them. Do not start a second animation loop.
+`#game` exposes base phase, round, Scatter count/trigger, hearts, Wild awards,
+love charge and arrow counters via data attributes. `data-base-board` serializes
+base symbol IDs for restoration checks. Bonus data: bonus-step, bonus-spin,
+bonus-remaining, bonus-coins, bonus-multiplier, bonus-waiting-hearts,
+bonus-arrow-count, bonus-arrow-rows, bonus-arrows-fired, bonus-arrows-left,
+bonus-parked-hearts. These are inspection values, not controls.
 
-`setPhase()` exposes `data-phase`, `data-spinning`, `data-hearts`,
-`data-wilds-added`, `data-round`, `data-love-meter`, `data-arrow-targets`,
-`data-arrows-fired`, `data-arrows-pending`, `data-arrow-bursts`,
-`data-arrow-targets-cleared`, and `data-removal-source` on `#game` for inspection.
-`data-arrows-fired` now means at least one burst this round, not an eligibility guard.
-`data-arrow-targets` is the latest burst; targets-cleared is the cumulative actual
-removal count. Spin resets charge, pending, burst/target totals. Busy phases set
-`aria-disabled`; the actual input guard checks `phase === 'idle'`. Announcements
-use `#game-status`; the paytable and rules live in the How to play dialog.
-`data-scatter-count` and `data-scatter-trigger` expose the latest evaluated board
-for next-phase integration; they reset to 0/false during a new spin. They never
-drive the current win/cascade/heart/arrow phase transitions. Integrate a future
-phase from the settled board rather than firing it repeatedly during cascades.
+Vite-only preview: open `/?bonus-preview=1`, How to play → Preview 3-Scatter
+bonus. It replaces other visible Scatters and inserts exactly three at the bottom
+of the first three columns, then opens the award dialog. If the session has no
+paid rounds, it supplies one fixture round. `/?bonus-preview=fast` also shortens
+bonus steps to 100ms. Preview carried hearts supplies waiting columns [0,2,2]
+for visibility checks through filling/queued sweeps. No preview controls exist
+in production.
+Use this fixture to check layout/return without changing real spin probabilities.
 
-Background: `src/assets/background/main.png`, 941 × 1672. The user originally
-typed `main,png`; the actual file uses a dot. Grid coordinates in portrait art:
-`x=41, y=594, pitchX=150, pitchY=159, cell=138 × 148`.
-`low.png`, `mid.png`, `high.png` each have six horizontal frames (2172 × 724);
-`bonus.png` has Wild left / Scatter right (1774 × 887). Equal-width splitting
-comes before alpha-margin trimming and proportional cell fitting.
+## Verification baseline
 
-Landscape activates at width >= 760px and aspect ratio >= 1. It uses a 1600 × 900
-scene, separate title/board/meter crops, and the same grid transform for symbols
-and frames. Portrait retains the full art. Canvas pixel ratio is capped at 3.
-The right love meter overlays ten artwork plaque bounds, projected via
-`meterPoint` with the same crop/scale used by the desktop meter. Uncharged cells
-are dimmed, charged cells glow, and a counter shows 0–10/10. Arrows use the same
-projection for their origin and the scene grid for their targets. The five
-bottom hearts are rendered dynamically. Statistics are responsive DOM
-below the canvas; CSS reserves their height so the page fits the viewport.
-
-## Last verified baseline
-
-- `npm test`: **48 passing tests**, including capped Wild strips, zero/three cases,
-  special caps together, circular stops, spin distribution and opening fallback.
-  Also covers repeated arrow bursts with retained
-  charge, win/heart priority and losing/Scatter-trigger termination, plus Mid/High-only heart charging for all
-  frames and 3–5 reel lengths, mixed longer Low wins, Wild substitution, and
-  Low/standalone Wild clearing without heart awards. Also covers the one-Scatter limit across full strips,
-  every wrapped stop and repeated win/arrow refills, plus regular-weight
-  renormalization and constant-RNG termination. Also covers trigger-only detection, survival
-  through mixed winning cascades, no payout and no feature charging, alongside
-  arrow tiers, protected targets, full clears and paid wins from arrow refills.
-- `npm run build`: strict type check and Vite build passed.
-- Latest Mid/High reweighting check: all 48 tests pass with the updated draw
-  ranges, seeded category/frame distribution and unchanged special caps. Mobile
-  390 × 844 round returned to idle after two removal/refill cycles and an arrow
-  burst, paying 0.50 credits; no console errors.
-- Latest generated-Wild preview: mobile 390 × 844 round returned to idle after
-  two removal/refill cycles and one arrow burst, paying 0.90 credits. Wild/Scatter
-  rule cards checked at desktop 1440 × 900; no console errors. Full-strip Wild
-  limits and generation probabilities are verified by deterministic/seeded tests.
-- Latest arrow-chain preview: three mobile winning rounds returned to idle with
-  retained charges of 2/10, 3/10 and 1/10 and pending false after losing arrow
-  refills. A desktop losing spin reset charge/burst totals and fired no arrows.
-  Updated repeat-burst help text checked; no console errors. The deterministic
-  rules test verifies two bursts in one chain, retained charge and final termination;
-  these random browser rounds each produced one burst.
-- Latest Mid/High-heart preview: a mobile 390 × 844 winning round paid 0.50,
-  completed two removal/refill cycles (including a three-target arrow burst),
-  and returned to idle with zero heart Wilds added. Updated help text checked at
-  mobile and desktop 1440 × 900 sizes; no console errors. Qualifying Mid/High
-  awards are verified deterministically for every frame and 3–5 reel lengths.
-- Latest one-Scatter preview: a mobile 390 × 844 spin returned to idle normally;
-  updated rules were checked at mobile and desktop 1440 × 900 sizes. No console
-  errors. Per-strip and refill limits are verified deterministically by tests.
-- Historical single-burst baseline: mobile 390 × 844 and desktop 1440 × 900 were checked for love-meter overlay
-  alignment and arrow flights. A desktop 1/10 burst fired two arrows and ended
-  idle; a mobile 1/10 burst fired one arrow and produced new paid wins/cascades.
-  That mobile round finished at 10/10 with the original one-target burst still
-  recorded, confirming no second arrow burst after post-arrow wins.
-  Starting the next spin reset both charge and the per-round arrow guard.
-- Browser checks covered input locking, cascades, heart release/recharge,
-  statistics, love-meter charging to ten, arrows/refills, and no console errors.
-- Historical Scatter check before the one-per-reel limit at 390 × 844:
-  a round completed 29 cascades, heart Wild
-  cycles and one full-meter arrow clear, then returned to idle with six Scatters
-  preserved (`scatterCount=6`, `scatterTrigger=true`). Scatters were absent from
-  win reporting and did not keep the cascade loop running; no console errors.
-- Historical check before the meter feature: a seeded 100-round rules simulation
-  after reweighting completed every round;
-  it averaged 23.56 cascades and had a maximum of 178. This is a termination
-  smoke check, not an RTP calibration or a guarantee for all random outcomes.
-- Previews use a temporary local static server on port 1234. Do not assume a
-  server remains available or that an occupied port belongs to this task.
-
-Wild generation up to three per reel, repeated earned arrow bursts, Mid/High-only heart charging, Scatter separation
-and the one-per-reel limit are implemented. The next phase is reserved
-for a future user-defined feature. Follow [AGENTS.md](AGENTS.md) for subsequent
-changes, then update this context.
+- **61 tests pass**: 48 base and 13 bonus. Bonus coverage includes exact weighted
+  ranges and large seeded samples; 3/4/5 awards; unique rows and equal per-shot row probabilities;
+  single collection/overlaps; integer additive payouts; empty-column waiting;
+  stacked waiting hearts and visible queued carries; chained sweeps; last-spin Scatter extensions; 50
+  complete seeded bonuses. Base fixtures/distribution expectations now match the user-tuned weights and
+  larger arrow tiers; all pass.
+- Strict TypeScript and Vite production build pass.
+- Remaining-arrow badge checked on mobile 390 × 844 and desktop 1440 × 900.
+  A two-arrow spin showed 2 → 1 after the first completed shot; the badge was
+  absent at zero after both shots. No browser warnings or errors were recorded.
+- Latest bonus tweaks: mobile 390 × 844 and desktop 1440 × 900 carried-heart
+  fixtures visibly retain markers during filling and queued sweeps, including
+  stacked hearts. Unique-arrow selection is verified for all counts and constant
+  random draws, plus 50,000 full selections checking equal row probabilities.
+  An accelerated carried-heart bonus completed 17 spins; inspected arrow rows
+  were unique and Continue restored the exact base board with one paid round.
+  No browser warnings or errors were recorded.
+- Browser: mobile 390 × 844 and desktop 1440 × 900 bonus grids, selector, arrows,
+  dialogs and counters checked; statistics fit after correcting CSS order.
+  Resizing an active bonus retained play. Complete accelerated feature verified
+  extra-spin awards, one paid-round count, exact preserved base board on Continue
+  and no duplicate credit. No browser warning/error logs.
+- Tests verify 4/5-Scatter awards and held-heart edge cases; browser preview
+  exercises a three-Scatter fixture (an earlier four-Scatter fixture also finished).
+- Base browser checks from previous work covered cascades, Wild releases,
+  love-meter charging/arrow refills, locked input and stats at both sizes.
+  RTP is intentionally not calibrated.
+- Stop only preview servers/tabs started for this work. Do not assume a server
+  remains running or that an occupied port belongs to this task.

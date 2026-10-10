@@ -64,7 +64,7 @@ test('an arrow-refill win allows another burst with retained charge, and a losin
   const second = selectLoveArrows(grid, charge, () => 0);
   assert.equal(second.charge, 7);
   assert.equal(second.targets.length, 3);
-  grid = createRemovalCascade(grid, second.targets, () => 0.965).grid;
+  grid = createRemovalCascade(grid, second.targets, () => 0.925).grid;
   result = evaluateWays(grid);
   assert.equal(result.totalWays, 0);
   assert.equal(chargeLoveMeter(charge, result), 7);
@@ -84,7 +84,7 @@ test('retained full charge and a Scatter trigger cannot restart arrows without f
 
 test('arrow tiers use inclusive counts, with the fifth cell in the 1–3 tier', () => {
   const grid = Array.from({ length: 5 }, () => fill(a));
-  for (const [level, min, max] of [[1, 1, 3], [5, 1, 3], [6, 3, 5], [8, 3, 5], [9, 5, 10]]) {
+  for (const [level, min, max] of [[1, 1, 3], [5, 1, 3], [6, 3, 8], [8, 3, 8], [9, 8, 15]]) {
     assert.equal(selectLoveArrows(grid, level, () => 0).targets.length, min);
     assert.equal(selectLoveArrows(grid, level, () => 0.99999).targets.length, max);
   }
@@ -107,9 +107,9 @@ test('full meter clears every regular cell, leaving special symbols to fall in o
   const grid = [[a, wild, b, scatter], [scatter, a, wild, b], fill(a), fill(wild), fill(scatter)];
   const burst = selectLoveArrows(grid, 10, () => { throw new Error('Full clear needs no selection randomness'); });
   assert.equal(burst.targets.length, 8);
-  const next = createRemovalCascade(grid, burst.targets, () => 0.965);
+  const next = createRemovalCascade(grid, burst.targets, () => 0.925);
   const fresh = find('high-5');
-  const protectedFresh = find('high-5'); // 0.965 remains High after excluding Scatter weight.
+  const protectedFresh = find('high-5'); // 0.925 remains High after excluding Scatter weight.
   assert.deepEqual(next.grid[0], [protectedFresh, protectedFresh, wild, scatter]);
   assert.deepEqual(next.grid[1], [protectedFresh, protectedFresh, scatter, wild]);
   assert.deepEqual(next.grid[2], fill(fresh));
@@ -178,7 +178,7 @@ test('unpaid special-symbol hits and losing results pay zero', () => {
 test('cascade payouts accumulate in exact cents without duplicate prefix awards', () => {
   const initial = [fill(a), fill(a), fill(a), fill(b), fill(b)];
   const first = evaluateWays(initial);
-  const second = evaluateWays(createCascade(initial, first, () => 0.965).grid);
+  const second = evaluateWays(createCascade(initial, first, () => 0.925).grid);
   assert.equal(winCents(first), 320);
   assert.equal(winCents(second), 4800);
   assert.equal(winCents(first) + winCents(second), 5120);
@@ -201,10 +201,10 @@ test('sheets map to 18 regular symbols plus Wild and Scatter', () => {
 });
 
 test('category ranges and frame selection honor the specified weights', () => {
-  assert.deepEqual(CATEGORY_WEIGHTS, { low: 0.8, mid: 0.11, high: 0.065, wild: 0, scatter: 0.025 });
-  for (const [roll, category] of [[0, 'low'], [0.79999, 'low'], [0.8, 'mid'],
-    [0.90999, 'mid'], [0.91, 'high'], [0.97499, 'high'],
-    [0.97501, 'scatter'], [0.99999, 'scatter']]) {
+  assert.deepEqual(CATEGORY_WEIGHTS, { low: 0.8, mid: 0.11, high: 0.095, wild: 0, scatter: 0.065 });
+  for (const [roll, category] of [[0, 'low'], [0.79999 / 1.07, 'low'], [0.80001 / 1.07, 'mid'],
+    [0.90999 / 1.07, 'mid'], [0.91001 / 1.07, 'high'], [1.00499 / 1.07, 'high'],
+    [1.00501 / 1.07, 'scatter'], [0.99999, 'scatter']]) {
     let call = 0;
     const symbol = drawSymbol(() => call++ === 0 ? roll : 0.99999);
     assert.equal(symbol.category, category);
@@ -222,10 +222,10 @@ test('a large seeded sample follows category weights, draws every eligible frame
     frames.set(symbol.id, (frames.get(symbol.id) ?? 0) + 1);
   }
   for (const category of Object.keys(count)) {
-    assert.ok(Math.abs(count[category] / 200000 - CATEGORY_WEIGHTS[category]) < 0.004);
+    assert.ok(Math.abs(count[category] / 200000 - CATEGORY_WEIGHTS[category] / 1.07) < 0.004);
   }
   for (const symbol of SYMBOLS.filter((entry) => entry.category === 'low')) {
-    assert.ok(Math.abs(frames.get(symbol.id) / 200000 - CATEGORY_WEIGHTS.low / 6) < 0.004);
+    assert.ok(Math.abs(frames.get(symbol.id) / 200000 - CATEGORY_WEIGHTS.low / 1.07 / 6) < 0.004);
   }
   assert.equal(count.wild, 0);
   assert.equal(frames.size, 19);
@@ -268,9 +268,9 @@ test('each strip permits at most one Scatter, including constant Scatter rolls a
 
 test('reels allow zero to three Wilds, cap both specials independently, and preserve circular limits', () => {
   assert.equal(MAX_REEL_WILDS, 3);
-  assert.deepEqual(REEL_CATEGORY_WEIGHTS, { low: 0.775, mid: 0.11, high: 0.065, wild: 0.025, scatter: 0.025 });
+  assert.deepEqual(REEL_CATEGORY_WEIGHTS, { low: 0.775, mid: 0.11, high: 0.095, wild: 0.025, scatter: 0.065 });
   assert.ok(generateReels(() => 0).every((reel) => !reel.strip.includes(wild)));
-  for (const random of [() => 0.96, () => 0.99999]) {
+  for (const random of [() => 0.93, () => 0.99999]) {
     for (const reel of generateReels(random)) {
       assert.equal(reel.strip.filter((symbol) => symbol === wild).length, 3);
       assert.ok(reel.strip.filter((symbol) => symbol === scatter).length <= 1);
@@ -290,7 +290,7 @@ test('the first uncapped reel draw follows the configured spin weights', () => {
     for (const reel of generateReels(random)) counts[reel.strip[0].category]++;
   }
   for (const category of Object.keys(counts)) {
-    assert.ok(Math.abs(counts[category] / 50000 - REEL_CATEGORY_WEIGHTS[category]) < 0.004);
+    assert.ok(Math.abs(counts[category] / 50000 - REEL_CATEGORY_WEIGHTS[category] / 1.07) < 0.004);
   }
 });
 
@@ -303,7 +303,7 @@ test('Scatter-free draws retain regular category ratios and never draw special s
     counts[symbol.category]++;
   }
   for (const category of Object.keys(counts)) {
-    assert.ok(Math.abs(counts[category] / 100000 - CATEGORY_WEIGHTS[category] / 0.975) < 0.004);
+    assert.ok(Math.abs(counts[category] / 100000 - CATEGORY_WEIGHTS[category] / 1.005) < 0.004);
   }
   assert.equal(drawSymbol(() => 0.99999, false).category, 'high');
 });
@@ -401,7 +401,7 @@ test('regular wins beside three Scatters pay and cascade while preserving every 
   assert.equal(winCents(result), 5);
   assert.equal(heartsForResult(result), 0);
   assert.equal(chargeLoveMeter(0, result), 1);
-  const cascade = createCascade(grid, result, () => 0.965);
+  const cascade = createCascade(grid, result, () => 0.925);
   assert.equal(cascade.removed.length, 3);
   assert.deepEqual(cascade.grid[0], [find('high-5'), scatter, c, scatter]);
   assert.deepEqual(cascade.grid[2], [find('high-5'), c, scatter, c]);
@@ -429,7 +429,7 @@ test('winning symbols clear together, survivors fall in order, and only gaps ref
   const result = evaluateWays(grid);
   assert.equal(result.totalWays, 2);
   let calls = 0;
-  const cascade = createCascade(grid, result, () => { calls++; return 0.965; });
+  const cascade = createCascade(grid, result, () => { calls++; return 0.925; });
   const fresh = find('high-5');
   assert.deepEqual(cascade.grid[0], [fresh, fresh, c, d]);
   assert.deepEqual(cascade.grid[1], [fresh, b, b, b]);
@@ -449,7 +449,7 @@ test('a shared Wild is removed once even when it participates in two wins', () =
   const result = evaluateWays(grid);
   assert.equal(result.totalWays, 2);
   assert.equal(winningCells(result).length, 5);
-  const cascade = createCascade(grid, result, () => 0.965);
+  const cascade = createCascade(grid, result, () => 0.925);
   assert.deepEqual(cascade.grid[1], [find('high-5'), scatter, scatter, scatter]);
   assert.equal(cascade.removed.filter((cell) => cell.reel === 1 && cell.row === 0).length, 1);
 });
@@ -457,12 +457,12 @@ test('a shared Wild is removed once even when it participates in two wins', () =
 test('all Scatters survive cascades, including boards with a next-phase trigger', () => {
   const grid = [fill(a), fill(b), [scatter, b, b, b], [b, scatter, b, b], [b, b, b, scatter]];
   const result = evaluateWays(grid);
-  const cascade = createCascade(grid, result, () => 0.965);
+  const cascade = createCascade(grid, result, () => 0.925);
   assert.equal(cascade.removed.length, 0);
   assert.deepEqual(cascade.grid, grid);
   assert.equal(cascade.grid.flat().filter((symbol) => symbol.category === 'scatter').length, 3);
   const two = [[scatter, a, b, b], [a, scatter, b, b], [a, b, b, b], fill(b), fill(b)];
-  const next = createCascade(two, evaluateWays(two), () => 0.965);
+  const next = createCascade(two, evaluateWays(two), () => 0.925);
   assert.equal(next.grid.flat().filter((symbol) => symbol.category === 'scatter').length, 2);
 });
 
@@ -470,7 +470,7 @@ test('a refill can make another win, followed by a board with no wins', () => {
   let grid = [fill(a), fill(a), fill(a), fill(b), fill(b)];
   let result = evaluateWays(grid);
   assert.equal(result.totalWays, 64);
-  grid = createCascade(grid, result, () => 0.965).grid;
+  grid = createCascade(grid, result, () => 0.925).grid;
   result = evaluateWays(grid);
   assert.equal(result.wins[0].symbol.id, 'high-5');
   assert.equal(result.totalWays, 64);
