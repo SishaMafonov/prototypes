@@ -13,6 +13,7 @@ Most modern prototypes use Node.js, TypeScript, Vite, and `<canvas>`. Older prot
 | `capybara-crossing/` | Two-player, dynamic-path board-race game; human Blue versus automated Red | `src/main.ts`, `src/style.css`; read `capybara-crossing/AGENTS.md` before editing | `pnpm install`, `pnpm dev`, `pnpm build` |
 | `planet-pulse-football/` | Voice-powered canvas football game with planetary gravity, AI, timed matches, and optional microphone input | `src/main.ts`, `src/style.css` | `pnpm install`, `pnpm dev`, `pnpm build` |
 | `slot-template/` | Canvas card-slot-machine prototype with three animated reels | `src/main.ts`, `src/style.css` | `pnpm install`, `pnpm dev`, `pnpm build` |
+| `hattack/` | Heart Attack canvas video slot: 5 × 4 ways, cascades, heart Wilds, love-meter arrows and a 5 × 5 free-spin bonus | Read `hattack/AGENTS.md` and `hattack/CONTEXT.md`; rules in `src/game.ts` / `src/bonus.ts`, rendering/state in `src/main.ts` | `npm ci`, `npm run dev`, `npm test`, `npm run build`, `npm run serve` |
 | `races-of-aces/` | Browser card-racing game: card suits advance aces while side cards alter the race | `index.mjs`, `src/`, `static/index.html`, `static/css/main.css` | `npm install`, `npm run build`, `npm run serve` |
 | `video-slots/swirl-animation/` | Legacy Phaser 3.10 five-reel slot experiment with a swirl feature animation | `main.js`, `config.js`, `index.html`, `assets/` | Serve the directory with a static web server; Phaser is loaded from a CDN |
 | `rps/` | Node.js rock-paper-scissors Monte Carlo/statistics script (100 million rounds) | `src/*.mjs` | `npm run run` |
@@ -25,7 +26,7 @@ Most modern prototypes use Node.js, TypeScript, Vite, and `<canvas>`. Older prot
 - Repository-local Codex skills live in `.agents/skills/`. At the beginning of each session, discover and expose the skills in this directory in the session's available-skills catalog. Before taking task actions, select and initialize every local skill that is relevant to the requested project or workflow; read its `SKILL.md` in full and follow it. Do not initialize unrelated skills. Use `$project-init` when asked to create a new standalone browser-project directory.
 - `AGENTS.md` cannot itself register a skill with the client: each local skill must be a directory under `.agents/skills/` containing a valid `SKILL.md`, so session discovery can include it.
 - Start by locating the target project above and run commands from its directory. Do not run `npm install`, `pnpm install`, or build commands at the repository root; the root `package-lock.json` has no dependencies.
-- Respect package-local lockfiles and package managers. The three Vite TypeScript projects use `pnpm`; `races-of-aces` has an npm lockfile; the two script projects declare no dependencies.
+- Respect package-local lockfiles and package managers. `capybara-crossing`, `planet-pulse-football` and `slot-template` use `pnpm`; `hattack` and `races-of-aces` use npm lockfiles; the two script projects declare no dependencies.
 - Treat each project as a standalone client-only prototype. There are no server APIs, database schemas, authentication flows, or shared runtime packages to maintain.
 - Canvas game state, rules, rendering, and animation are intentionally concentrated in each project's `src/main.ts`. Preserve responsive canvas sizing and input behavior when modifying those games.
 - Prefer focused edits. Do not convert legacy JavaScript to TypeScript, replace rendering approaches, or add frameworks as incidental cleanup.
@@ -47,6 +48,10 @@ This is a strict TypeScript Vite canvas game. `src/main.ts` owns all match state
 
 This is a strict TypeScript Vite canvas prototype. `src/main.ts` defines the card deck, three reel states, animation timing, hit testing, and drawing; `src/style.css` owns the page layout. The canvas itself is the spin control, so retain its click/tap accessibility label and interaction.
 
+### Heart Attack (`hattack`)
+
+Read [`hattack/AGENTS.md`](hattack/AGENTS.md) for working rules and [`hattack/CONTEXT.md`](hattack/CONTEXT.md) for the current handoff. This is an independent npm/TypeScript 7/Vite canvas project. Pure rules and payouts live in `src/game.ts` and `src/bonus.ts`; `src/main.ts` handles both state machines, art, animations and statistics. Mobile layout is the priority. Initial strips allow up to three Wilds per reel; Mid/High heart awards add more. Settled 3/4/5 Scatters trigger 10/15/20 free spins on a separate 5 × 5 bonus board, then return to the preserved base reels. RTP is knowingly uncalibrated and accepted for this demo; do not rebalance it without a user request.
+
 ### Races of Aces
 
 This is legacy ECMAScript-module browser code bundled by webpack. `index.mjs` coordinates DOM updates; `src/deck/` creates and shuffles a 48-card deck (2–K only); `src/game/` contains board state and turn rules. Webpack emits `static/src/main.js`, which is generated and intentionally not tracked. `npm run serve` serves the built `static/` directory on port 1234.
@@ -61,7 +66,8 @@ These are command-line experiments, not browser applications. `rps/src/main.mjs`
 
 ## Verification
 
-- For Vite projects, use the local `pnpm build` (which type-checks before bundling).
+- For `capybara-crossing`, `planet-pulse-football` and `slot-template`, use the local `pnpm build` (which type-checks before bundling).
+- For `hattack`, use Node.js 24, `npm test` and `npm run build` from `hattack/`; its tests import TypeScript directly with Node's native support.
 - For Races of Aces, use `npm run build`; use `npm run test` only to execute its browser-oriented entry point if the environment supplies a DOM.
 - For RPS and Code Word, use their declared script commands only when the expected runtime cost is acceptable.
 - Use a browser preview/manual smoke test for interactive canvas or Phaser changes, especially after changing event handling, animation, or microphone behavior.
