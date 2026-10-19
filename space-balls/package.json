@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs test/*.test.mjs",
+    "test:opencv": "node --test test/opencv.test.mjs",
+    "test:capture": "node --test test/capture.test.mjs",
+    "cv:compile": "node tools/compile-cv-requirements.mjs",
+    "cv:check": "node tools/compile-cv-requirements.mjs --check",
+    "predev": "npm run cv:compile",
+    "prebuild": "npm run cv:compile",
     "dev": "vite --host 0.0.0.0",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
@@ -14,6 +20,7 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@techstark/opencv-js": "5.0.0-release.1",
     "http-server": "^14.1.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.4"

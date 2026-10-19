@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TIME-01",
+  "title": "moving nets",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 800,
+  "scope": "Observed independent net movement and bounded geometry; RNG excluded.",
+  "checks": [
+    {
+      "op": "motion",
+      "target": "nets"
+    }
+  ],
+  "relatedIds": [
+    "C-GOAL-01",
+    "C-GOAL-02",
+    "C-GOAL-05"
+  ],
+  "source": {
+    "path": "visual/temporal.md",
+    "sha256": "e4e9ba18517fd5374520fcce3b2ce07492082725130b9f54fd0699222bb3fdef"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-UI-04",
+  "title": "drive feedback",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 1600,
+  "scope": "Paired input-off/on annulus brightness; NA until both are observed.",
+  "checks": [
+    {
+      "op": "glow"
+    }
+  ],
+  "relatedIds": [
+    "C-INPUT-05",
+    "C-PLANET-10"
+  ],
+  "source": {
+    "path": "visual/overlays.md",
+    "sha256": "6ef0da8ea786a93d0472e5320cae2d6e956bfa7e011d6552917d3136c214d781"
+  }
+}

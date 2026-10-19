@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "motion",
+  "title": "Motion study suite",
+  "requirementIds": [
+    "V-TOOL-05"
+  ]
+}

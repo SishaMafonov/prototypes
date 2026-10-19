@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TIME-04",
+  "title": "goal/reset",
+  "story": "space-balls",
+  "stages": [
+    "S-GOAL"
+  ],
+  "durationMs": 2400,
+  "scope": "Observable contact-to-centered stationary core transition; scores excluded.",
+  "checks": [
+    {
+      "op": "goalReset"
+    }
+  ],
+  "relatedIds": [
+    "C-MATCH-05",
+    "I-FLOW-05"
+  ],
+  "source": {
+    "path": "visual/temporal.md",
+    "sha256": "e4e9ba18517fd5374520fcce3b2ce07492082725130b9f54fd0699222bb3fdef"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TOOL-05",
+  "title": "fixture",
+  "story": "motion",
+  "stages": [],
+  "durationMs": 800,
+  "scope": "Moving sphere, orbit bounds, and blue/mint swatches; frame/time copy excluded.",
+  "checks": [
+    {
+      "op": "fixture"
+    }
+  ],
+  "relatedIds": [
+    "C-FIXTURE-01",
+    "C-FIXTURE-02"
+  ],
+  "source": {
+    "path": "visual/workspace.md",
+    "sha256": "a3b5ee63661eb7943f505814898bbfa1794d41c2699f542706b70f7bb295a3ce"
+  }
+}

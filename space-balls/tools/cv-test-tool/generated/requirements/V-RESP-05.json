@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "V-RESP-05",
+  "title": "occlusion/layout limits",
+  "story": "space-balls",
+  "stages": [],
+  "durationMs": 0,
+  "scope": "Visible control bounds and pixel visibility; pointer reachability excluded.",
+  "checks": [
+    {
+      "op": "layout"
+    }
+  ],
+  "relatedIds": [
+    "C-RESULT-03",
+    "C-INPUT-07"
+  ],
+  "source": {
+    "path": "visual/responsive.md",
+    "sha256": "93e470bf429bf3b9c49b4b310d455ed02c5e6464a8f4073578a3395a334a6e82"
+  }
+}

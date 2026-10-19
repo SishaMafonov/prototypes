@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-02",
+  "title": "physical rings",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Quiet-ring annulus color support and concentric geometry.",
+  "checks": [
+    {
+      "op": "rings"
+    }
+  ],
+  "relatedIds": [
+    "C-PLANET-04"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}

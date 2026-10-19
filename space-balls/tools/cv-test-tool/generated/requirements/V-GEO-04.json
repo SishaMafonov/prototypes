@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-GEO-04",
+  "title": "right-side mirroring",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Mirrored right-side artwork and offsets.",
+  "checks": [
+    {
+      "op": "planets",
+      "side": 1
+    }
+  ],
+  "relatedIds": [
+    "C-PLANET-02"
+  ],
+  "source": {
+    "path": "visual/geometry.md",
+    "sha256": "b6c04cdefad321c665633ee879c8373976d8048d475cf0ad8b4f9d8c318d636c"
+  }
+}

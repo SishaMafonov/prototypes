@@ -1,0 +1,1119 @@
+{
+  "schemaVersion": 1,
+  "suites": [
+    "space-balls",
+    "motion",
+    "workspace"
+  ],
+  "templates": [
+    {
+      "id": "planet-earth",
+      "source": "src/assets/planets.png",
+      "sourceRect": [
+        0,
+        0,
+        543,
+        724
+      ],
+      "width": 543,
+      "height": 724,
+      "bodyCenter": [
+        288.5,
+        356
+      ],
+      "bodyRadius": 249,
+      "gameAspect": 0.75,
+      "sourceHash": "0a9f0ff6fb77943c42b53e043e27004ec60aefa180e367149f5b23cd28d64143",
+      "template": "templates/planet-earth.png",
+      "mask": "templates/planet-earth-mask.png",
+      "maskPolicy": {
+        "minAlpha": 250,
+        "radiusFactor": 0.7,
+        "format": "RGB binary PNG; convert to CV_8UC1"
+      },
+      "templateHash": "70ac8d2aea3ea3332d59932ca34a406e524fa71d23f38e4f00c8fb184e7d81cb",
+      "maskHash": "7aed14e38eca51fa26e0d9f1d143c4062180393b14d27261099bc0bd54c51933",
+      "mat": {
+        "type": "CV_8UC1",
+        "decode": "RGBA2GRAY"
+      },
+      "maskMat": {
+        "type": "CV_8UC1",
+        "resize": "INTER_NEAREST"
+      }
+    },
+    {
+      "id": "planet-jupiter",
+      "source": "src/assets/planets.png",
+      "sourceRect": [
+        543,
+        0,
+        543,
+        724
+      ],
+      "width": 543,
+      "height": 724,
+      "bodyCenter": [
+        276.5,
+        355
+      ],
+      "bodyRadius": 249,
+      "gameAspect": 0.75,
+      "sourceHash": "0a9f0ff6fb77943c42b53e043e27004ec60aefa180e367149f5b23cd28d64143",
+      "template": "templates/planet-jupiter.png",
+      "mask": "templates/planet-jupiter-mask.png",
+      "maskPolicy": {
+        "minAlpha": 250,
+        "radiusFactor": 0.7,
+        "format": "RGB binary PNG; convert to CV_8UC1"
+      },
+      "templateHash": "234e7da4c916cf77ad4c8bf57c6c5d8e018469644cb890a54ad0bea1cbbe59bd",
+      "maskHash": "1470fdf12185bdeceabb5164de1c259a86aadbd2caba4fd6c3dba6599982f18e",
+      "mat": {
+        "type": "CV_8UC1",
+        "decode": "RGBA2GRAY"
+      },
+      "maskMat": {
+        "type": "CV_8UC1",
+        "resize": "INTER_NEAREST"
+      }
+    },
+    {
+      "id": "planet-lava",
+      "source": "src/assets/planets.png",
+      "sourceRect": [
+        1086,
+        0,
+        543,
+        724
+      ],
+      "width": 543,
+      "height": 724,
+      "bodyCenter": [
+        267,
+        356
+      ],
+      "bodyRadius": 251.5,
+      "gameAspect": 0.75,
+      "sourceHash": "0a9f0ff6fb77943c42b53e043e27004ec60aefa180e367149f5b23cd28d64143",
+      "template": "templates/planet-lava.png",
+      "mask": "templates/planet-lava-mask.png",
+      "maskPolicy": {
+        "minAlpha": 250,
+        "radiusFactor": 0.7,
+        "format": "RGB binary PNG; convert to CV_8UC1"
+      },
+      "templateHash": "52bab5f22e98ed0ddf1f6a536d8993fc5b88af03f8d1f7459beb2a6d6865c53e",
+      "maskHash": "54ad58db5e517b46fe65648a1857fe4c47134f36f087076775bf52d137d2ed10",
+      "mat": {
+        "type": "CV_8UC1",
+        "decode": "RGBA2GRAY"
+      },
+      "maskMat": {
+        "type": "CV_8UC1",
+        "resize": "INTER_NEAREST"
+      }
+    },
+    {
+      "id": "planet-ice",
+      "source": "src/assets/planets.png",
+      "sourceRect": [
+        1629,
+        0,
+        543,
+        724
+      ],
+      "width": 543,
+      "height": 724,
+      "bodyCenter": [
+        257.5,
+        356
+      ],
+      "bodyRadius": 250,
+      "gameAspect": 0.75,
+      "sourceHash": "0a9f0ff6fb77943c42b53e043e27004ec60aefa180e367149f5b23cd28d64143",
+      "template": "templates/planet-ice.png",
+      "mask": "templates/planet-ice-mask.png",
+      "maskPolicy": {
+        "minAlpha": 250,
+        "radiusFactor": 0.7,
+        "format": "RGB binary PNG; convert to CV_8UC1"
+      },
+      "templateHash": "e89ef4984108b35c05f611dd4023d309210c948f2c660fcf9f8ef9aa4bf34b9e",
+      "maskHash": "d09dabcc30989ab16a751fca46b0b3d197713b2a2762727afc6a792798ebcfee",
+      "mat": {
+        "type": "CV_8UC1",
+        "decode": "RGBA2GRAY"
+      },
+      "maskMat": {
+        "type": "CV_8UC1",
+        "resize": "INTER_NEAREST"
+      }
+    },
+    {
+      "id": "asteroid",
+      "source": "src/assets/ball.png",
+      "sourceRect": [
+        248,
+        156,
+        912,
+        880
+      ],
+      "width": 912,
+      "height": 880,
+      "bodyCenter": [
+        456,
+        440
+      ],
+      "bodyRadius": 440,
+      "gameAspect": 1,
+      "sourceHash": "9e66a216ec90977df59841f2c12694a1594a0f380d09746d2843cd9ce7abe11a",
+      "template": "templates/asteroid.png",
+      "mask": "templates/asteroid-mask.png",
+      "maskPolicy": {
+        "minAlpha": 250,
+        "radiusFactor": 0.7,
+        "format": "RGB binary PNG; convert to CV_8UC1"
+      },
+      "templateHash": "3a34a4824e4d83aa5d2226625294e3cd09360896448924bd68b264ba9d429dae",
+      "maskHash": "fc8ec2e9e6343939d368186656ffdccb667ffcf9b632d2d6a6dc720dcbdaf474",
+      "mat": {
+        "type": "CV_8UC1",
+        "decode": "RGBA2GRAY"
+      },
+      "maskMat": {
+        "type": "CV_8UC1",
+        "resize": "INTER_NEAREST"
+      }
+    }
+  ],
+  "defaults": {
+    "geometry": {
+      "court": [
+        44,
+        1629,
+        1672,
+        40,
+        887,
+        941
+      ],
+      "sizes": {
+        "jupiter": 0.4,
+        "earth": 0.3,
+        "small": 0.15,
+        "goal": 0.15,
+        "ballRadius": 0.025
+      },
+      "gap": 0.04,
+      "verticalSeparation": 2.1,
+      "ringScales": {
+        "Earth": 1.4,
+        "Jupiter": 1.15,
+        "Lava": 1.7,
+        "Ice": 1.7
+      }
+    },
+    "thresholds": {
+      "maxSqdiff": 0.12,
+      "scales": [
+        0.95,
+        1,
+        1.05
+      ],
+      "minMaskVisibility": 0.7,
+      "minTexturePixels": 12,
+      "ringSupport": 0.6,
+      "hueTolerance": 12,
+      "backgroundCorrelation": 0.7,
+      "stableMeanDifference": 2,
+      "minMovementCss": 1
+    }
+  },
+  "background": {
+    "id": "background",
+    "source": "src/assets/background.png",
+    "sha256": "0fb6f93d1a33d4e886c7c0c1f9639a7a975a1cea0ae37841afe39c38426cd7a7"
+  },
+  "represented": [
+    {
+      "id": "C-BALL-02",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-04"
+      ]
+    },
+    {
+      "id": "C-BALL-03",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-05",
+        "V-TIME-02"
+      ]
+    },
+    {
+      "id": "C-GOAL-01",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-01"
+      ]
+    },
+    {
+      "id": "C-GOAL-02",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-01"
+      ]
+    },
+    {
+      "id": "C-GOAL-03",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-03"
+      ]
+    },
+    {
+      "id": "C-GOAL-05",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-01"
+      ]
+    },
+    {
+      "id": "C-PICK-01",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-MENU-01"
+      ]
+    },
+    {
+      "id": "C-PICK-02",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-MENU-01"
+      ]
+    },
+    {
+      "id": "C-PICK-04",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-MENU-02"
+      ]
+    },
+    {
+      "id": "C-PICK-05",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-STAGE-01"
+      ]
+    },
+    {
+      "id": "C-COURT-01",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-RESP-01"
+      ]
+    },
+    {
+      "id": "C-COURT-02",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-06"
+      ]
+    },
+    {
+      "id": "C-COURT-03",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-06"
+      ]
+    },
+    {
+      "id": "C-COURT-04",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-GEO-02"
+      ]
+    },
+    {
+      "id": "C-COURT-05",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-GEO-01"
+      ]
+    },
+    {
+      "id": "C-COURT-07",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-06"
+      ]
+    },
+    {
+      "id": "C-HUD-01",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-01"
+      ]
+    },
+    {
+      "id": "C-HUD-02",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-01"
+      ]
+    },
+    {
+      "id": "C-HUD-03",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-STAGE-01",
+        "V-UI-02"
+      ]
+    },
+    {
+      "id": "C-HUD-04",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-02"
+      ]
+    },
+    {
+      "id": "C-RESULT-02",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-05"
+      ]
+    },
+    {
+      "id": "C-RESULT-03",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-RESP-05",
+        "V-UI-05"
+      ]
+    },
+    {
+      "id": "C-RESULT-04",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-05"
+      ]
+    },
+    {
+      "id": "C-INPUT-05",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-04"
+      ]
+    },
+    {
+      "id": "C-INPUT-06",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-06"
+      ]
+    },
+    {
+      "id": "C-INPUT-07",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-RESP-05",
+        "V-UI-03"
+      ]
+    },
+    {
+      "id": "C-MATCH-05",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-04"
+      ]
+    },
+    {
+      "id": "C-PLANET-01",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-01"
+      ]
+    },
+    {
+      "id": "C-PLANET-02",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-01",
+        "V-GEO-04"
+      ]
+    },
+    {
+      "id": "C-PLANET-03",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-GEO-02"
+      ]
+    },
+    {
+      "id": "C-PLANET-04",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-ART-02",
+        "V-GEO-03"
+      ]
+    },
+    {
+      "id": "C-PLANET-10",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-UI-04"
+      ]
+    },
+    {
+      "id": "C-HARNESS-01",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TOOL-01"
+      ]
+    },
+    {
+      "id": "C-HARNESS-05",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TOOL-03"
+      ]
+    },
+    {
+      "id": "C-HARNESS-07",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TOOL-01"
+      ]
+    },
+    {
+      "id": "C-FIXTURE-01",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TOOL-05"
+      ]
+    },
+    {
+      "id": "C-FIXTURE-02",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TOOL-05"
+      ]
+    },
+    {
+      "id": "I-FLOW-05",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-TIME-04"
+      ]
+    },
+    {
+      "id": "I-PHYSICS-02",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests.",
+      "by": [
+        "V-GEO-03"
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "id": "V-MENU-03",
+      "source": "visual/checks.md",
+      "reason": "Loading/error copy and disabled controls are DOM/E2E assertions."
+    },
+    {
+      "id": "V-TEXT-01",
+      "source": "visual/copy.md",
+      "reason": "Exact text/semantic assertions are delegated to DOM/E2E tools."
+    },
+    {
+      "id": "V-TEXT-02",
+      "source": "visual/copy.md",
+      "reason": "Exact text/semantic assertions are delegated to DOM/E2E tools."
+    },
+    {
+      "id": "V-TEXT-03",
+      "source": "visual/copy.md",
+      "reason": "Exact text/semantic assertions are delegated to DOM/E2E tools."
+    },
+    {
+      "id": "V-TEXT-04",
+      "source": "visual/copy.md",
+      "reason": "Exact text/semantic assertions are delegated to DOM/E2E tools."
+    },
+    {
+      "id": "V-RESP-02",
+      "source": "visual/responsive.md",
+      "reason": "DPR/backing-store comparison across browser contexts belongs to E2E."
+    },
+    {
+      "id": "V-RESP-03",
+      "source": "visual/responsive.md",
+      "reason": "Resolution-floor policy is enforced by each visual operator, not a standalone assertion."
+    },
+    {
+      "id": "V-RESP-04",
+      "source": "visual/responsive.md",
+      "reason": "Focus ownership and keyboard/pointer behavior belong to E2E."
+    },
+    {
+      "id": "V-RESP-06",
+      "source": "visual/responsive.md",
+      "reason": "Accessibility names, live regions, and modal semantics are DOM/E2E assertions."
+    },
+    {
+      "id": "C-AUDIO-01",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-02",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-03",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-04",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-05",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-06",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-07",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-08",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-AUDIO-09",
+      "source": "components/audio.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BALL-01",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BALL-04",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-GOAL-04",
+      "source": "components/ball-goals.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BOOT-01",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BOOT-02",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BOOT-03",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PICK-03",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PICK-06",
+      "source": "components/boot-selection.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-01",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-02",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-03",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-04",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-05",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-06",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-07",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-08",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CAPTURE-09",
+      "source": "components/capture.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-COURT-06",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-COURT-08",
+      "source": "components/court.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-RESULT-01",
+      "source": "components/hud-result.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-INPUT-01",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-INPUT-02",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-INPUT-03",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-INPUT-04",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-INPUT-08",
+      "source": "components/input.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-01",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-02",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-03",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-04",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-06",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-07",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-08",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-MATCH-09",
+      "source": "components/match.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PLANET-05",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PLANET-06",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PLANET-07",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PLANET-08",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-PLANET-09",
+      "source": "components/planets.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CV-01",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CV-02",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CV-03",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CV-04",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CV-05",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BUILD-01",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BUILD-02",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-BUILD-03",
+      "source": "components/runtime-build.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CONVERT-01",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CONVERT-02",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CONVERT-03",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-CONVERT-04",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-01",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-02",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-03",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-04",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-05",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-06",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-07",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-SUITE-08",
+      "source": "components/visual-validation.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-HARNESS-02",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-HARNESS-03",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-HARNESS-04",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "C-HARNESS-06",
+      "source": "components/workspace.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-01",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-02",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-03",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-04",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-06",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-07",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-FLOW-08",
+      "source": "integrations/game-flow.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-01",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-02",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-03",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-04",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-05",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-06",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-07",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-08",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-INPUT-09",
+      "source": "integrations/input-lifecycle.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-01",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-03",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-04",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-05",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-06",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-07",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-PHYSICS-08",
+      "source": "integrations/physics-render.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-01",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-02",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-03",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-04",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-05",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-06",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-07",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-08",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    },
+    {
+      "id": "I-TOOL-09",
+      "source": "integrations/tool-pipeline.md",
+      "reason": "Component/integration behavior delegated to unit, integration, and E2E tests."
+    }
+  ]
+}

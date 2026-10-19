@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CV Test Tool · Space Balls</title>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="#space-balls"><span class="brand-mark" aria-hidden="true">◫</span><span>CV Lab<small>SPACE BALLS / TOOLS</small></span></a>
+      <p class="nav-heading">WORKSPACE</p>
+      <nav aria-label="Test pages">
+        <p class="nav-group">Game</p>
+        <a class="story-link" href="#space-balls" data-story="space-balls"><span aria-hidden="true">◉</span> Space Balls</a>
+        <p class="nav-group">Fixtures</p>
+        <a class="story-link" href="#motion" data-story="motion"><span aria-hidden="true">◈</span> Motion study</a>
+      </nav>
+      <div class="sidebar-note"><span class="experimental">EXPERIMENTAL</span><p>A small workspace for capturing visual test frames.</p><span>Local pixels. In memory.</span></div>
+    </aside>
+    <main>
+      <header class="workspace-header"><div><p class="eyebrow">VISUAL REGRESSION / CAPTURE</p><h1>Capture workspace</h1></div><span id="state" class="state">Idle</span></header>
+      <section class="preview-panel" aria-label="Test page preview">
+        <div class="preview-toolbar"><div><strong id="story-title">Space Balls</strong><span id="story-path">/index.html</span></div><div class="preview-actions"><span id="dimensions"></span><button id="reload" type="button" title="Reload preview">↻ <span>Reload</span></button></div></div>
+        <div class="stage"><div class="preview-surface"><iframe id="preview" title="Space Balls test page" allow="microphone 'self'"></iframe></div></div>
+        <div class="capture-toolbar"><div class="count-control"><label for="count">Frames</label><input id="count" type="number" min="1" max="30" value="5" /><span>within 1 second</span></div><div class="capture-actions"><button id="stop" type="button" disabled>Stop sharing</button><button id="capture" class="primary" type="button" disabled><span aria-hidden="true">⊙</span> Capture frames</button></div></div>
+      </section>
+      <p id="status" class="status" role="status">Loading preview…</p>
+      <p class="capture-hint">On first capture, select <strong>This Tab</strong> in the browser picker. Only the preview area is saved. Desktop Chrome or Edge · localhost or HTTPS.</p>
+      <section id="test-suites" class="test-suites" aria-labelledby="suite-title">
+        <div class="suite-heading"><div><p class="eyebrow">REQUIREMENTS / OPENCV</p><h2 id="suite-title">Visual test suites</h2></div><span id="observed-stage" class="observed-stage">Loading preview</span></div>
+        <div class="suite-toolbar"><label>Suite <select id="suite-select"></select></label><div><button id="reset-results" type="button">Reset results</button><button id="run-suite" class="primary" type="button" disabled>Run suite</button></div></div>
+        <p id="coverage-summary">Coverage 0/0</p><progress id="suite-coverage" max="1" value="0" aria-label="Evaluated visual requirement coverage"></progress>
+        <p id="suite-status" role="status">Loading OpenCV and requirements…</p>
+        <label class="requirement-search">Find a requirement <input id="requirement-filter" type="search" placeholder="ID or name" /></label>
+        <div id="requirement-list" class="requirement-list" aria-label="Visual requirements"></div>
+        <p id="excluded-summary" class="excluded-summary"></p>
+      </section>
+      <section class="results" aria-labelledby="results-title"><div class="results-heading"><div><h2 id="results-title">Captured frames <span id="frame-count">0</span></h2><p id="batch-summary">Ready for your first capture</p></div><button id="clear" type="button" disabled>Clear frames</button></div><div id="frames" class="frames"><div class="empty-state"><span aria-hidden="true">▧</span><p>Your frames will appear here</p><small>Capture a short sequence, then inspect its pixels with OpenCV.</small></div></div></section>
+      <footer><code>window.cvTestTool.captureScreenshot({ count: 5 })</code><span>RGBA ImageData · no files written</span></footer>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

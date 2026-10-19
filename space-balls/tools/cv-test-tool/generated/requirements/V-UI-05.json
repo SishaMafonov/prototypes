@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "V-UI-05",
+  "title": "result",
+  "story": "space-balls",
+  "stages": [
+    "S-FINISH-YOU",
+    "S-FINISH-OPP"
+  ],
+  "durationMs": 0,
+  "scope": "Modal silhouette, trophy/glyph pixels, winner color; exact copy excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "result"
+    }
+  ],
+  "relatedIds": [
+    "C-RESULT-02",
+    "C-RESULT-03"
+  ],
+  "source": {
+    "path": "visual/overlays.md",
+    "sha256": "6ef0da8ea786a93d0472e5320cae2d6e956bfa7e011d6552917d3136c214d781"
+  }
+}

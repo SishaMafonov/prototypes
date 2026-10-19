@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TIME-06",
+  "title": "voice/manual response",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 1600,
+  "scope": "Paired drive-off/on pixel response; causal audio and timer claims excluded.",
+  "checks": [
+    {
+      "op": "glow"
+    }
+  ],
+  "relatedIds": [
+    "C-INPUT-06"
+  ],
+  "source": {
+    "path": "visual/temporal.md",
+    "sha256": "e4e9ba18517fd5374520fcce3b2ce07492082725130b9f54fd0699222bb3fdef"
+  }
+}

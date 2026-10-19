@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "V-GEO-01",
+  "title": "capture coordinate normalization",
+  "story": "space-balls",
+  "stages": [],
+  "durationMs": 0,
+  "scope": "Capture normalization and RGBA integrity.",
+  "checks": [
+    {
+      "op": "frame"
+    }
+  ],
+  "relatedIds": [
+    "C-COURT-05"
+  ],
+  "source": {
+    "path": "visual/geometry.md",
+    "sha256": "b6c04cdefad321c665633ee879c8373976d8048d475cf0ad8b4f9d8c318d636c"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "V-MENU-02",
+  "title": "ready composition",
+  "story": "space-balls",
+  "stages": [
+    "S-READY"
+  ],
+  "durationMs": 0,
+  "scope": "Dimmed court and visible start/input composition; copy excluded.",
+  "checks": [
+    {
+      "op": "background"
+    },
+    {
+      "op": "panel",
+      "target": "start"
+    },
+    {
+      "op": "panel",
+      "target": "voice"
+    }
+  ],
+  "relatedIds": [
+    "C-PICK-04"
+  ],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

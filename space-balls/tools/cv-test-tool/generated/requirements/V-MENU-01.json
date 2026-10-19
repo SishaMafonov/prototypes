@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-MENU-01",
+  "title": "selector composition",
+  "story": "space-balls",
+  "stages": [
+    "S-PICK"
+  ],
+  "durationMs": 0,
+  "scope": "Planet, arrow geometry, button color, and ordering; copy excluded.",
+  "checks": [
+    {
+      "op": "picker"
+    }
+  ],
+  "relatedIds": [
+    "C-PICK-01",
+    "C-PICK-02"
+  ],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

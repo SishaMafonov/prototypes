@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "V-STAGE-01",
+  "title": "countdown",
+  "story": "space-balls",
+  "stages": [
+    "S-COUNT-READY",
+    "S-COUNT-STEADY",
+    "S-COUNT-GO"
+  ],
+  "durationMs": 0,
+  "scope": "Visible countdown overlays; obscured field and exact words excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "round"
+    },
+    {
+      "op": "panel",
+      "target": "hud"
+    },
+    {
+      "op": "panel",
+      "target": "voice"
+    }
+  ],
+  "relatedIds": [
+    "C-PICK-05",
+    "C-HUD-03"
+  ],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

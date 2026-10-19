@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TOOL-01",
+  "title": "navigation and preview",
+  "story": "workspace",
+  "stages": [],
+  "durationMs": 0,
+  "scope": "Requires a full-workspace acquisition source.",
+  "naReason": "Workspace chrome is outside the iframe stream. Use a dedicated external capture/E2E adapter.",
+  "checks": [],
+  "relatedIds": [
+    "C-HARNESS-01",
+    "C-HARNESS-07"
+  ],
+  "source": {
+    "path": "visual/workspace.md",
+    "sha256": "a3b5ee63661eb7943f505814898bbfa1794d41c2699f542706b70f7bb295a3ce"
+  }
+}

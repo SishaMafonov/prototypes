@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-01",
+  "title": "planet slots",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "One masked texture match per observable slot; occluded slots produce NA.",
+  "checks": [
+    {
+      "op": "planets"
+    }
+  ],
+  "relatedIds": [
+    "C-PLANET-01",
+    "C-PLANET-02"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}
