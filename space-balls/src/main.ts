@@ -8,6 +8,8 @@ import { advanceMatch, createArena, createMatch, roundMessage, scoreStatus, type
 import { createPlanetField, planetDefinitions, planetNames, type FieldPlanet, type PlanetName } from './planets';
 import { MicrophoneInput } from './microphone';
 
+declare const __BROWSER_TEST__: boolean;
+
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('Missing app element');
 
@@ -603,3 +605,20 @@ watchPixelRatio();
 updateSelection();
 resizeCanvas();
 requestAnimationFrame(animate);
+
+// Only the dedicated browser-test build exposes controlled fixtures. Vite removes
+// this entire branch from ordinary dev/production builds, including the API name.
+if (typeof __BROWSER_TEST__ !== 'undefined' && __BROWSER_TEST__) {
+  Object.defineProperty(window, '__spaceBallsTest', { value: Object.freeze({
+    snapshot: () => structuredClone({ state, selectedPlanet: planetNames[selectedPlanet], match,
+      playerDrive, microphone: { state: microphone.state, level: microphone.level } }),
+    arrange: (fixture: Partial<Match>) => {
+      if (!match) throw new Error('Start a match before arranging a browser fixture');
+      Object.assign(match, structuredClone(fixture));
+      interfaceKey = '';
+      syncMatchInterface();
+      syncVoiceControls();
+      render();
+    },
+  }) });
+}

@@ -1,6 +1,7 @@
 # Coverage, limitations, and next implementation boundary
 Requirements reflect the reviewed sources in [provenance.json](provenance.json).
-Manual visual projections are executable; no game-state hooks or approved baselines are added.
+Manual CV projections and browser screenshot regressions are executable. Controlled
+fixtures exist only in the separate browser-test build; normal builds omit them.
 
 ## Existing evidence
 | Area | Evidence present |
@@ -18,10 +19,13 @@ Manual visual projections are executable; no game-state hooks or approved baseli
 | adapter with real source art | test/vision-assets.probe.mjs; planted positives and negatives |
 | structural dependency/call/state graphs | [tests/struct](../tests/struct/README.md); requirement-linked AST checks, deterministic phase walks, negative controls |
 | game scene graph and DOM composition | [tests/scene](../tests/scene/README.md); real renderer/handlers, recorded canvas scopes, 11 stages, viewport/DPR fixtures, input/status/modal checks |
+| production browser journeys | [browser E2E](../tests/browser/README.md); real assets/DOM/layout/input, errors, permission denial and workspace navigation |
+| browser visual regressions | Playwright real raster baselines; explicit update command, frozen clock/RNG, responsive profiles and DPR |
+| controlled browser integration | real net collisions, score/modal/replay synchronization, browser focus and audio cleanup |
 
 ## Work still required for live visual validation
 - Complete remaining semantic/unsupported projections with dedicated testing adapters.
-- Controlled browser stages, clock/RNG, score/ball/net injection or equivalent fixtures.
+- Extend browser coverage beyond current Chromium fixtures and reviewed baseline profiles.
 - Add controlled-state metadata beyond the current stage/viewport/overlay observations.
 - Calibrate candidate thresholds using real captured positives and negative controls.
 - Establish DOM/logic/media evidence adapters for non-pixel assertions.

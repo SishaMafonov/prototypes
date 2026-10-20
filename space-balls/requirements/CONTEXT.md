@@ -37,7 +37,8 @@ OpenCV alone does not provide OCR, microphone permission evidence, or game-state
 
 ## Boundaries
 The [manual runner](../tools/cv-test-tool/SUITES.md) executes explicit OpenCV mappings.
-No test-state injection API, seeded browser game, or OCR is provided.
+The normal game has no fixture API or OCR. A separate browser-test build exposes
+controlled match fixtures; [browser tests](../tests/browser/README.md) seed RNG/clock.
 Five frames cover <1s after stream setup; they cannot prove a complete 3s countdown.
 The manual runner collects repeated bursts for configured longer sequence checks.
 Win/deuce/goal fixtures need controlled setup; normal random play is not a fixture.

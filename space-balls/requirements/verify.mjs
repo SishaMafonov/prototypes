@@ -45,7 +45,7 @@ for (const record of catalog) {
   assert.deepEqual(record.ids, actual, 'Incorrect catalog topic mapping: ' + record.path);
 }
 const currentSources = ['src', 'tools', 'test', 'tests'].flatMap(name => walk(join(project, name)));
-for (const name of ['GAME_RULES.md', 'index.html', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts']) {
+for (const name of ['GAME_RULES.md', 'index.html', 'package.json', 'package-lock.json', 'tsconfig.json', 'vite.config.ts', 'playwright.config.mjs']) {
   currentSources.push(join(project, name));
 }
 assert.deepEqual(new Set(currentSources.map(path => relative(project, path).replaceAll('\\', '/'))),

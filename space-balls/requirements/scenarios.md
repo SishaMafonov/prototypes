@@ -1,6 +1,6 @@
 # Scenario setup and run windows
-Current browser game has no seeded/state-injection API. Steps marked CONTROLLED
-describe fixtures needed by a future runner, not public APIs that exist today.
+The normal browser game has no seeded/state-injection API. Steps marked CONTROLLED
+use the separate [browser-test build](../tests/browser/README.md), not public APIs.
 Start with [CONTEXT](CONTEXT.md), [stages](visual/stages.md), [translation](translation.md).
 
 | Scenario | Setup | Window / evidence |

@@ -1,0 +1,69 @@
+<testsuites id="" name="" tests="24" failures="0" skipped="0" errors="0" time="154.043505">
+<testsuite name="e2e.spec.mjs" timestamp="2026-10-20T15:53:56.671Z" hostname="e2e" tests="6" failures="0" skipped="0" time="48.529" errors="0">
+<testcase name="C-BOOT-02, C-PICK-02, C-PICK-05, I-FLOW-03: production: keyboard selection → ready → countdown → play" classname="e2e.spec.mjs" time="10.782">
+</testcase>
+<testcase name="C-INPUT-01, C-INPUT-02, C-INPUT-04, I-INPUT-02: production: mouse capture and Space boost release without microphone input" classname="e2e.spec.mjs" time="12.151">
+</testcase>
+<testcase name="C-BOOT-03: production: a failed artwork request blocks Start and reload recovers" classname="e2e.spec.mjs" time="2.955">
+</testcase>
+<testcase name="C-AUDIO-05, C-INPUT-08: production: browser microphone failure keeps the manual game playable" classname="e2e.spec.mjs" time="8.469">
+<properties>
+<property name="native-capture-error" value="NotSupportedError">
+</property>
+</properties>
+</testcase>
+<testcase name="V-RESP-01, V-RESP-02, V-RESP-05: production: portrait and short resizing preserves reachable controls and backing size" classname="e2e.spec.mjs" time="2.726">
+</testcase>
+<testcase name="C-HARNESS-01, C-CV-03, I-INPUT-09: production: workspace loads WASM, navigates stories, and focuses the game iframe" classname="e2e.spec.mjs" time="11.446">
+</testcase>
+</testsuite>
+<testsuite name="integration.spec.mjs" timestamp="2026-10-20T15:53:56.671Z" hostname="browser-integration" tests="7" failures="0" skipped="0" time="95.191" errors="0">
+<testcase name="C-GOAL-04, I-FLOW-04, I-FLOW-05: controlled browser: net 0 → score → goal hold → fresh countdown" classname="integration.spec.mjs" time="15.252">
+</testcase>
+<testcase name="C-GOAL-04, I-FLOW-04, I-FLOW-05: controlled browser: net 1 → score → goal hold → fresh countdown" classname="integration.spec.mjs" time="15.166">
+</testcase>
+<testcase name="I-FLOW-06, I-FLOW-07, C-RESULT-04, V-RESP-06: controlled browser: winner 0, native modal keyboard containment, Escape persistence and replay" classname="integration.spec.mjs" time="14.855">
+</testcase>
+<testcase name="I-FLOW-06, I-FLOW-07, C-RESULT-04, V-RESP-06: controlled browser: winner 1, native modal keyboard containment, Escape persistence and replay" classname="integration.spec.mjs" time="16.62">
+</testcase>
+<testcase name="C-MATCH-04, I-FLOW-08: controlled browser: deuce → match point → deuce without a winner modal" classname="integration.spec.mjs" time="12.333">
+</testcase>
+<testcase name="C-AUDIO-08, C-RESULT-01: controlled browser: a winning collision releases native Web Audio fixture tracks" classname="integration.spec.mjs" time="10.281">
+</testcase>
+<testcase name="C-AUDIO-05, C-INPUT-08, V-TEXT-03: controlled browser: permission rejection projects exact denied copy and preserves Boost" classname="integration.spec.mjs" time="10.684">
+</testcase>
+</testsuite>
+<testsuite name="visual.spec.mjs" timestamp="2026-10-20T15:53:56.671Z" hostname="visual" tests="11" failures="0" skipped="0" time="103.12" errors="0">
+<testcase name="C-BOOT-02, C-BOOT-03, V-TEXT-01: visual: loading gate and artwork error" classname="visual.spec.mjs" time="4.572">
+</testcase>
+<testcase name="V-MENU-01, C-PICK-01: visual: all four real planet picker sprites" classname="visual.spec.mjs" time="7.05">
+</testcase>
+<testcase name="V-MENU-02, V-STAGE-01: visual: ready and all three countdown overlays" classname="visual.spec.mjs" time="7.261">
+</testcase>
+<testcase name="V-STAGE-02, C-INPUT-05, C-BALL-03: visual: playing field, tail, selected ring and manual drive glow" classname="visual.spec.mjs" time="9.603">
+</testcase>
+<testcase name="V-STAGE-03, V-UI-03, I-FLOW-08: visual: scoring hold, deuce, and match-point HUD" classname="visual.spec.mjs" time="10.08">
+</testcase>
+<testcase name="V-STAGE-04, C-RESULT-02: visual: winner 0 final modal and backdrop" classname="visual.spec.mjs" time="8.361">
+</testcase>
+<testcase name="V-STAGE-04, C-RESULT-02: visual: winner 1 final modal and backdrop" classname="visual.spec.mjs" time="10.06">
+</testcase>
+<testcase name="V-RESP-01, V-RESP-05: visual: portrait picker, ready, play, result with reachable controls" classname="visual.spec.mjs" time="8.857">
+</testcase>
+<testcase name="V-RESP-01, V-RESP-05: visual: short picker, ready, play, result with reachable controls" classname="visual.spec.mjs" time="8.931">
+</testcase>
+<testcase name="DPR 2 › V-RESP-02, I-PHYSICS-08: visual: dense backing store preserves logical field geometry" classname="visual.spec.mjs" time="23.742">
+</testcase>
+<testcase name="visual negative control: hiding the rendered canvas is rejected by the actual snapshot matcher" classname="visual.spec.mjs" time="4.603">
+<system-out>
+<![CDATA[
+[[ATTACHMENT|..\..\tests\browser\baselines\win32\visual\landscape-picker-earth.png]]
+
+[[ATTACHMENT|artifacts\visual-visual-negative-con-897dc-the-actual-snapshot-matcher-visual\landscape-picker-earth-actual.png]]
+
+[[ATTACHMENT|artifacts\visual-visual-negative-con-897dc-the-actual-snapshot-matcher-visual\landscape-picker-earth-diff.png]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

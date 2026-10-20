@@ -13,9 +13,10 @@ try {
   // Source archives can still run without Git metadata.
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   define: {
     __REPOSITORY_COMMIT__: JSON.stringify(repositoryCommit),
+    __BROWSER_TEST__: JSON.stringify(mode === 'browser-test'),
   },
   build: {
     rolldownOptions: {
@@ -26,4 +27,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));
