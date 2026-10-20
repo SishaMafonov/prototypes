@@ -16,6 +16,8 @@ Manual visual projections are executable; no game-state hooks or approved baseli
 | masked matching compatibility | assets/probe.mjs, synthetic planted samples |
 | compiler and manual visual engine | test/cv-compiler.test.mjs, test/vision.test.mjs |
 | adapter with real source art | test/vision-assets.probe.mjs; planted positives and negatives |
+| structural dependency/call/state graphs | [tests/struct](../tests/struct/README.md); requirement-linked AST checks, deterministic phase walks, negative controls |
+| game scene graph and DOM composition | [tests/scene](../tests/scene/README.md); real renderer/handlers, recorded canvas scopes, 11 stages, viewport/DPR fixtures, input/status/modal checks |
 
 ## Work still required for live visual validation
 - Complete remaining semantic/unsupported projections with dedicated testing adapters.
