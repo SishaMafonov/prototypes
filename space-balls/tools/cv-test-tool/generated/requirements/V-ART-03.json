@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-03",
+  "title": "goal rectangles",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Colored goal rectangles and size; subpixel mesh is excluded.",
+  "checks": [
+    {
+      "op": "nets"
+    }
+  ],
+  "relatedIds": [
+    "C-GOAL-03"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}

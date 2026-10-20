@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "workspace",
+  "title": "Workspace chrome",
+  "requirementIds": [
+    "V-TOOL-01",
+    "V-TOOL-02",
+    "V-TOOL-03",
+    "V-TOOL-04"
+  ]
+}

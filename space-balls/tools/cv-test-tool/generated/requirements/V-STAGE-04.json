@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-STAGE-04",
+  "title": "finished",
+  "story": "space-balls",
+  "stages": [
+    "S-FINISH-YOU",
+    "S-FINISH-OPP"
+  ],
+  "durationMs": 0,
+  "scope": "Modal geometry and winner color; copy and score semantics excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "result"
+    }
+  ],
+  "relatedIds": [],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

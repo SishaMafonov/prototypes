@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-RESP-01",
+  "title": "landscape, portrait, short",
+  "story": "space-balls",
+  "stages": [],
+  "durationMs": 0,
+  "scope": "Visible controls inside the current viewport; one profile per manual run.",
+  "checks": [
+    {
+      "op": "frame"
+    },
+    {
+      "op": "layout"
+    }
+  ],
+  "relatedIds": [
+    "C-COURT-01"
+  ],
+  "source": {
+    "path": "visual/responsive.md",
+    "sha256": "93e470bf429bf3b9c49b4b310d455ed02c5e6464a8f4073578a3395a334a6e82"
+  }
+}

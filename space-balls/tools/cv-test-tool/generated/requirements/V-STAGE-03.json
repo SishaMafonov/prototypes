@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "V-STAGE-03",
+  "title": "nonwinning goal",
+  "story": "space-balls",
+  "stages": [
+    "S-GOAL"
+  ],
+  "durationMs": 0,
+  "scope": "Goal overlay composition; exact score and timing are separate.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "round"
+    },
+    {
+      "op": "panel",
+      "target": "hud"
+    },
+    {
+      "op": "panel",
+      "target": "voice"
+    }
+  ],
+  "relatedIds": [],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

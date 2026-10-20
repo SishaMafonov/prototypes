@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-GEO-03",
+  "title": "ring body alignment",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Body-centered ring geometry.",
+  "checks": [
+    {
+      "op": "rings"
+    }
+  ],
+  "relatedIds": [
+    "C-PLANET-04",
+    "I-PHYSICS-02"
+  ],
+  "source": {
+    "path": "visual/geometry.md",
+    "sha256": "b6c04cdefad321c665633ee879c8373976d8048d475cf0ad8b4f9d8c318d636c"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "V-GEO-02",
+  "title": "planet coordinate alignment",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Observable planet locations and sizes.",
+  "checks": [
+    {
+      "op": "planets"
+    }
+  ],
+  "relatedIds": [
+    "C-COURT-04",
+    "C-PLANET-03"
+  ],
+  "source": {
+    "path": "visual/geometry.md",
+    "sha256": "b6c04cdefad321c665633ee879c8373976d8048d475cf0ad8b4f9d8c318d636c"
+  }
+}

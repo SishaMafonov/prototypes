@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TIME-02",
+  "title": "asteroid motion and trail",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 800,
+  "scope": "Observed asteroid displacement and rear plume; unobserved collisions excluded.",
+  "checks": [
+    {
+      "op": "motion",
+      "target": "ball"
+    },
+    {
+      "op": "tail"
+    }
+  ],
+  "relatedIds": [
+    "C-BALL-03"
+  ],
+  "source": {
+    "path": "visual/temporal.md",
+    "sha256": "e4e9ba18517fd5374520fcce3b2ce07492082725130b9f54fd0699222bb3fdef"
+  }
+}

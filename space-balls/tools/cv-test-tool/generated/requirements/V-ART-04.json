@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-04",
+  "title": "asteroid core",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "One unoccluded asteroid core.",
+  "checks": [
+    {
+      "op": "ball"
+    }
+  ],
+  "relatedIds": [
+    "C-BALL-02"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}

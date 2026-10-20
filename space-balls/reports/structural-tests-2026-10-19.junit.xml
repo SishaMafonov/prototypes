@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="I-PHYSICS-01, I-PHYSICS-02, I-PHYSICS-03: rules and renderer connect to shared arena, fields, and goals" time="0.059906" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="C-COURT-08: render call order keeps rings behind planets, goals, and asteroid" time="0.015346" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="I-INPUT-01, C-INPUT-04: mic/manual drive merge feeds physics while meter reads mic only" time="0.022598" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="C-PICK-03, C-PICK-05, I-FLOW-01, I-FLOW-07: outer state graph owns match creation and replay cleanup" time="0.026797" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="I-FLOW-06, I-FLOW-08, C-RESULT-01: result and HUD synchronize from Match with cleanup before modal" time="0.029156" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="I-INPUT-06, I-INPUT-07, I-INPUT-08, C-AUDIO-08: hidden, finished, replay, and pagehide connect to audio release" time="0.080293" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="C-AUDIO-02, C-AUDIO-06: microphone graph reads locally and disconnects without speaker output" time="0.004025" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="C-HARNESS-02, C-HARNESS-06, I-TOOL-02, C-SUITE-06: capture, navigation, and analysis retain lifecycle connections" time="0.014602" classname="test" file="C:\git\prototypes\space-balls\tests\struct\connections.test.mjs"/>
+	<testcase name="C-BUILD-03: game runtime stays inside game modules and local art" time="0.004070" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-BOOT-02: all four game artwork nodes are local import dependencies" time="0.000221" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-CV-01, C-CV-02, C-BUILD-03: pinned CV package is behind a lazy ESM adapter" time="0.000765" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-HARNESS-01, C-FIXTURE-01, I-TOOL-01: workspace, game, and motion have separate entry graphs" time="0.000849" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-BUILD-01: Vite includes all three standalone HTML entries" time="0.001886" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-CONVERT-02, C-SUITE-05, I-TOOL-04: workspace reaches capture, generated configs, and pixel analysis" time="0.000389" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="C-BUILD-03, I-PHYSICS-01: runtime graph has no cycles; type-only Arena edge is excluded" time="0.000853" classname="test" file="C:\git\prototypes\space-balls\tests\struct\dependencies.test.mjs"/>
+	<testcase name="graph parser ignores comments, strings, and type-only edges but retains side effects and re-exports" time="0.010406" classname="test" file="C:\git\prototypes\space-balls\tests\struct\graph.test.mjs"/>
+	<testcase name="missing call edge cannot be supplied by a comment or string" time="0.000817" classname="test" file="C:\git\prototypes\space-balls\tests\struct\graph.test.mjs"/>
+	<testcase name="negative control: an indirect game-to-tool import is visible to the boundary check" time="0.164497" classname="test" file="C:\git\prototypes\space-balls\tests\struct\graph.test.mjs"/>
+	<testcase name="negative control: making the adapter eager exposes CV in the initial workspace graph" time="0.082621" classname="test" file="C:\git\prototypes\space-balls\tests\struct\graph.test.mjs"/>
+	<testcase name="negative control: runtime cycles fail with the dependency path" time="0.086764" classname="test" file="C:\git\prototypes\space-balls\tests\struct\graph.test.mjs"/>
+	<testcase name="C-MATCH-01, C-MATCH-02, C-MATCH-03, C-MATCH-05, C-MATCH-06: phase writers match the required directed graph" time="0.031204" classname="test" file="C:\git\prototypes\space-balls\tests\struct\transitions.test.mjs"/>
+	<testcase name="I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 0" time="0.017270" classname="test" file="C:\git\prototypes\space-balls\tests\struct\transitions.test.mjs"/>
+	<testcase name="I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 1" time="0.007258" classname="test" file="C:\git\prototypes\space-balls\tests\struct\transitions.test.mjs"/>
+	<testcase name="C-MATCH-04, I-FLOW-05, I-FLOW-08: deuce cycles remain reachable until two clear points end the graph" time="0.015390" classname="test" file="C:\git\prototypes\space-balls\tests\struct\transitions.test.mjs"/>
+	<testcase name="C-GOAL-04, I-FLOW-04, I-PHYSICS-03: both net-contact edges enter the same scoring state graph" time="0.004832" classname="test" file="C:\git\prototypes\space-balls\tests\struct\transitions.test.mjs"/>
+	<!-- tests 25 -->
+	<!-- suites 0 -->
+	<!-- pass 25 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 657.3219 -->
+</testsuites>

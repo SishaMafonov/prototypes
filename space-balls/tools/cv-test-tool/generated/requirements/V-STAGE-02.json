@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "V-STAGE-02",
+  "title": "ordinary play",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 0,
+  "scope": "Observable playing composition; functional state transitions excluded.",
+  "checks": [
+    {
+      "op": "planets"
+    },
+    {
+      "op": "nets"
+    },
+    {
+      "op": "ball"
+    },
+    {
+      "op": "panel",
+      "target": "hud"
+    },
+    {
+      "op": "panel",
+      "target": "voice"
+    }
+  ],
+  "relatedIds": [],
+  "source": {
+    "path": "visual/checks.md",
+    "sha256": "d392aa67b713f478e57e5092805cd900e305740add8208fabec7ace731d60479"
+  }
+}

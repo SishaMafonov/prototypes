@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-06",
+  "title": "background/court",
+  "story": "space-balls",
+  "stages": [],
+  "durationMs": 0,
+  "scope": "Brightness-invariant matching of unobscured background landmarks.",
+  "checks": [
+    {
+      "op": "background"
+    }
+  ],
+  "relatedIds": [
+    "C-COURT-02",
+    "C-COURT-03",
+    "C-COURT-07"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}

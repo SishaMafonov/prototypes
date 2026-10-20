@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "V-UI-01",
+  "title": "HUD",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY",
+    "S-GOAL",
+    "S-COUNT-READY",
+    "S-COUNT-STEADY",
+    "S-COUNT-GO"
+  ],
+  "durationMs": 0,
+  "scope": "HUD position, visible edges, cyan/pink grouping; exact scores excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "hud"
+    }
+  ],
+  "relatedIds": [
+    "C-HUD-01",
+    "C-HUD-02"
+  ],
+  "source": {
+    "path": "visual/overlays.md",
+    "sha256": "6ef0da8ea786a93d0472e5320cae2d6e956bfa7e011d6552917d3136c214d781"
+  }
+}

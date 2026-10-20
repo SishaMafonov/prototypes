@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "id": "V-ART-05",
+  "title": "tail",
+  "story": "space-balls",
+  "stages": [
+    "S-PLAY"
+  ],
+  "durationMs": 800,
+  "scope": "Warm pixels behind measured core motion.",
+  "checks": [
+    {
+      "op": "tail"
+    }
+  ],
+  "relatedIds": [
+    "C-BALL-03"
+  ],
+  "source": {
+    "path": "visual/artwork.md",
+    "sha256": "54144c54fcf470e8ac94852afff83e563d2973af7fdf1c03da9c8700a92bca9e"
+  }
+}

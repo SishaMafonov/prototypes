@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "V-UI-03",
+  "title": "voice panel",
+  "story": "space-balls",
+  "stages": [
+    "S-READY",
+    "S-PLAY",
+    "S-GOAL",
+    "S-COUNT-READY",
+    "S-COUNT-STEADY",
+    "S-COUNT-GO"
+  ],
+  "durationMs": 0,
+  "scope": "Voice panel bounds, border, and visible control row; semantics excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "voice"
+    }
+  ],
+  "relatedIds": [
+    "C-INPUT-07"
+  ],
+  "source": {
+    "path": "visual/overlays.md",
+    "sha256": "6ef0da8ea786a93d0472e5320cae2d6e956bfa7e011d6552917d3136c214d781"
+  }
+}

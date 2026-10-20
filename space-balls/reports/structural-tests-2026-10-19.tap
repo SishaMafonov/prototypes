@@ -1,0 +1,160 @@
+TAP version 13
+# Subtest: I-PHYSICS-01, I-PHYSICS-02, I-PHYSICS-03: rules and renderer connect to shared arena, fields, and goals
+ok 1 - I-PHYSICS-01, I-PHYSICS-02, I-PHYSICS-03: rules and renderer connect to shared arena, fields, and goals
+  ---
+  duration_ms: 59.9057
+  type: 'test'
+  ...
+# Subtest: C-COURT-08: render call order keeps rings behind planets, goals, and asteroid
+ok 2 - C-COURT-08: render call order keeps rings behind planets, goals, and asteroid
+  ---
+  duration_ms: 15.346
+  type: 'test'
+  ...
+# Subtest: I-INPUT-01, C-INPUT-04: mic/manual drive merge feeds physics while meter reads mic only
+ok 3 - I-INPUT-01, C-INPUT-04: mic/manual drive merge feeds physics while meter reads mic only
+  ---
+  duration_ms: 22.5982
+  type: 'test'
+  ...
+# Subtest: C-PICK-03, C-PICK-05, I-FLOW-01, I-FLOW-07: outer state graph owns match creation and replay cleanup
+ok 4 - C-PICK-03, C-PICK-05, I-FLOW-01, I-FLOW-07: outer state graph owns match creation and replay cleanup
+  ---
+  duration_ms: 26.7965
+  type: 'test'
+  ...
+# Subtest: I-FLOW-06, I-FLOW-08, C-RESULT-01: result and HUD synchronize from Match with cleanup before modal
+ok 5 - I-FLOW-06, I-FLOW-08, C-RESULT-01: result and HUD synchronize from Match with cleanup before modal
+  ---
+  duration_ms: 29.1558
+  type: 'test'
+  ...
+# Subtest: I-INPUT-06, I-INPUT-07, I-INPUT-08, C-AUDIO-08: hidden, finished, replay, and pagehide connect to audio release
+ok 6 - I-INPUT-06, I-INPUT-07, I-INPUT-08, C-AUDIO-08: hidden, finished, replay, and pagehide connect to audio release
+  ---
+  duration_ms: 80.2925
+  type: 'test'
+  ...
+# Subtest: C-AUDIO-02, C-AUDIO-06: microphone graph reads locally and disconnects without speaker output
+ok 7 - C-AUDIO-02, C-AUDIO-06: microphone graph reads locally and disconnects without speaker output
+  ---
+  duration_ms: 4.0251
+  type: 'test'
+  ...
+# Subtest: C-HARNESS-02, C-HARNESS-06, I-TOOL-02, C-SUITE-06: capture, navigation, and analysis retain lifecycle connections
+ok 8 - C-HARNESS-02, C-HARNESS-06, I-TOOL-02, C-SUITE-06: capture, navigation, and analysis retain lifecycle connections
+  ---
+  duration_ms: 14.602
+  type: 'test'
+  ...
+# Subtest: C-BUILD-03: game runtime stays inside game modules and local art
+ok 9 - C-BUILD-03: game runtime stays inside game modules and local art
+  ---
+  duration_ms: 4.0696
+  type: 'test'
+  ...
+# Subtest: C-BOOT-02: all four game artwork nodes are local import dependencies
+ok 10 - C-BOOT-02: all four game artwork nodes are local import dependencies
+  ---
+  duration_ms: 0.221
+  type: 'test'
+  ...
+# Subtest: C-CV-01, C-CV-02, C-BUILD-03: pinned CV package is behind a lazy ESM adapter
+ok 11 - C-CV-01, C-CV-02, C-BUILD-03: pinned CV package is behind a lazy ESM adapter
+  ---
+  duration_ms: 0.7648
+  type: 'test'
+  ...
+# Subtest: C-HARNESS-01, C-FIXTURE-01, I-TOOL-01: workspace, game, and motion have separate entry graphs
+ok 12 - C-HARNESS-01, C-FIXTURE-01, I-TOOL-01: workspace, game, and motion have separate entry graphs
+  ---
+  duration_ms: 0.8491
+  type: 'test'
+  ...
+# Subtest: C-BUILD-01: Vite includes all three standalone HTML entries
+ok 13 - C-BUILD-01: Vite includes all three standalone HTML entries
+  ---
+  duration_ms: 1.8858
+  type: 'test'
+  ...
+# Subtest: C-CONVERT-02, C-SUITE-05, I-TOOL-04: workspace reaches capture, generated configs, and pixel analysis
+ok 14 - C-CONVERT-02, C-SUITE-05, I-TOOL-04: workspace reaches capture, generated configs, and pixel analysis
+  ---
+  duration_ms: 0.389
+  type: 'test'
+  ...
+# Subtest: C-BUILD-03, I-PHYSICS-01: runtime graph has no cycles; type-only Arena edge is excluded
+ok 15 - C-BUILD-03, I-PHYSICS-01: runtime graph has no cycles; type-only Arena edge is excluded
+  ---
+  duration_ms: 0.8529
+  type: 'test'
+  ...
+# Subtest: graph parser ignores comments, strings, and type-only edges but retains side effects and re-exports
+ok 16 - graph parser ignores comments, strings, and type-only edges but retains side effects and re-exports
+  ---
+  duration_ms: 10.406
+  type: 'test'
+  ...
+# Subtest: missing call edge cannot be supplied by a comment or string
+ok 17 - missing call edge cannot be supplied by a comment or string
+  ---
+  duration_ms: 0.8171
+  type: 'test'
+  ...
+# Subtest: negative control: an indirect game-to-tool import is visible to the boundary check
+ok 18 - negative control: an indirect game-to-tool import is visible to the boundary check
+  ---
+  duration_ms: 164.4971
+  type: 'test'
+  ...
+# Subtest: negative control: making the adapter eager exposes CV in the initial workspace graph
+ok 19 - negative control: making the adapter eager exposes CV in the initial workspace graph
+  ---
+  duration_ms: 82.6205
+  type: 'test'
+  ...
+# Subtest: negative control: runtime cycles fail with the dependency path
+ok 20 - negative control: runtime cycles fail with the dependency path
+  ---
+  duration_ms: 86.7638
+  type: 'test'
+  ...
+# Subtest: C-MATCH-01, C-MATCH-02, C-MATCH-03, C-MATCH-05, C-MATCH-06: phase writers match the required directed graph
+ok 21 - C-MATCH-01, C-MATCH-02, C-MATCH-03, C-MATCH-05, C-MATCH-06: phase writers match the required directed graph
+  ---
+  duration_ms: 31.2036
+  type: 'test'
+  ...
+# Subtest: I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 0
+ok 22 - I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 0
+  ---
+  duration_ms: 17.2705
+  type: 'test'
+  ...
+# Subtest: I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 1
+ok 23 - I-FLOW-03, I-FLOW-05, I-FLOW-06, C-MATCH-04, C-MATCH-06: all phase nodes/edges reach terminal winner 1
+  ---
+  duration_ms: 7.2585
+  type: 'test'
+  ...
+# Subtest: C-MATCH-04, I-FLOW-05, I-FLOW-08: deuce cycles remain reachable until two clear points end the graph
+ok 24 - C-MATCH-04, I-FLOW-05, I-FLOW-08: deuce cycles remain reachable until two clear points end the graph
+  ---
+  duration_ms: 15.3895
+  type: 'test'
+  ...
+# Subtest: C-GOAL-04, I-FLOW-04, I-PHYSICS-03: both net-contact edges enter the same scoring state graph
+ok 25 - C-GOAL-04, I-FLOW-04, I-PHYSICS-03: both net-contact edges enter the same scoring state graph
+  ---
+  duration_ms: 4.8321
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 657.3219

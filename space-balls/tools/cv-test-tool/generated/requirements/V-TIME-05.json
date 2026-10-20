@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "V-TIME-05",
+  "title": "finished persistence",
+  "story": "space-balls",
+  "stages": [
+    "S-FINISH-YOU",
+    "S-FINISH-OPP"
+  ],
+  "durationMs": 1600,
+  "scope": "Modal pixel persistence; Escape/New Game behaviors excluded.",
+  "checks": [
+    {
+      "op": "panel",
+      "target": "result"
+    },
+    {
+      "op": "stable",
+      "target": "result"
+    }
+  ],
+  "relatedIds": [
+    "C-RESULT-04"
+  ],
+  "source": {
+    "path": "visual/temporal.md",
+    "sha256": "e4e9ba18517fd5374520fcce3b2ce07492082725130b9f54fd0699222bb3fdef"
+  }
+}
