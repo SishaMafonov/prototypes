@@ -1,0 +1,47 @@
+{
+  "ruleset_id": "fool-house-2026-10-25-v2",
+  "targetRtpPercent": 96,
+  "rounds": 2000000,
+  "seeds": [
+    20261025,
+    857
+  ],
+  "weights": {
+    "low": 14.66,
+    "mid": 10,
+    "high": 70.34,
+    "scatter": 5
+  },
+  "inputFiles": [
+    "room-bonus-validation-a.json",
+    "room-bonus-validation-b.json"
+  ],
+  "totalWagerCents": 200000000,
+  "totalWinCents": 192151280,
+  "rtpPercent": 96.07564,
+  "standardErrorRtpPercentagePoints": 0.0611277572269467,
+  "approximate95PercentInterval": [
+    95.9558295958352,
+    96.19545040416482
+  ],
+  "hitPercent": 88.1421,
+  "winningBatchesPerPaidRound": 2.4842835,
+  "roomGroupsPerPaidRound": 0.6826685,
+  "freeStages": 63,
+  "capStages": 0,
+  "maximumRespinNumber": 1,
+  "maximumRoundWinCents": 1020,
+  "truncatedChains": 0,
+  "source_hashes": {
+    "src/game.ts": "0a0a57ef1716e18fee568d087ff216d48c7f89955b9440e7da01314e54650430",
+    "src/main.ts": "a9e067d013a872828e1d5558d3ef659a1aefae2398297326c5b4d11acddb372c",
+    "src/style.css": "1d2d11f1aab38b5295df2a4e70c8109bd097e3f9394361700d013849ce37ecc7",
+    "tests/game.test.mjs": "53850ab7b979cdfa350ad3b7f73979dc913746d07a44e59d93430ab147c3bf54",
+    "scripts/simulate.mjs": "88fb1217407739e6d67bbd53f0062ace8844a236b5efa872b6b4e5eddf4b4707"
+  },
+  "limitations": [
+    "Prototype Monte Carlo estimate, not certified or exact RTP.",
+    "Approximate interval uses observed sample variance and does not bound unobserved rare multiplier tails.",
+    "No validation run reached stage x3 or x144; free-stage tail behavior is unit-tested, not empirically calibrated."
+  ]
+}

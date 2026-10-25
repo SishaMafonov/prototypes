@@ -2,6 +2,25 @@
 
 Newest changes come first. Keep this history updated so future agents can understand the current behavior and the decisions behind it.
 
+## 2026-10-25 — Room-specific win multipliers and prototype calibration
+
+- User confirmed one independent random multiplier per winning room-specific group, stacked with the Fibonacci stage multiplier, and an approximate 96% RTP target.
+- Added the exact 30-slot bag: fourteen x2, eight x3, five x5, three x8. Award = count-paytable group amount × stage × room. Other-room groups receive no room roll. Already-collected tiers remain eligible on later wins; Scatter and sub-threshold matches do not qualify.
+- Added a separate 1100 ms teal room-bonus reveal between winning highlight and removal, with one row per qualifying group and before/after amounts. Highlight matching member cells; preserve readable static reveal under reduced motion. Credit only the final total once after removal.
+- Calibrated static weights to Low 14.66%, Mid 10%, High 70.34%, Scatter 5%, retaining the paytable, uniform regular indexes, and stage/collection rules. High is deliberately common; this shorter-chain profile was selected over a tested Low-heavy alternative.
+- Added `npm run simulate` using production math helpers and seeded complete-round simulations. Two fresh million-round validations yielded combined 96.07564% RTP (approximate 95% interval 95.9558–96.1955%) and 88.1421% hits versus 62.929% in the old-game sample. Only 63 first free stages were observed; later Fibonacci tails are not empirically calibrated. See `docs/game-rules/07-calibration.md` and raw JSON studies.
+- Updated the agent-readable rules to v2, including room-roll branches, ten states, accounting examples, and calibration evidence. Added three room-multiplier regression tests (15 tests total).
+- Verification: all 15 tests and the final production build passed. Desktop and 440 × 956 browser checks showed independent x2/x3/x8 group reveals, locked input, exact 0.97 final credit, and the subsequent free stage at x2; no console warnings/errors. The temporary fixture and both preview servers were removed/stopped. Validated seven rules modules, 106 case IDs, 44 links, five source fingerprints, and `git diff --check`.
+
+## 2026-10-25 — Detailed agent-readable rules reference
+
+- Audited current runtime math, sequencing, accounting, presentation, and failure branches. Added `GAME_RULES.md` as a compact entry point with a topic/module catalogue.
+- Added six self-contained modules in `docs/game-rules/` covering math, round flow, stages, accounting, runtime/UI/errors, and market-analysis handoff. Each has a context packet, stable branch IDs, source-function references, and explicit edge cases.
+- Added `docs/game-rules/rules.json` for machine-readable facts, module routing, and raw-source SHA-256 fingerprints at commit `39435f59cd107d714a2fb15a807700c57feff1cd`.
+- Documented unpaid preview, nonpaying Scatter, stage-completion priority over refill, capped multiplier with uncapped chain length, observed-versus-expected RTP, reset/error semantics, and current feature gaps. No external market research or new balance/RTP claim is included.
+- Updated agent instructions to read the compact rules/index and relevant history/modules instead of loading the entire change history. No gameplay, image, or UI code changed.
+- Verification: all 12 existing math tests passed. Parsed JSON facts match runtime grid/bet/weights/paytable/threshold/multiplier constants and all nine state names. Checked six modules, all 91 documented case IDs, 29 local Markdown links, four source fingerprints, and `git diff --check`. The entry point is 699 whitespace-delimited words; detailed context is loaded by topic.
+
 ## 2026-10-25 — Mid and High tier color overlays
 
 - Added a subtle light-red radial wash behind Mid symbols and a light-gold wash behind High symbols, clipped to each reel opening. The artwork remains clear above the translucent tint.

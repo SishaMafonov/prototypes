@@ -1,0 +1,42 @@
+{
+  "study": "completed-paid-round Monte Carlo; not certified RTP",
+  "rounds": 100000,
+  "seed": 42,
+  "weights": {
+    "low": 57,
+    "mid": 23.75,
+    "high": 14.25,
+    "scatter": 5
+  },
+  "roomBonusEnabled": false,
+  "totalWagerCents": 10000000,
+  "totalWinCents": 413430,
+  "rtpPercent": 4.1343,
+  "standardErrorRtpPercentagePoints": 0.0178932846843828,
+  "approximate95PercentInterval": [
+    4.099229162018609,
+    4.16937083798139
+  ],
+  "hitPercent": 62.929,
+  "freeStagesPerPaidRound": 0.00007,
+  "winningBatchesPerPaidRound": 1.15433,
+  "roomGroupsPerPaidRound": 0,
+  "freeStageHistogramByRespinNumberCappedAt10": [
+    0,
+    7,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "capStages": 0,
+  "maximumRoundWinCents": 68,
+  "maximumEvaluations": 13,
+  "maximumRespinNumber": 1,
+  "truncatedChains": 0
+}

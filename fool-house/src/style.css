@@ -111,8 +111,69 @@ canvas:focus-visible {
   font-weight: 500;
 }
 
+.room-bonus-popup {
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: 95%;
+  padding: 0.65em;
+  border: 1px solid #9affe4;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #103d33fa, #071c19fa);
+  color: #effff7;
+  text-align: center;
+  box-shadow: 0 0 25px #67ffd780, inset 0 0 15px #67ffd71a;
+  animation: room-bonus-reveal 1.1s ease-out both;
+}
+
+.room-bonus-title {
+  display: block;
+  margin-bottom: 0.4em;
+}
+
+.room-bonus-list {
+  display: grid;
+  gap: 0.3em;
+}
+
+.room-bonus-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding: 0.25em 0.6em;
+  border-radius: 5px;
+  background: #ffffff0d;
+}
+
+.room-bonus-row > span {
+  text-align: left;
+  font-size: 0.75em;
+  letter-spacing: 0.06em;
+}
+
+.room-bonus-row > strong {
+  color: #a6ffe6;
+  font-size: 1.65em;
+  text-shadow: 0 0 10px #52ffd4;
+}
+
+.room-bonus-row > small {
+  grid-column: 1 / -1;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.7em;
+}
+
+@keyframes room-bonus-reveal {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.65); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+  40%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .multiplier.boosted {
+  .multiplier.boosted,
+  .room-bonus-popup {
     animation: none;
   }
 }

@@ -3,8 +3,15 @@ export const REEL_ROWS = 5;
 export const SYMBOLS_PER_SPRITE = 5;
 export const BET_CENTS = 100;
 export const SYMBOL_TIERS = ['low', 'mid', 'high'] as const;
-// Percentages; regular tiers retain their original 60:25:15 ratio within the remaining 95%.
-export const SYMBOL_WEIGHTS = { low: 57, mid: 23.75, high: 14.25, scatter: 5 } as const;
+// Prototype calibration targets ~96% RTP with the group room bonus; see the recorded study.
+export const SYMBOL_WEIGHTS = { low: 14.66, mid: 10, high: 70.34, scatter: 5 } as const;
+export interface SymbolWeights { low: number; mid: number; high: number; scatter: number }
+export const ROOM_MULTIPLIERS = [
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  3, 3, 3, 3, 3, 3, 3, 3,
+  5, 5, 5, 5, 5,
+  8, 8, 8,
+] as const;
 export const MIN_WIN_COUNT = 5;
 export const PAYTABLE_CENTS = {
   low: { 5: 1, 6: 5, 7: 10 },
@@ -29,19 +36,33 @@ export interface WinGroup {
   cells: CellPosition[];
   winCents: number;
 }
+export interface RoomWinGroup extends WinGroup {
+  roomMultiplier: number;
+  unboostedWinCents: number;
+}
 
-export function drawSymbol(random: () => number = Math.random): ReelSymbol {
+export function drawSymbol(random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol {
   const roll = random();
-  if (roll >= (100 - SYMBOL_WEIGHTS.scatter) / 100) return { tier: 'scatter', index: 0 };
-  const tier: SymbolTier = roll < SYMBOL_WEIGHTS.low / 100 ? 'low'
-    : roll < (SYMBOL_WEIGHTS.low + SYMBOL_WEIGHTS.mid) / 100 ? 'mid' : 'high';
+  if (roll >= (100 - weights.scatter) / 100) return { tier: 'scatter', index: 0 };
+  const tier: SymbolTier = roll < weights.low / 100 ? 'low'
+    : roll < (weights.low + weights.mid) / 100 ? 'mid' : 'high';
   return { tier, index: Math.floor(random() * SYMBOLS_PER_SPRITE) };
 }
 
 // Row-major board. Each cell draws independently from fifteen regular icons plus one scatter.
-export function generateBoard(random: () => number = Math.random): ReelSymbol[][] {
+export function generateBoard(random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol[][] {
   return Array.from({ length: REEL_ROWS }, () =>
-    Array.from({ length: REEL_COLUMNS }, () => drawSymbol(random)));
+    Array.from({ length: REEL_COLUMNS }, () => drawSymbol(random, weights)));
+}
+
+export function applyRoomMultipliers(
+  wins: WinGroup[], backgroundIndex: number, random: () => number = Math.random,
+): RoomWinGroup[] {
+  return wins.map((win) => {
+    const roomMultiplier = win.symbol.index === backgroundIndex
+      ? ROOM_MULTIPLIERS[Math.floor(random() * ROOM_MULTIPLIERS.length)] : 1;
+    return { ...win, roomMultiplier, unboostedWinCents: win.winCents, winCents: win.winCents * roomMultiplier };
+  });
 }
 
 export function getMultiplier(respinNumber: number): number {
@@ -76,8 +97,8 @@ export function removeWins(board: Board, wins: WinGroup[]): Board {
   return result;
 }
 
-export function refillBoard(board: Board, random: () => number = Math.random): ReelSymbol[][] {
-  return board.map((row) => row.map((symbol) => symbol ?? drawSymbol(random)));
+export function refillBoard(board: Board, random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol[][] {
+  return board.map((row) => row.map((symbol) => symbol ?? drawSymbol(random, weights)));
 }
 
 export function collectWins(

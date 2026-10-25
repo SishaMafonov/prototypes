@@ -6,7 +6,7 @@ import midSymbolsUrl from './assets/symbols/mid.png';
 import highSymbolsUrl from './assets/symbols/high.png';
 import scatterUrl from './assets/symbols/scatter.png';
 import {
-  BET_CENTS, collectWins, findWins, generateBoard, getMultiplier, isCollectionComplete,
+  applyRoomMultipliers, BET_CENTS, collectWins, findWins, generateBoard, getMultiplier, isCollectionComplete,
   REEL_COLUMNS, REEL_ROWS, refillBoard, removeWins, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
 } from './game';
 import type { Board, SymbolKind, SymbolTier } from './game';
@@ -23,6 +23,10 @@ app.innerHTML = `
     <p id="reels-description" class="sr-only"></p>
     <div class="reel-overlay" aria-hidden="true">
       <span class="multiplier">x1</span>
+      <div class="room-bonus-popup" hidden>
+        <strong class="room-bonus-title">Room bonus</strong>
+        <div class="room-bonus-list"></div>
+      </div>
       <div class="stage-popup" hidden>Switching to the next stage<small></small></div>
     </div>
     <section class="hud" aria-label="Game status">
@@ -49,6 +53,9 @@ const collectionDescription = app.querySelector<HTMLParagraphElement>('#collecti
 const reelsDescription = app.querySelector<HTMLParagraphElement>('#reels-description')!;
 const reelOverlay = app.querySelector<HTMLDivElement>('.reel-overlay')!;
 const multiplierBadge = app.querySelector<HTMLSpanElement>('.multiplier')!;
+const roomBonusPopup = app.querySelector<HTMLDivElement>('.room-bonus-popup')!;
+const roomBonusTitle = app.querySelector<HTMLElement>('.room-bonus-title')!;
+const roomBonusList = app.querySelector<HTMLDivElement>('.room-bonus-list')!;
 const stagePopup = app.querySelector<HTMLDivElement>('.stage-popup')!;
 const stageDetail = stagePopup.querySelector('small')!;
 const statSpins = app.querySelector<HTMLElement>('[data-stat="spins"]')!;
@@ -56,7 +63,7 @@ const statRtp = app.querySelector<HTMLElement>('[data-stat="rtp"]')!;
 const statTotalWin = app.querySelector<HTMLElement>('[data-stat="total-win"]')!;
 const statRoundWin = app.querySelector<HTMLElement>('[data-stat="round-win"]')!;
 
-type GameState = 'loading' | 'ready' | 'drawing' | 'winning' | 'removing' | 'cleared'
+type GameState = 'loading' | 'ready' | 'drawing' | 'winning' | 'room-bonus' | 'removing' | 'cleared'
   | 'refilling' | 'switching' | 'error';
 let gameState: GameState = 'loading';
 const session = { spins: 0, totalWagerCents: 0, totalWinCents: 0, roundWinCents: 0 };
@@ -101,6 +108,8 @@ async function requestRound(): Promise<void> {
     setGameState('ready', `Won ${formatWin(session.roundWinCents)} · Tap or click · Bet 1.00`);
     draw();
   } catch (error) {
+    roomBonusPopup.hidden = true;
+    roomBonusCells.clear();
     setGameState('error', 'Round interrupted. Please reload.');
     console.error('Failed to resolve Fool House round:', error);
   }
@@ -153,6 +162,7 @@ let board: Board = [];
 let collected = new Set<SymbolTier>();
 let growingCells = new Set<number>();
 let winningCells = new Set<number>();
+const roomBonusCells = new Map<number, number>();
 let phaseStartedAt = 0;
 let phaseDuration = 1;
 let respinNumber = 0;
@@ -234,7 +244,8 @@ function updateBoardDescription(): void {
 function playPhase(state: GameState, message: string, duration: number): Promise<void> {
   setGameState(state, message);
   phaseStartedAt = performance.now();
-  phaseDuration = reducedMotion.matches && state !== 'switching' ? Math.min(duration, 180) : duration;
+  phaseDuration = reducedMotion.matches && state !== 'switching' && state !== 'room-bonus'
+    ? Math.min(duration, 180) : duration;
   updateBoardDescription();
   draw();
   return new Promise((resolve) => {
@@ -249,12 +260,31 @@ function playPhase(state: GameState, message: string, duration: number): Promise
 
 async function resolveRound(): Promise<void> {
   while (assets) {
-    const wins = findWins(board, multiplier);
-    if (wins.length === 0) return;
-    winningCells = new Set(wins.flatMap((win) => win.cells.map((cell) => cell.row * REEL_COLUMNS + cell.column)));
+    const baseWins = findWins(board, multiplier);
+    if (baseWins.length === 0) return;
+    winningCells = new Set(baseWins.flatMap((win) => win.cells.map((cell) => cell.row * REEL_COLUMNS + cell.column)));
+    const baseAward = baseWins.reduce((sum, win) => sum + win.winCents, 0);
+    await playPhase('winning', `Win ${formatWin(baseAward)} · x${multiplier}`, 550);
+    const wins = applyRoomMultipliers(baseWins, assets.theme.symbolIndex);
+    const boosted = wins.filter((win) => win.roomMultiplier > 1);
     const award = wins.reduce((sum, win) => sum + win.winCents, 0);
-    await playPhase('winning', `Win ${formatWin(award)} · x${multiplier}`, 550);
-    await playPhase('removing', 'Collecting winning symbols…', 240);
+    if (boosted.length > 0) {
+      roomBonusTitle.textContent = `${assets.theme.name} bonus`;
+      roomBonusList.innerHTML = boosted.map((win) => `
+        <div class="room-bonus-row">
+          <span>${win.symbol.tier.toUpperCase()}</span><strong>×${win.roomMultiplier}</strong>
+          <small>${formatWin(win.unboostedWinCents)} → ${formatWin(win.winCents)}</small>
+        </div>
+      `).join('');
+      for (const win of boosted) {
+        for (const cell of win.cells) roomBonusCells.set(cell.row * REEL_COLUMNS + cell.column, win.roomMultiplier);
+      }
+      roomBonusPopup.hidden = false;
+      await playPhase('room-bonus', `Room bonus ${boosted.map((win) => `×${win.roomMultiplier}`).join('/')} · Win ${formatWin(award)}`, 1100);
+      roomBonusPopup.hidden = true;
+      roomBonusCells.clear();
+    }
+    await playPhase('removing', `Collecting ${formatWin(award)}…`, 240);
     board = removeWins(board, wins);
     collected = collectWins(collected, wins, assets.theme.symbolIndex);
     winningCells.clear();
@@ -349,6 +379,7 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
     const progress = reducedMotion.matches || !isGrowing ? 1 : Math.max(0, Math.min(1,
       (elapsed - columnIndex * COLUMN_DELAY - rowIndex * ROW_DELAY) / GROW_DURATION));
     const isWinner = winningCells.has(cellId);
+    const isRoomBonus = gameState === 'room-bonus' && roomBonusCells.has(cellId);
     const removalScale = gameState === 'removing' && isWinner ? 1 - phaseProgress : 1;
     const growth = (1 - (1 - progress) ** 3) * removalScale;
     ctx.save();
@@ -356,7 +387,7 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
     ctx.roundRect(x, y, cellWidth, cellHeight, 16 * scale);
     ctx.clip();
     const isScatter = symbol?.tier === 'scatter';
-    ctx.fillStyle = isWinner ? '#624014ed' : isScatter ? '#2a103ff2' : '#0c080ce6';
+    ctx.fillStyle = isRoomBonus ? '#175648f2' : isWinner ? '#624014ed' : isScatter ? '#2a103ff2' : '#0c080ce6';
     ctx.fillRect(x, y, cellWidth, cellHeight);
     if (symbol && symbol.tier !== 'scatter' && !isWinner) {
       drawTierOverlay(symbol.tier, x, y, cellWidth, cellHeight);
@@ -370,7 +401,7 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
       const iconWidth = frameWidth * iconScale;
       const iconHeight = sprite.height * iconScale;
       if (isWinner) {
-        ctx.shadowColor = '#ffd16c';
+        ctx.shadowColor = isRoomBonus ? '#7affde' : '#ffd16c';
         ctx.shadowBlur = reducedMotion.matches ? 8 : 12 + Math.sin(elapsed / 70) * 6;
       }
       ctx.drawImage(sprite, symbol.index * frameWidth, 0, frameWidth, sprite.height,
@@ -380,7 +411,7 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
     ctx.restore();
     if (isWinner) {
       ctx.save();
-      ctx.strokeStyle = '#ffdc83';
+      ctx.strokeStyle = isRoomBonus ? '#7affde' : '#ffdc83';
       ctx.lineWidth = Math.max(1, 6 * scale);
       ctx.strokeRect(x + 2 * scale, y + 2 * scale, cellWidth - 4 * scale, cellHeight - 4 * scale);
       ctx.restore();

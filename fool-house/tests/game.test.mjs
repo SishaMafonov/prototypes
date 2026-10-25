@@ -1,25 +1,25 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  BET_CENTS, collectWins, drawSymbol, findWins, generateBoard, getMultiplier,
-  isCollectionComplete, refillBoard, removeWins, SYMBOL_WEIGHTS,
+  applyRoomMultipliers, BET_CENTS, collectWins, drawSymbol, findWins, generateBoard, getMultiplier,
+  isCollectionComplete, refillBoard, removeWins, ROOM_MULTIPLIERS, SYMBOL_WEIGHTS,
 } from '../src/game.ts';
 
-test('draw boundaries implement 57% low, 23.75% mid, 14.25% high, and 5% scatter', () => {
+test('draw boundaries implement calibrated 14.66% low, 10% mid, 70.34% high, and 5% scatter', () => {
   for (const [roll, tier] of [
-    [0, 'low'], [0.569999, 'low'], [0.57, 'mid'],
-    [0.807499, 'mid'], [0.8075, 'high'], [0.949999, 'high'],
+    [0, 'low'], [0.146599, 'low'], [0.1466, 'mid'],
+    [0.246599, 'mid'], [0.2466, 'high'], [0.949999, 'high'],
     [0.95, 'scatter'], [0.999999, 'scatter'],
   ]) {
     const samples = [roll, 0];
     assert.deepEqual(drawSymbol(() => samples.shift()), { tier, index: 0 });
     assert.equal(samples.length, tier === 'scatter' ? 1 : 0);
   }
-  assert.equal(Object.values(SYMBOL_WEIGHTS).reduce((sum, weight) => sum + weight, 0), 100);
+  assert.ok(Math.abs(Object.values(SYMBOL_WEIGHTS).reduce((sum, weight) => sum + weight, 0) - 100) < 1e-9);
 });
 
 test('every icon is reachable within every tier, including both ends of each sprite', () => {
-  for (const [roll, tier] of [[0.1, 'low'], [0.7, 'mid'], [0.9, 'high']]) {
+  for (const [roll, tier] of [[0.1, 'low'], [0.2, 'mid'], [0.9, 'high']]) {
     for (let index = 0; index < 5; index++) {
       const samples = [roll, (index + 0.5) / 5];
       assert.deepEqual(drawSymbol(() => samples.shift()), { tier, index });
@@ -53,7 +53,7 @@ test('a seeded sample distributes probability across fifteen regular icons and o
     const symbol = drawSymbol(random);
     counts[symbol.tier][symbol.index]++;
   }
-  for (const [tier, probability] of [['low', 0.114], ['mid', 0.0475], ['high', 0.0285], ['scatter', 0.05]]) {
+  for (const [tier, probability] of [['low', 0.02932], ['mid', 0.02], ['high', 0.14068], ['scatter', 0.05]]) {
     for (const count of counts[tier]) {
       assert.ok(Math.abs(count / samples - probability) < 0.004,
         `${tier}: observed ${count / samples}, expected ${probability}`);
@@ -200,4 +200,45 @@ test('free respins follow Fibonacci from x2 through x144 and stay capped', () =>
   assert.deepEqual(Array.from({ length: 13 }, (_, index) => getMultiplier(index)),
     [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 144, 144]);
   assert.equal(getMultiplier(1000), 144);
+});
+
+test('room multiplier bag preserves all 30 equally likely slots and their duplicate weights', () => {
+  assert.equal(ROOM_MULTIPLIERS.length, 30);
+  assert.deepEqual(Object.fromEntries([2, 3, 5, 8].map((value) =>
+    [value, ROOM_MULTIPLIERS.filter((entry) => entry === value).length])), { 2: 14, 3: 8, 5: 5, 8: 3 });
+  assert.equal(ROOM_MULTIPLIERS.reduce((sum, value) => sum + value, 0), 101);
+  const wins = findWins([Array.from({ length: 5 }, () => symbol('high', 2))], 3);
+  for (let slot = 0; slot < 30; slot++) {
+    const boosted = applyRoomMultipliers(wins, 2, () => (slot + 0.5) / 30);
+    assert.equal(boosted[0].roomMultiplier, ROOM_MULTIPLIERS[slot]);
+    assert.equal(boosted[0].unboostedWinCents, 30);
+    assert.equal(boosted[0].winCents, 30 * ROOM_MULTIPLIERS[slot]);
+  }
+  assert.equal(wins[0].winCents, 30);
+});
+
+test('each matching-room group draws independently; other identities get no bonus or RNG draw', () => {
+  const wins = findWins([
+    Array.from({ length: 5 }, () => symbol('low', 1)),
+    Array.from({ length: 5 }, () => symbol('mid', 1)),
+    Array.from({ length: 6 }, () => symbol('high', 4)),
+  ], 5);
+  const rolls = [0, 0.999999];
+  const boosted = applyRoomMultipliers(wins, 1, () => {
+    assert.ok(rolls.length > 0, 'A non-room group must not draw a bonus');
+    return rolls.shift();
+  });
+  assert.deepEqual(boosted.map((win) => win.roomMultiplier), [2, 8, 1]);
+  assert.deepEqual(boosted.map((win) => win.winCents), [10, 200, 125]);
+  assert.deepEqual(wins.map((win) => win.winCents), [5, 25, 125]);
+  assert.deepEqual(applyRoomMultipliers([], 1, () => { throw new Error('No draw expected'); }), []);
+});
+
+test('room bonus multiplies the capped stage award and can apply again in a later winning batch', () => {
+  const wins = findWins([Array.from({ length: 7 }, () => symbol('high', 0))], 144);
+  const first = applyRoomMultipliers(wins, 0, () => 0.99);
+  const later = applyRoomMultipliers(wins, 0, () => 0);
+  assert.equal(first[0].winCents, 50 * 144 * 8);
+  assert.equal(later[0].winCents, 50 * 144 * 2);
+  assert.equal(first[0].cells.length, 7);
 });
