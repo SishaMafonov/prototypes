@@ -1,0 +1,15 @@
+# Fool House — Agent Guide
+
+Read `CHANGELOG.md` before changing this project. Append an entry for each completed change, including behavior, relevant decisions, verification, and remaining gameplay work.
+
+- This is an independent npm / TypeScript / Vite canvas prototype. Run commands from `fool-house/`.
+- `src/game.ts` owns weighted draws, global 5+ identical regular-symbol wins, integer-cent payouts, removal/refill, collection, and Fibonacci multipliers. `src/main.ts` owns scene loading, round/stage sequencing, canvas layout/animation, input, and session UI. `src/style.css` owns the page, HUD, popup, and multiplier badge.
+- Preserve the background-to-symbol contract documented in `CHANGELOG.md`. Low/mid/high sprites each have five equal horizontal frames indexed from 0 to 4. `scatter.png` is one standalone icon, drawn whole.
+- Keep the background full-screen, reels centered, title at the top, collection between reels and HUD, and layout responsive at high pixel densities.
+- The board is 5 columns × 5 rows (25 cells). `src/assets/reels/main-5x5.png` is the active frame; the original 5 × 4 `main.png` is preserved as source history. Cell apertures in `src/main.ts` are measured in the active image's 1164 × 1351 source pixels.
+- Each paid round costs 1.00, chooses another random background, and draws all 25 cells independently: low 57%, mid 23.75%, high 14.25%, scatter 5%. Regular tiers then choose a uniform index 0–4; scatter has only index 0. Input stays locked throughout wins, refills, and free stages.
+- Scatter weight and deferred feature were explicitly confirmed by the user. It does not pay, form winning groups, collect, substitute, or trigger a bonus yet. It stays in place during ordinary refills and clears with the board on a new paid/free stage.
+- Match regular symbols by both tier and icon index anywhere on the board. Remove all members of every 5+ group simultaneously, refill only holes without gravity, and re-check until no wins remain. Pay once per group based on quantity, times the active multiplier: low 5/6/7+ = 0.01/0.05/0.10; mid = 0.05/0.10/0.25; high = 0.10/0.25/0.50. Counts above seven use the seven-symbol award, while every matching symbol is removed. Money is integer cents.
+- Collection persists across refills within one background. A removed matching-background group collects that tier. Collect all three to show the stage popup, clear the board, switch to another background, reset collection, and automatically respin free. Multipliers are x2, x3, x5, …, capped at x144 for subsequent free stages; reset to x1 on a new paid round.
+- Spins count paid deals and free respins, not refills. Only paid rounds add to wager. Round win includes its entire refill/free-stage chain; session RTP = total awards / paid wagers. The opening board remains an unpaid preview and does not resolve wins.
+- Verify math with `npm test` (Node.js 24+) and `npm run build`, plus browser checks for canvas/layout changes. Preserve supplied artwork and user changes.
