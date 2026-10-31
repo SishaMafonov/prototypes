@@ -1,22 +1,22 @@
 {
   "schema_version": 1,
-  "ruleset_id": "fool-house-2026-10-25-v2",
+  "ruleset_id": "fool-house-2026-10-31-v4",
   "status": "implemented_working_tree_snapshot",
-  "audited_on": "2026-10-25",
+  "audited_on": "2026-10-31",
   "project_root": "fool-house",
   "path_base": "project_root",
   "entrypoint": "GAME_RULES.md",
   "source_of_truth": "Runtime code overrides stale documentation. Historical changelog entries are not current rules.",
   "provenance": {
-    "git_commit": "39435f59cd107d714a2fb15a807700c57feff1cd",
-    "source_tree_before_documentation": "working-tree room-bonus and calibration changes; raw hashes identify current source",
+    "git_commit": "529f78ef6143025eba10f0f26269e7d095d006e1",
+    "source_tree_before_documentation": "working-tree mobile sizing, Scatter entry and corrected tier frequency; raw hashes identify current source; historical studies preserve their original snapshots",
     "hash_algorithm": "SHA-256 of raw file bytes; line-ending conversion changes hashes",
     "source_hashes": {
-      "src/game.ts": "0a0a57ef1716e18fee568d087ff216d48c7f89955b9440e7da01314e54650430",
-      "src/main.ts": "a9e067d013a872828e1d5558d3ef659a1aefae2398297326c5b4d11acddb372c",
-      "src/style.css": "1d2d11f1aab38b5295df2a4e70c8109bd097e3f9394361700d013849ce37ecc7",
-      "tests/game.test.mjs": "53850ab7b979cdfa350ad3b7f73979dc913746d07a44e59d93430ab147c3bf54",
-      "scripts/simulate.mjs": "88fb1217407739e6d67bbd53f0062ace8844a236b5efa872b6b4e5eddf4b4707"
+      "src/game.ts": "25ae320022dabc7a69b93a08cca92e593bc4d17fd40139078b6b02dd3f19fd42",
+      "src/main.ts": "cd60d34146b3fb2d9623e6310c1a695edbece22f0699242653707fbf32f9b88d",
+      "src/style.css": "c73475af2110713c31bfc0e4200c7eaf3c952e8630bbd946b7a1b749d2c11639",
+      "tests/game.test.mjs": "6bdced9b18d20dd03bb5c6d2dafc68440f0851140791d81c5b89ce356f400bc8",
+      "scripts/simulate.mjs": "da806be926dd634fe2a05a6d232a0b7226101b5ef84238fbc93bf3100a448cc1"
     }
   },
   "module_catalog": [
@@ -74,7 +74,8 @@
         "F13",
         "F14",
         "F15",
-        "F16"
+        "F16",
+        "F17"
       ],
       "source_functions": [
         "start",
@@ -128,7 +129,8 @@
         "A09",
         "A10",
         "A11",
-        "A12"
+        "A12",
+        "A13"
       ],
       "source_functions": [
         "renderStats",
@@ -216,6 +218,18 @@
         "findWins",
         "refillBoard"
       ]
+    },
+    {
+      "path": "docs/game-rules/08-scatter-bonus.md",
+      "context": "6+ Scatter entry, exact-count saved moves, modal Continue, duplicate guards, future retriggers.",
+      "branch_ids": ["B01", "B02", "B03", "B04", "B05", "B06", "B07", "B08", "B09", "B10", "B11", "B12"],
+      "source_functions": ["getScatterBonusMoves", "checkScatterBonus", "resolveRound", "requestRound"]
+    },
+    {
+      "path": "docs/game-rules/09-tier-frequency.md",
+      "context": "Current Low > Mid > High weights, explicit deferred payout rebalancing, observed win frequency and RTP.",
+      "branch_ids": ["K01", "K02", "K03", "K04", "K05", "K06"],
+      "source_functions": ["drawSymbol", "generateBoard", "findWins", "refillBoard"]
     }
   ],
   "facts": {
@@ -251,36 +265,36 @@
         "pays": false,
         "substitutes": false,
         "collects": false,
-        "triggers_bonus": false,
+        "triggers_bonus": true,
         "retained_on_refill": true
       },
       "identity_count": 16,
       "weights_percent": {
-        "low": 14.66,
-        "mid": 10,
-        "high": 70.34,
+        "low": 57,
+        "mid": 23.75,
+        "high": 14.25,
         "scatter": 5
       },
       "probability_per_regular_identity": {
-        "low": 0.02932,
-        "mid": 0.02,
-        "high": 0.14068
+        "low": 0.114,
+        "mid": 0.0475,
+        "high": 0.0285
       },
       "rng": "Math.random by default; optional injected RNG in pure math helpers",
       "tier_intervals": [
         {
           "tier": "low",
           "minimum_inclusive": 0,
-          "maximum_exclusive": 0.1466
+          "maximum_exclusive": 0.57
         },
         {
           "tier": "mid",
-          "minimum_inclusive": 0.1466,
-          "maximum_exclusive": 0.2466
+          "minimum_inclusive": 0.57,
+          "maximum_exclusive": 0.8075
         },
         {
           "tier": "high",
-          "minimum_inclusive": 0.2466,
+          "minimum_inclusive": 0.8075,
           "maximum_exclusive": 0.95
         },
         {
@@ -419,6 +433,21 @@
       "resolves_wins": false,
       "collects": false
     },
+    "scatter_bonus": {
+      "minimum_count": 6,
+      "moves_awarded": "exact Scatter count on first qualifying evaluated board per room stage",
+      "checks": "before regular evaluation after full paid/free deals and ordinary refills; no preview check",
+      "deduplication": "one award per room stage, reset on fresh paid/free stage; retained Scatters do not award repeatedly",
+      "continue_required": true,
+      "escape_or_backdrop_dismisses": false,
+      "continue_effect": "resume ordinary evaluation on same board",
+      "bank_persists_across_paid_rounds": true,
+      "bank_persists_reload": false,
+      "move_execution_implemented": false,
+      "moves_consumed": false,
+      "adds_payout_or_wager_or_spins": false,
+      "future_retrigger_policy_confirmed": "6+ Scatters during future bonus play add exact-count moves; bonus loop not yet implemented"
+    },
     "accounting": {
       "spins": "paid full deals plus free full deals",
       "total_wager_cents": "100 per accepted paid round; zero per refill or free stage",
@@ -457,6 +486,7 @@
       "drawing",
       "winning",
       "room-bonus",
+      "bonus-trigger",
       "removing",
       "cleared",
       "refilling",
@@ -496,7 +526,9 @@
       "popup_text": "Switching to the next stage",
       "canvas_compact_height_condition": "height < 500 CSS pixels",
       "css_compact_height_condition": "height <= 500 CSS pixels",
-      "room_bonus": "separate teal popup; tier/roll/before-after rows; teal highlights on matching group cells"
+      "room_bonus": "separate teal popup; tier/roll/before-after rows; teal highlights on matching group cells",
+      "mobile_portrait_layout": "width <= 600 CSS px and height > width: 4 px reel side margins, gap <= 10 px, collection icon height <= min(64 px, 8vh); use available play-area height and shift reels upward only when viewport centering does not fit",
+      "reel_icon_fit": "98% aperture width; regular sprite height allowance 108%, Scatter icon area height 100%; uniform scale and aperture clipping"
     },
     "assets": {
       "active_frame": "src/assets/reels/main-5x5.png",
@@ -616,28 +648,30 @@
     }
   },
   "evidence": {
-    "math_tests_passed": 15,
-    "math_tests_run_on": "2026-10-25",
-    "validation_scope": "source audit, math tests, production build, desktop/mobile room reveal and exact-credit fixture, independent Monte Carlo runs",
-    "monte_carlo_paid_rounds": 2000000,
+    "math_tests_passed": 16,
+    "math_tests_run_on": "2026-10-31",
+    "validation_scope": "source audit, math tests, production build, mobile round smoke test, complete-chain Monte Carlo with wins/awards by tier",
+    "monte_carlo_paid_rounds": 1000000,
     "monte_carlo_seeds": [
-      20261025,
-      857
+      20261031
     ]
   },
   "analysis_status": {
     "target_rtp_percent": 96,
+    "target_status": "payout rebalancing deferred by explicit user choice; preserve 57/23.75/14.25/5 weights",
+    "required_regular_frequency_order": ["low", "mid", "high"],
     "long_run_rtp": null,
-    "estimated_rtp_percent": 96.07564,
+    "estimated_rtp_percent": 6.09404,
     "approximate_95_percent_interval": [
-      95.9558295958352,
-      96.19545040416482
+      6.073866460234298,
+      6.114213539765701
     ],
-    "observed_hit_percent": 88.1421,
+    "observed_hit_percent": 62.8208,
     "volatility": "observed variance in raw studies; rare tails not comprehensively calibrated",
-    "study": "docs/game-rules/07-calibration.md",
-    "combined_raw_result": "docs/game-rules/studies/room-bonus-combined.json",
-    "rare_free_stage_limit": "63 x2 free stages; no x3 or later stages observed in validation",
+    "study": "docs/game-rules/09-tier-frequency.md",
+    "combined_raw_result": "docs/game-rules/studies/tier-order-validation.json",
+    "winning_groups_by_tier": {"low": 1281630, "mid": 81723, "high": 9718},
+    "rare_free_stage_limit": "67 x2 free stages; no x3 or later stages observed in validation; future Scatter move payouts excluded",
     "external_market_research_performed": false
   }
 }

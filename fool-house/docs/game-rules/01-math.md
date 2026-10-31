@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-25-v2
+ruleset_id: fool-house-2026-10-31-v4
 context: independent cell draws, global matching, group awards, in-place replacement
 read_when: probabilities, paytable, matching, refill semantics
 branch_ids: M01-M21
@@ -18,18 +18,18 @@ A regular symbol is `{tier: "low" | "mid" | "high", index: 0..4}`. Scatter is `{
 
 | Tier | Total probability per newly drawn cell | Identities | Probability per particular identity |
 | --- | --- | --- | --- |
-| Low | 14.66% | `low[0]` … `low[4]` | 2.932% each |
-| Mid | 10% | `mid[0]` … `mid[4]` | 2% each |
-| High | 70.34% | `high[0]` … `high[4]` | 14.068% each |
+| Low | 57% | `low[0]` … `low[4]` | 11.4% each |
+| Mid | 23.75% | `mid[0]` … `mid[4]` | 4.75% each |
+| High | 14.25% | `high[0]` … `high[4]` | 2.85% each |
 | Scatter | 5% | one mansion | 5% |
 
-High is intentionally common in this calibration; tier names describe award levels, not rarity order. These are per-draw probabilities, not board/session quotas. See [calibration](07-calibration.md) for the unchanged-paytable tradeoff.
+Low is the most common regular tier, Mid is next, and High is rarest. These are per-draw probabilities, not board/session quotas. The user chose this split and deferred payout rebalancing; the old High-heavy 96% study no longer describes these odds. See [current frequency study](09-tier-frequency.md).
 
 | ID | Condition | Exact result |
 | --- | --- | --- |
-| M01 | First RNG value `r < 0.1466` | Select Low; consume another independent RNG value for the index. |
-| M02 | `0.1466 <= r < 0.2466` | Select Mid; draw the index independently. |
-| M03 | `0.2466 <= r < 0.95` | Select High; draw the index independently. |
+| M01 | First RNG value `r < 0.57` | Select Low; consume another independent RNG value for the index. |
+| M02 | `0.57 <= r < 0.8075` | Select Mid; draw the index independently. |
+| M03 | `0.8075 <= r < 0.95` | Select High; draw the index independently. |
 | M04 | `0.95 <= r < 1` | Return Scatter at index 0; consume no index RNG draw. |
 | M05 | Regular tier selected, next RNG value `u` | Index = `floor(u * 5)`. Intervals `[0,.2)`, `[.2,.4)`, `[.4,.6)`, `[.6,.8)`, `[.8,1)` produce indexes 0–4. |
 | M06 | Full deal requested | Generate all 25 cells independently, row-major (row 0 columns 0–4, then row 1, etc.). Exactly 25 tier draws plus one index draw for each regular symbol. No deck depletion or cross-cell quota. |
@@ -43,7 +43,7 @@ Scan the whole board in row-major order. A group's key is `tier:index`. Position
 | ID | Condition | Exact result |
 | --- | --- | --- |
 | M07 | Cell is `null` | Ignore it during evaluation. |
-| M08 | Cell is Scatter | Ignore it during evaluation regardless of the total Scatter count, including 25. It is not a Wild and does not substitute. |
+| M08 | Cell is Scatter | Ignore it during regular win evaluation regardless of the total count, including 25. It is not a Wild and does not substitute. The separate [Scatter bonus check](08-scatter-bonus.md) counts 6+ before regular evaluation. |
 | M09 | Regular identity appears | Create its group on first occurrence; append later occurrences to the same group. Different tiers with the same index, or different indexes in the same tier, stay separate. |
 | M10 | Regular group contains 0–4 matches | No win, award, removal, or collection from that group. (Absent groups are not materialized.) |
 | M11 | Group contains exactly 5 | Select the five-match award. |

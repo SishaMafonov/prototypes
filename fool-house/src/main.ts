@@ -6,7 +6,7 @@ import midSymbolsUrl from './assets/symbols/mid.png';
 import highSymbolsUrl from './assets/symbols/high.png';
 import scatterUrl from './assets/symbols/scatter.png';
 import {
-  applyRoomMultipliers, BET_CENTS, collectWins, findWins, generateBoard, getMultiplier, isCollectionComplete,
+  applyRoomMultipliers, BET_CENTS, collectWins, findWins, generateBoard, getMultiplier, getScatterBonusMoves, isCollectionComplete,
   REEL_COLUMNS, REEL_ROWS, refillBoard, removeWins, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
 } from './game';
 import type { Board, SymbolKind, SymbolTier } from './game';
@@ -22,6 +22,7 @@ app.innerHTML = `
     <p id="collection-description" class="sr-only"></p>
     <p id="reels-description" class="sr-only"></p>
     <div class="reel-overlay" aria-hidden="true">
+      <span class="bonus-bank" hidden></span>
       <span class="multiplier">x1</span>
       <div class="room-bonus-popup" hidden>
         <strong class="room-bonus-title">Room bonus</strong>
@@ -40,6 +41,32 @@ app.innerHTML = `
         </dl>
       </div>
     </section>
+    <dialog class="scatter-bonus-dialog" aria-labelledby="scatter-bonus-title" aria-describedby="scatter-bonus-description">
+      <div class="haunted-card">
+        <svg class="bonus-web" viewBox="0 0 160 160" aria-hidden="true">
+          <path d="M0 0L160 20M0 0L148 68M0 0L112 112M0 0L68 148M0 0L20 160
+            M0 32Q18 20 32 4M0 64Q35 40 64 8M0 96Q52 60 96 12M0 128Q70 80 128 16
+            M32 4Q30 24 29 58Q48 42 59 27Q58 51 55 80Q77 68 86 40Q88 70 82 102
+            M20 44Q40 45 45 20M30 68Q61 68 68 30M44 98Q88 98 98 44M58 128Q114 128 128 58"/>
+        </svg>
+        <svg class="bonus-web bonus-web-right" viewBox="0 0 160 160" aria-hidden="true">
+          <path d="M0 0L160 20M0 0L148 68M0 0L112 112M0 0L68 148M0 0L20 160
+            M0 32Q18 20 32 4M0 64Q35 40 64 8M0 96Q52 60 96 12M0 128Q70 80 128 16
+            M32 4Q30 24 29 58Q48 42 59 27Q58 51 55 80Q77 68 86 40Q88 70 82 102
+            M20 44Q40 45 45 20M30 68Q61 68 68 30M44 98Q88 98 98 44M58 128Q114 128 128 58"/>
+        </svg>
+        <div class="bonus-dust" aria-hidden="true"></div>
+        <div class="blood-drips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="bonus-eyebrow">The mansion has awakened</p>
+        <h1 id="scatter-bonus-title">BONUS<br>TRIGGERED</h1>
+        <img class="bonus-mansion" src="${scatterUrl}" alt="" aria-hidden="true">
+        <p class="bonus-award"><strong data-bonus-award>6</strong><span>FREE MOVES</span></p>
+        <p id="scatter-bonus-description"></p>
+        <button class="bonus-continue" type="button" autofocus>Continue</button>
+        <p class="bonus-footnote">Your moves are saved for the upcoming bonus feature.</p>
+        <div class="bonus-ooze" aria-hidden="true"></div>
+      </div>
+    </dialog>
   </main>
 `;
 
@@ -58,14 +85,21 @@ const roomBonusTitle = app.querySelector<HTMLElement>('.room-bonus-title')!;
 const roomBonusList = app.querySelector<HTMLDivElement>('.room-bonus-list')!;
 const stagePopup = app.querySelector<HTMLDivElement>('.stage-popup')!;
 const stageDetail = stagePopup.querySelector('small')!;
+const scatterBonusDialog = app.querySelector<HTMLDialogElement>('.scatter-bonus-dialog')!;
+const bonusAward = app.querySelector<HTMLElement>('[data-bonus-award]')!;
+const bonusDescription = app.querySelector<HTMLParagraphElement>('#scatter-bonus-description')!;
+const bonusContinue = app.querySelector<HTMLButtonElement>('.bonus-continue')!;
+const bonusBank = app.querySelector<HTMLSpanElement>('.bonus-bank')!;
 const statSpins = app.querySelector<HTMLElement>('[data-stat="spins"]')!;
 const statRtp = app.querySelector<HTMLElement>('[data-stat="rtp"]')!;
 const statTotalWin = app.querySelector<HTMLElement>('[data-stat="total-win"]')!;
 const statRoundWin = app.querySelector<HTMLElement>('[data-stat="round-win"]')!;
 
-type GameState = 'loading' | 'ready' | 'drawing' | 'winning' | 'room-bonus' | 'removing' | 'cleared'
+type GameState = 'loading' | 'ready' | 'drawing' | 'winning' | 'room-bonus' | 'bonus-trigger' | 'removing' | 'cleared'
   | 'refilling' | 'switching' | 'error';
 let gameState: GameState = 'loading';
+let bonusMoves = 0;
+let scatterBonusAwarded = false;
 const session = { spins: 0, totalWagerCents: 0, totalWinCents: 0, roundWinCents: 0 };
 const winFormat = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
@@ -95,6 +129,7 @@ async function requestRound(): Promise<void> {
     respinNumber = 0;
     updateMultiplier();
     applyTheme(nextTheme());
+    scatterBonusAwarded = false;
     board = generateBoard();
     session.spins++;
     session.totalWagerCents += BET_CENTS;
@@ -105,7 +140,7 @@ async function requestRound(): Promise<void> {
     await resolveRound();
     growingCells.clear();
     updateBoardDescription();
-    setGameState('ready', `Won ${formatWin(session.roundWinCents)} · Tap or click · Bet 1.00`);
+    setGameState('ready', `Won ${formatWin(session.roundWinCents)} · Tap or click · Bet 1.00${bonusMoves ? ` · Bonus: ${bonusMoves} moves saved` : ''}`);
     draw();
   } catch (error) {
     roomBonusPopup.hidden = true;
@@ -258,8 +293,39 @@ function playPhase(state: GameState, message: string, duration: number): Promise
   });
 }
 
+async function checkScatterBonus(): Promise<void> {
+  if (scatterBonusAwarded) return;
+  const moves = getScatterBonusMoves(board);
+  if (!moves) return;
+  // Persistent Scatters must not award again on every refill of this same room stage.
+  scatterBonusAwarded = true;
+  bonusMoves += moves;
+  bonusBank.hidden = false;
+  bonusBank.textContent = `BONUS\n${bonusMoves} moves saved`;
+  bonusAward.textContent = String(moves);
+  bonusDescription.textContent = `${moves} Scatters unlocked ${moves} free moves. ${bonusMoves} moves saved in total.`;
+  setGameState('bonus-trigger', `Bonus triggered · ${moves} free moves · Press Continue`);
+  updateBoardDescription();
+  growingCells.clear();
+  draw();
+  scatterBonusDialog.showModal();
+  await new Promise<void>((resolve) => {
+    bonusContinue.addEventListener('click', () => {
+      scatterBonusDialog.close();
+      // Lock input synchronously before the modal releases focus back to the canvas.
+      setGameState('drawing', 'Continuing the round…');
+      canvas.focus({ preventScroll: true });
+      resolve();
+    }, { once: true });
+  });
+}
+
+// The explicit Continue action is required; neither Escape nor a backdrop click dismisses it.
+scatterBonusDialog.addEventListener('cancel', (event) => event.preventDefault());
+
 async function resolveRound(): Promise<void> {
   while (assets) {
+    await checkScatterBonus();
     const baseWins = findWins(board, multiplier);
     if (baseWins.length === 0) return;
     winningCells = new Set(baseWins.flatMap((win) => win.cells.map((cell) => cell.row * REEL_COLUMNS + cell.column)));
@@ -300,6 +366,7 @@ async function resolveRound(): Promise<void> {
       board = Array.from({ length: REEL_ROWS }, () => Array(REEL_COLUMNS).fill(null));
       await playPhase('switching', 'Switching to the next stage', 180);
       applyTheme(nextTheme());
+      scatterBonusAwarded = false;
       respinNumber++;
       updateMultiplier();
       session.spins++;
@@ -397,7 +464,9 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
       const frameWidth = sprite.width / (isScatter ? 1 : SYMBOLS_PER_SPRITE);
       const labelSpace = isScatter ? cellHeight * 0.25 : 0;
       const iconAreaHeight = cellHeight - labelSpace;
-      const iconScale = Math.min(cellWidth * 0.9 / frameWidth, iconAreaHeight * 0.94 / sprite.height) * growth;
+      // Regular sheets include transparent margins; fill more of the aperture without stretching the art.
+      const iconScale = Math.min(cellWidth * 0.98 / frameWidth,
+        iconAreaHeight * (isScatter ? 1 : 1.08) / sprite.height) * growth;
       const iconWidth = frameWidth * iconScale;
       const iconHeight = sprite.height * iconScale;
       if (isWinner) {
@@ -431,7 +500,8 @@ function draw(): void {
     backgroundWidth, backgroundHeight);
 
   const padding = Math.min(24, Math.min(width, height) * 0.03);
-  const gap = Math.min(16, height * 0.02);
+  const mobilePortrait = width <= 600 && height > width;
+  const gap = Math.min(mobilePortrait ? 10 : 16, height * 0.02);
   const titleScale = Math.min(
     (width - padding * 2) / title.width,
     Math.min(150, height * 0.14) / title.height,
@@ -440,22 +510,29 @@ function draw(): void {
   const titleHeight = title.height * titleScale;
 
   const compact = height < 500;
-  const symbolHeight = Math.min(80, height * (compact ? 0.08 : 0.09));
+  const symbolHeight = Math.min(mobilePortrait ? 64 : 80, height * (compact || mobilePortrait ? 0.08 : 0.09));
   const labelHeight = compact ? 13 : 15;
   const collectionHeight = symbolHeight + labelHeight;
 
-  // Keep the reels centered, with the collection below them and clear of the HUD.
+  // Short portrait screens can use the full play area instead of symmetric empty margins.
   const topReserve = padding + titleHeight + gap;
   const hudTop = height - hud.getBoundingClientRect().height;
   const bottomReserve = height - hudTop + collectionHeight + gap * 2;
+  const reelPadding = mobilePortrait ? 4 : padding;
+  const availableReelHeight = mobilePortrait
+    ? height - topReserve - bottomReserve
+    : height - 2 * Math.max(topReserve, bottomReserve);
   const reelsScale = Math.min(
-    (width - padding * 2) / reels.width,
-    Math.max(1, height - 2 * Math.max(topReserve, bottomReserve)) / reels.height,
+    (width - reelPadding * 2) / reels.width,
+    Math.max(1, availableReelHeight) / reels.height,
   );
   const reelsWidth = reels.width * reelsScale;
   const reelsHeight = reels.height * reelsScale;
   const reelsLeft = (width - reelsWidth) / 2;
-  const reelsTop = (height - reelsHeight) / 2;
+  const centeredReelsTop = (height - reelsHeight) / 2;
+  const reelsTop = mobilePortrait
+    ? Math.max(topReserve, Math.min(centeredReelsTop, height - bottomReserve - reelsHeight))
+    : centeredReelsTop;
   reelOverlay.style.left = `${reelsLeft}px`;
   reelOverlay.style.top = `${reelsTop}px`;
   reelOverlay.style.width = `${reelsWidth}px`;
@@ -465,7 +542,7 @@ function draw(): void {
   drawReelSymbols(reelsLeft, reelsTop, reelsScale);
   ctx.drawImage(reels, reelsLeft, reelsTop, reelsWidth, reelsHeight);
 
-  const collectionTop = ((height + reelsHeight) / 2 + hudTop - collectionHeight) / 2;
+  const collectionTop = (reelsTop + reelsHeight + hudTop - collectionHeight) / 2;
   const slotWidth = Math.min(compact ? 64 : 100, (width - padding * 2) / 3);
   const collectionLeft = (width - slotWidth * 3) / 2;
   ctx.fillStyle = '#100d0bd9';

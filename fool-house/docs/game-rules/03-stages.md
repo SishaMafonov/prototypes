@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-25-v2
+ruleset_id: fool-house-2026-10-31-v4
 context: background mapping, collection eligibility, stage completion, free respins
 read_when: bonus qualification, room changes, multiplier resets or cap
 branch_ids: C01-C14
@@ -8,7 +8,7 @@ branch_ids: C01-C14
 
 # 03 — Background collection and free stages
 
-**Context packet:** a regular symbol matches by tier AND index. At least five copies win globally. Only removed winning groups can collect a tier. A stage has exactly one target index, a three-tier collection set, and one multiplier. Scatter has no collection or bonus role.
+**Context packet:** a regular symbol matches by tier AND index. At least five copies win globally. Only removed winning groups can collect a tier. A stage has exactly one target index, a three-tier collection set, and one multiplier. Scatter does not collect; its separate [entry feature](08-scatter-bonus.md) banks moves without executing them. Every fresh paid/free stage resets the Scatter award guard, not the session move bank.
 
 **Authority:** [src/main.ts](../../src/main.ts): `themes`, `nextTheme`, `applyTheme`, `resolveRound`, `updateMultiplier`; [src/game.ts](../../src/game.ts): `collectWins`, `isCollectionComplete`, `getMultiplier`.
 

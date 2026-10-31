@@ -3,8 +3,8 @@ export const REEL_ROWS = 5;
 export const SYMBOLS_PER_SPRITE = 5;
 export const BET_CENTS = 100;
 export const SYMBOL_TIERS = ['low', 'mid', 'high'] as const;
-// Prototype calibration targets ~96% RTP with the group room bonus; see the recorded study.
-export const SYMBOL_WEIGHTS = { low: 14.66, mid: 10, high: 70.34, scatter: 5 } as const;
+// Lower-paying tiers appear more often. Payout rebalancing is deferred by user choice.
+export const SYMBOL_WEIGHTS = { low: 57, mid: 23.75, high: 14.25, scatter: 5 } as const;
 export interface SymbolWeights { low: number; mid: number; high: number; scatter: number }
 export const ROOM_MULTIPLIERS = [
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -13,6 +13,7 @@ export const ROOM_MULTIPLIERS = [
   8, 8, 8,
 ] as const;
 export const MIN_WIN_COUNT = 5;
+export const MIN_BONUS_SCATTERS = 6;
 export const PAYTABLE_CENTS = {
   low: { 5: 1, 6: 5, 7: 10 },
   mid: { 5: 5, 6: 10, 7: 25 },
@@ -30,6 +31,11 @@ export interface RegularSymbol {
 export type ReelSymbol = RegularSymbol | { tier: 'scatter'; index: 0 };
 
 export type Board = (ReelSymbol | null)[][];
+
+export function getScatterBonusMoves(board: Board): number {
+  const count = board.reduce((total, row) => total + row.filter((symbol) => symbol?.tier === 'scatter').length, 0);
+  return count >= MIN_BONUS_SCATTERS ? count : 0;
+}
 export interface CellPosition { row: number; column: number }
 export interface WinGroup {
   symbol: RegularSymbol;
@@ -72,7 +78,7 @@ export function getMultiplier(respinNumber: number): number {
 export function findWins(board: Board, multiplier = 1): WinGroup[] {
   const groups = new Map<string, WinGroup>();
   board.forEach((row, rowIndex) => row.forEach((symbol, column) => {
-    // Scatter features are pending; it neither pays nor joins regular matching groups.
+    // Scatter awards bonus moves separately; it never joins paying regular groups.
     if (!symbol || symbol.tier === 'scatter') return;
     const key = `${symbol.tier}:${symbol.index}`;
     let group = groups.get(key);

@@ -1,9 +1,9 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-25-v2
+ruleset_id: fool-house-2026-10-31-v4
 context: fixed wager, cumulative wins, spin count, observed session RTP
 read_when: financial model, statistics, simulation denominators, reset behavior
-branch_ids: A01-A12
+branch_ids: A01-A13
 ---
 
 # 04 — Session and award accounting
@@ -35,6 +35,7 @@ branch_ids: A01-A12
 | A10 | A startup/round error occurs | No rollback/refund transaction exists. In a caught round failure, any wager/spins/awards already mutated remain in memory until reload; the error state disables new requests. Do not model interrupted rounds as automatically refunded. |
 | A11 | Player-facing balance/net profit would be needed | No such field is implemented. Wins are gross awards, not `awards - wager`. The game does not track deposits, cash-out, remaining credits, or insufficient funds. |
 | A12 | Room bonus is revealed | It announces a recalculated group award, not a separately credited payment. Credit only the final group amount at A04: table × stage × room. Do not add both the unboosted and boosted amounts. Other simultaneous groups remain included once. |
+| A13 | Scatter entry awards N moves / Continue | Increment the separate in-memory `bonusMoves` bank by N once per qualifying stage. Do not increment Spins, wager, win totals, multiplier, or collection. Continue resumes the same board. Moves are neither played nor consumed yet; future bonus payouts are excluded from current RTP studies. Reload clears the bank. |
 
 ## Formulas and measurement units
 

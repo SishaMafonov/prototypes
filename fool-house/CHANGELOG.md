@@ -2,6 +2,36 @@
 
 Newest changes come first. Keep this history updated so future agents can understand the current behavior and the decisions behind it.
 
+## 2026-10-31 — Bonus mansion-plan background artwork
+
+- Generated `src/assets/background/bonus.png` with built-in imagegen: a full mansion floor plan in navy drafting ink on yellowed paper, filling most of the view on a worn attic table. Includes corner cobwebs, coffee stains, creases, tears, repair tape and paper patches. No text, logo, watermark or game UI.
+- Saved the exact prompt and generation method in `src/assets/background/bonus.prompt.md`. PNG is 1024 × 1536, intended for the future bonus scene; existing five-room theme mapping and gameplay remain unchanged.
+- Verification: visually inspected the generated artwork, checked PNG signature/dimensions and successful production build with the new asset bundled. No source/game-rule changes were needed.
+
+## 2026-10-31 — Restore Low > Mid > High frequency
+
+- User explicitly chose Low 57%, Mid 23.75%, High 14.25%, Scatter 5%, with payout rebalancing later. Replaced the previous 14.66/10/70.34/5 High-heavy calibration. Lower-paying tiers now appear more often. Keep the existing paytable, room multipliers, Scatter entry and stage behavior intact.
+- Updated draw-boundary/reachability/distribution tests and added a regression assertion for Low > Mid > High and fixed 5% Scatter. All five icons in each regular tier remain equally likely. The same weights apply to initial deals, free stages and refills.
+- Added per-tier winning-group and awarded-cent counters to the simulation without consuming RNG. One million paid rounds (seed 20261031) produced 1,281,630 Low / 81,723 Mid / 9,718 High winning groups; estimated RTP 6.09404% (approximate 95% interval 6.07387–6.11421%), hit rate 62.8208%. This lower RTP is documented; the old ~96% result is superseded, and future Scatter move payouts remain excluded.
+- Added the v4 context/study in `docs/game-rules/09-tier-frequency.md` and raw validation JSON. Refreshed current rules, probabilities, source fingerprints and agent guidance; retained historical studies with explicit reproduction weights. Payout rebalancing remains future work by user choice.
+- Verification: all 16 tests, production build and mobile browser smoke test passed. A paid round removed two five-Low groups, credited exactly 0.02, refilled, and returned to ready without console warnings/errors. Confirmed current-source fingerprints, structured facts, study totals and documentation links; preview server stopped after verification.
+
+## 2026-10-31 — Scatter bonus trigger and haunted entry popup
+
+- User scoped this step to trigger/popup only and confirmed that future bonus play should allow 6+ Scatter retriggers to add moves. Move execution/consumption is deferred. Continue currently resumes ordinary resolution while preserving the awarded moves for the next implementation step.
+- Added pure `getScatterBonusMoves`: count all Scatter cells; 0–5 awards zero, 6–25 awards the exact count. Check before regular evaluation after paid/free full deals and ordinary refills. Preview never triggers. Award once per room stage to prevent retained Scatters repeatedly awarding on cascades; reset the guard on each fresh paid/free stage.
+- Store moves in a session bank across paid rounds, with a reel badge and settled status. No extra wager, spin count, cash payout, RNG call, room change, or multiplier change from entry. Reload clears the bank. Existing calibration excludes future payouts from bonus moves.
+- Added the `bonus-trigger` state and a native modal with mansion artwork, cobweb corners, blood stains/drips, drifting dust and glowing green ooze. Dim/blur the scene, focus Continue, trap focus, prevent Escape/backdrop dismissal, and pause indefinitely until Continue. Resume the same board exactly once so pending regular wins are paid normally. Support constrained-height scrolling and reduced motion.
+- Added v3 rules and a dedicated `08-scatter-bonus.md` context module; updated routing, accounting, flow, structured facts and source fingerprints. Historical calibration files remain unchanged.
+- Verification: 16 math tests and production build passed. Deterministic browser checks verified unpaid six-Scatter preview exclusion; six/seven move allocations; no duplicate award after refill; a five-to-six Scatter refill trigger; Escape lock; keyboard/click Continue; exact pending win credit and 19 accumulated moves across three paid rounds. Checked 375 × 667, 390 × 844, 844 × 390, and 1280 × 800 layouts. The temporary fixture and local server were removed/stopped after verification.
+
+## 2026-10-31 — Larger mobile reels and symbols
+
+- Increased reel icon fit from 90% to 98% of aperture width and regular sprite height allowance from 94% to 108%, using the sheets' transparent margins. Scatter height fit increases to 100% of its icon area; its label remains above the mansion. Preserve aspect ratios and aperture clipping.
+- Portrait screens at most 600 CSS px wide use 4 px reel side margins, gaps capped at 10 px, and collection icons capped at 64 px / 8% of viewport height. Use the available play-area height; center vertically when possible and shift upward on short phones to keep the title, collection, and HUD clear. At 390 × 844 the frame is 382 px wide (about 9% larger); at 375 × 667 it is about 318 px wide (about 30% larger).
+- Updated the runtime UI reference, structured layout facts/current source fingerprint, and agent layout guidance. Calibration studies retain their original source snapshots; gameplay math is unchanged.
+- Verification: all 15 existing tests and production build passed. Browser checks at 375 × 667, 390 × 844, 440 × 956, and 844 × 390 confirmed panel separation, readable enlarged symbols, preserved state across resizes, and successful click-to-round settlement. No browser warnings/errors. The preview server was stopped after verification.
+
 ## 2026-10-25 — Room-specific win multipliers and prototype calibration
 
 - User confirmed one independent random multiplier per winning room-specific group, stacked with the Fibonacci stage multiplier, and an approximate 96% RTP target.

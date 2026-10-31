@@ -47,6 +47,8 @@ let capStages = 0;
 let maximumRoundWinCents = 0;
 let maximumEvaluations = 0;
 let maximumRespinNumber = 0;
+const winningGroupsByTier = { low: 0, mid: 0, high: 0 };
+const awardsCentsByTier = { low: 0, mid: 0, high: 0 };
 const histogram = Array(11).fill(0);
 
 for (let round = 1; round <= rounds; round++) {
@@ -65,6 +67,10 @@ for (let round = 1; round <= rounds; round++) {
     const wins = roomBonusEnabled ? applyRoomMultipliers(baseWins, room, random) : baseWins;
     winningBatches++;
     roomGroups += wins.filter((win) => win.roomMultiplier > 1).length;
+    for (const win of wins) {
+      winningGroupsByTier[win.symbol.tier]++;
+      awardsCentsByTier[win.symbol.tier] += win.winCents;
+    }
     roundWin += wins.reduce((sum, win) => sum + win.winCents, 0);
     board = removeWins(board, wins);
     collected = collectWins(collected, wins, room);
@@ -102,6 +108,7 @@ const result = {
   winningBatchesPerPaidRound: winningBatches / rounds, roomGroupsPerPaidRound: roomGroups / rounds,
   freeStageHistogramByRespinNumberCappedAt10: histogram,
   capStages, maximumRoundWinCents, maximumEvaluations, maximumRespinNumber,
+  winningGroupsByTier, awardsCentsByTier,
   truncatedChains: 0,
 };
 if (argumentsByName.out) {

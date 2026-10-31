@@ -8,9 +8,13 @@ branch_ids: R01-R08
 
 # 07 — Room bonus and prototype calibration
 
+**Superseded on 2026-10-31:** the user rejected the High-heavy frequency hierarchy and selected Low 57%, Mid 23.75%, High 14.25%, Scatter 5%, with payout rebalancing later. This module preserves the historical study. See [09](09-tier-frequency.md) for current weights and return; the 96% figures below do not apply to the shipped distribution.
+
 **Context packet:** fixed 1.00 paid wager; 25 independent cells; regular 5/6/7+ group awards; hole refills; collection-driven free stages at Fibonacci x2…x144. The user confirmed one random bonus per winning current-room group and a target of approximately 96% RTP. The paytable, five uniform indexes per tier, and 5% nonpaying Scatter were retained.
 
 **Authority:** [src/game.ts](../../src/game.ts), [scripts/simulate.mjs](../../scripts/simulate.mjs), [combined study](studies/room-bonus-combined.json), and the two raw independent validation outputs linked below.
+
+**2026-10-31 scope note:** this is the historical v2 payout study. The v3 [Scatter entry](08-scatter-bonus.md) adds a modal and saved move bank, with no additional payout or RNG draws. These measurements exclude future gameplay/payouts from the allocated moves; recalibrate when move execution is implemented.
 
 ## R01 — Room multiplier distribution
 
@@ -64,8 +68,8 @@ Combined totals: wager 200,000,000 cents; awards 192,151,280 cents. Hit rate = *
 Run from `fool-house/` with Node.js 24+:
 
 ```text
-npm run simulate -- --rounds=1000000 --seed=20261025
-npm run simulate -- --rounds=1000000 --seed=857
+npm run simulate -- --rounds=1000000 --seed=20261025 --weights=14.66,10,70.34,5
+npm run simulate -- --rounds=1000000 --seed=857 --weights=14.66,10,70.34,5
 npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5 --bonus=off
 npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5
 ```

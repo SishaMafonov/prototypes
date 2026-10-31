@@ -2,13 +2,26 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   applyRoomMultipliers, BET_CENTS, collectWins, drawSymbol, findWins, generateBoard, getMultiplier,
-  isCollectionComplete, refillBoard, removeWins, ROOM_MULTIPLIERS, SYMBOL_WEIGHTS,
+  getScatterBonusMoves, isCollectionComplete, refillBoard, removeWins, ROOM_MULTIPLIERS, SYMBOL_WEIGHTS,
 } from '../src/game.ts';
 
-test('draw boundaries implement calibrated 14.66% low, 10% mid, 70.34% high, and 5% scatter', () => {
+test('Scatter bonus awards the exact count from six through all 25 cells, ignoring regular symbols and holes', () => {
+  for (let count = 0; count <= 25; count++) {
+    const board = Array.from({ length: 5 }, (_, row) => Array.from({ length: 5 }, (_, column) =>
+      row * 5 + column < count ? { tier: 'scatter', index: 0 }
+        : (row + column) % 2 ? null : { tier: 'high', index: 0 }));
+    const before = structuredClone(board);
+    assert.equal(getScatterBonusMoves(board), count >= 6 ? count : 0);
+    assert.deepEqual(board, before);
+  }
+  assert.equal(getScatterBonusMoves([]), 0);
+  assert.deepEqual(findWins(Array.from({ length: 5 }, () => Array(5).fill({ tier: 'scatter', index: 0 }))), []);
+});
+
+test('draw boundaries preserve Low > Mid > High frequency with a fixed 5% Scatter rate', () => {
   for (const [roll, tier] of [
-    [0, 'low'], [0.146599, 'low'], [0.1466, 'mid'],
-    [0.246599, 'mid'], [0.2466, 'high'], [0.949999, 'high'],
+    [0, 'low'], [0.569999, 'low'], [0.57, 'mid'],
+    [0.807499, 'mid'], [0.8075, 'high'], [0.949999, 'high'],
     [0.95, 'scatter'], [0.999999, 'scatter'],
   ]) {
     const samples = [roll, 0];
@@ -16,10 +29,12 @@ test('draw boundaries implement calibrated 14.66% low, 10% mid, 70.34% high, and
     assert.equal(samples.length, tier === 'scatter' ? 1 : 0);
   }
   assert.ok(Math.abs(Object.values(SYMBOL_WEIGHTS).reduce((sum, weight) => sum + weight, 0) - 100) < 1e-9);
+  assert.ok(SYMBOL_WEIGHTS.low > SYMBOL_WEIGHTS.mid && SYMBOL_WEIGHTS.mid > SYMBOL_WEIGHTS.high);
+  assert.equal(SYMBOL_WEIGHTS.scatter, 5);
 });
 
 test('every icon is reachable within every tier, including both ends of each sprite', () => {
-  for (const [roll, tier] of [[0.1, 'low'], [0.2, 'mid'], [0.9, 'high']]) {
+  for (const [roll, tier] of [[0.1, 'low'], [0.7, 'mid'], [0.9, 'high']]) {
     for (let index = 0; index < 5; index++) {
       const samples = [roll, (index + 0.5) / 5];
       assert.deepEqual(drawSymbol(() => samples.shift()), { tier, index });
@@ -53,7 +68,7 @@ test('a seeded sample distributes probability across fifteen regular icons and o
     const symbol = drawSymbol(random);
     counts[symbol.tier][symbol.index]++;
   }
-  for (const [tier, probability] of [['low', 0.02932], ['mid', 0.02], ['high', 0.14068], ['scatter', 0.05]]) {
+  for (const [tier, probability] of [['low', 0.114], ['mid', 0.0475], ['high', 0.0285], ['scatter', 0.05]]) {
     for (const count of counts[tier]) {
       assert.ok(Math.abs(count / samples - probability) < 0.004,
         `${tier}: observed ${count / samples}, expected ${probability}`);

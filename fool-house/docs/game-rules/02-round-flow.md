@@ -1,14 +1,14 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-25-v2
+ruleset_id: fool-house-2026-10-31-v4
 context: startup preview, accepted input, paid deal, repeated evaluation, settlement
 read_when: lifecycle, input guards, branch ordering, round termination
-branch_ids: F01-F16
+branch_ids: F01-F17
 ---
 
 # 02 — Round flow and state transitions
 
-**Context packet:** 25 independent cells; regular groups of 5+ pay once by count at the active multiplier. One 1.00 wager starts a complete round chain. Refills and collection-driven free stages are automatic and free. Scatter has no active feature.
+**Context packet:** 25 independent cells; regular groups of 5+ pay once by count at the active multiplier. One 1.00 wager starts a complete round chain. Refills and collection-driven free stages are automatic and free. Scatter bonus entry pauses for Continue and banks moves; move gameplay is deferred. See [08](08-scatter-bonus.md).
 
 **Authority:** [src/main.ts](../../src/main.ts): startup statements, `start`, `requestRound`, canvas listeners, `setGameState`, `playPhase`, `resolveRound`.
 
@@ -60,6 +60,7 @@ There is no balance check or affordability branch; this prototype has no bankrol
 | F14 | Internal `while (assets)` guard has no assets | Resolution exits. Normal initialized gameplay never clears `assets`; this is an internal guard, not a player-facing exit or cash-out. Other asset-dependent helpers also no-op without assets. |
 | F15 | Page reload/navigation recreates application | Abandon the in-memory chain and start again from F01. No saved round, restored collection, retained totals, refund process, or replay is implemented. |
 | F16 | At least one winning group matches the room | After initial winning highlight, reveal each group's independent room multiplier and before/after award in `room-bonus` for 1100 ms. Highlight its cells in teal. Hide/clear this overlay, then remove all winners and credit the final sum (boosted and nonboosted groups together) once at F10. |
+| F17 | Each resolution-loop entry, before F08/F09 | Await the Scatter entry check. If this stage has not awarded and 6+ Scatters exist, bank the exact count, show the modal and wait indefinitely for Continue. Resume on the same board with F08/F09 afterward. Reset the guard on every full paid/free-stage deal; preview never checks. |
 
 **Priority is important:** all simultaneous winners are paid before checking stage completion. A completion discards every survivor and Scatter from the old stage after the popup; it does not award anything merely for clearing those survivors.
 
@@ -73,6 +74,8 @@ Won {round_win_with_two_decimals} · Tap or click · Bet 1.00
 
 The final board, last background, last multiplier, partial collection, and totals remain visible. They are replaced/reset as specified by the next accepted paid start. The final evaluated board contains no regular identity five or more times; any number of Scatters may remain.
 
+If saved bonus moves are nonzero, append ` · Bonus: {N} moves saved` to the settled message and retain the reel badge. The move bank survives new paid starts; it is separate from the room collection and ordinary round-win reset.
+
 ## State graph
 
 ```mermaid
@@ -80,7 +83,8 @@ flowchart TD
   L[loading] --> P[drawing: unpaid preview]
   P --> R[ready]
   R --> D[drawing: paid deal; wager 1.00]
-  D --> Q{Any regular 5+ group?}
+  D --> T[Scatter check; if eligible pause for Continue]
+  T --> Q{Any regular 5+ group?}
   Q -->|no| R
   Q -->|yes| W[winning]
   W --> J{Any room-specific winning group?}
@@ -90,11 +94,11 @@ flowchart TD
   M --> C{All three tiers collected?}
   C -->|no| H[cleared]
   H --> F[refilling holes]
-  F --> Q
+  F --> T
   C -->|yes| S[switching: popup then clear all]
   S --> B[new room; reset collection; next multiplier]
   B --> G[drawing: free deal; no wager]
-  G --> Q
+  G --> T
   L -->|caught loading failure| E[error: reload]
   D -->|caught round failure| E
 ```

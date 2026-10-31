@@ -1,6 +1,6 @@
 ---
 document_type: analysis_handoff
-ruleset_id: fool-house-2026-10-25-v2
+ruleset_id: fool-house-2026-10-31-v4
 context: implemented scope, correct simulation model, non-claims, evidence and maintenance
 read_when: market-analysis brief, RTP study, comparison checklist, rules validation
 branch_ids: X01-X10
@@ -8,7 +8,7 @@ branch_ids: X01-X10
 
 # 06 — Market-analysis handoff and validation
 
-**Context packet:** this is a source-audited prototype specification, not external market research. The product is a themed 5×5 global-count game with fixed 1.00 paid rounds, in-place winning-symbol refills, three-tier background collections, and automatically increasing free-stage multipliers. Scatter is integrated visually and probabilistically but has no feature.
+**Context packet:** this is a source-audited prototype specification, not external market research. The product is a themed 5×5 global-count game with fixed 1.00 paid rounds, in-place winning-symbol refills, three-tier background collections, and automatically increasing free-stage multipliers. Scatter entry awards saved moves and a Continue modal; executing those moves remains deferred. See [08](08-scatter-bonus.md).
 
 **Authority:** [math](01-math.md), [round flow](02-round-flow.md), [stages](03-stages.md), [accounting](04-accounting.md), [runtime](05-runtime-ui.md), and their linked runtime sources. [rules.json](rules.json) supplies structured constants and source fingerprints.
 
@@ -19,9 +19,9 @@ branch_ids: X01-X10
 | Core outcome | 25 independent weighted cells, global identity counts | Reel strips, paylines, adjacency/cluster criteria, deck depletion |
 | Wins | 5/6/7+ group paytable, simultaneous wins, hole refills | Per-symbol payment, gravity/drop-down, consecutive-reel requirements |
 | Progression | Background-specific Low/Mid/High collection and free stages | Persistent progression between paid rounds or saved room collections |
-| Escalation | Stage multipliers x1 → x2 → … → x144; cap then repeat x144 | Increasing multiplier on each ordinary refill, finite free-spin allocation, total round-win cap |
+| Escalation | Stage multipliers x1 → x2 → … → x144; cap then repeat x144 | Increasing multiplier on each ordinary refill, execution of allocated Scatter moves, total round-win cap |
 | Room award | Independent x2/x3/x5/x8 draw for every winning current-room identity; stacks with stage multiplier | Per-symbol multiplier rolls, bonus draws for sub-threshold or other-room symbols |
-| Scatter | 5% nonpaying mansion, purple frame/label, retained during refills | Scatter award, Wild substitution, Scatter collection or feature trigger |
+| Scatter | 5% nonpaying mansion, retained on refills; first 6+ per stage awards exact-count saved moves and modal Continue | Direct cash award, Wild substitution, collection, playable bonus moves (future retriggers confirmed) |
 | Economy | Fixed 1.00 paid wager; gross wins and observed session RTP | Variable bet, bankroll, deposits/withdrawals, insufficient-funds or cash-out controls |
 | Controls | Click/tap, focused Enter/Space; busy inputs discarded | Autoplay, quick-stop, buy feature, user skip/cancel of a live chain |
 | Delivery | Local browser prototype, responsive canvas, in-memory session | Accounts, persistence, server outcome generation, recovery/replay of interrupted rounds |
@@ -34,20 +34,21 @@ For a **freshly drawn 25-cell board**, the linear expectations derived from the 
 
 | Category | Expected number of cells |
 | --- | --- |
-| All Low / one particular Low identity | 3.665 / 0.733 |
-| All Mid / one particular Mid identity | 2.5 / 0.5 |
-| All High / one particular High identity | 17.585 / 3.517 |
+| All Low / one particular Low identity | 14.25 / 2.85 |
+| All Mid / one particular Mid identity | 5.9375 / 1.1875 |
+| All High / one particular High identity | 3.5625 / 0.7125 |
 | Scatter | 1.25 |
 
 These are per-draw expectations, not settled-board counts. Each room boosts a different uniformly weighted index; rooms remain mechanically symmetric under index relabeling. The active room changes which winning identities get room bonuses, not their draw probabilities.
 
 ## X03 — RTP status and analysis unit
 
-- Two independent million-round validation runs estimate RTP at 96.07564% (approximate 95% interval 95.9558–96.1955%) and paid-round hit frequency at 88.1421%. See [07](07-calibration.md) for raw outputs, methodology, and limitations. This is not an exact or certified long-run RTP.
+- Current one-million-round validation estimates RTP at 6.09404% (approximate 95% interval 6.07387–6.11421%) and hit frequency at 62.8208%. See [09](09-tier-frequency.md). The user explicitly chose Low > Mid > High at 57/23.75/14.25 and deferred payout rebalancing. The historical High-heavy 96.07564% result in [07](07-calibration.md) is superseded. Neither study is exact/certified RTP.
 - Rare later Fibonacci stages were not observed in these runs; their tail contribution and worst-case duration are not empirically calibrated. Volatility/maximum duration are not comprehensively characterized.
 - The UI's session RTP is a sample ratio of committed awards to paid wagers. A screenshot value, a constructed example, an old playtest, or a test assertion is not the mathematical expected RTP.
 - Historical results from the old 5×4 board, 3/4/5+ threshold, per-symbol paytable, or pre-Scatter weights are not valid measurements of this snapshot.
 - Use one **completed paid-round chain** as one outcome observation, including every free stage and refill. Analyze interrupted sessions separately.
+- Scatter entry adds no cash award or RNG calls. Existing simulations still measure ordinary payout math; they do not count the saved move bank or modal timing. Any future execution/payout of banked moves requires a new study.
 
 ## X04 — Exact simulation transition contract
 
@@ -61,6 +62,8 @@ for each accepted paid round:
     collection = empty; wager += 100; spins += 1
     board = full_independent_draw()
     loop:
+        # Runtime checks 6+ Scatter entry once per stage and waits for Continue.
+        # No payout or RNG effect yet, so cash-only simulations may omit this pause/bank.
         groups = global_regular_groups_with_count_at_least_5(board)
         if groups is empty: finish this paid round
         wins = apply_independent_room_rolls(groups, room, rng)
@@ -93,7 +96,7 @@ Preview symbols are never evaluated/credited. The first paid room excludes the p
 | Repeated target-tier win after that tier is collected | Normal group payment, no extra collection count. |
 | Completion during a winning batch | Pay all groups; skip refill; clear survivors without paying them. |
 | Incomplete collection followed by no wins | End the chain; display partial progress, discard it at next paid room change. |
-| Twenty-five Scatter symbols | No regular win and no Scatter feature; chain ends if evaluated. |
+| Twenty-five Scatter symbols | No regular win. If this stage has not awarded, bank 25 moves and await Continue; then settle. Preview still awards nothing. |
 | Another collection completes at x144 | Another free stage at x144; no automatic stop. |
 | Input while an animation/free stage is running | Ignored, not queued and not charged. |
 | Preview contains a winning combination | Unpaid display only; no award/collection. |
@@ -118,11 +121,11 @@ If only that High group instead matches the room and draws x8, the same table co
 
 Record ruleset ID, RNG/seed policy, number of completed paid rounds, paid wagers, total awards, and truncated/error chains. Useful outputs are RTP with uncertainty, paid-round hit frequency, win-amount distribution, awards by tier/multiplier, refills per stage, free stages per paid round, set-completion frequency, chain duration under the specified timings, and cap reach frequency. Keep paid spins, free deals, and refills as separate counters.
 
-The user confirmed a target of about 96% and one room roll per matching group. The implemented calibration and study are in [07](07-calibration.md); external market research remains outside this task.
+The earlier target was about 96% with one room roll per matching group. The user's later explicit choice prioritizes the 57/23.75/14.25 tier hierarchy and defers payout rebalancing. Current evidence is in [09](09-tier-frequency.md); [07](07-calibration.md) is historical. External market research remains outside this task.
 
 ## X09 — Evidence and coverage
 
-All **15 tests passed** on 2026-10-25 for this implementation:
+All **16 tests passed** on 2026-10-31 for this implementation:
 
 | Test area | Documented decisions it exercises |
 | --- | --- |
@@ -141,6 +144,7 @@ All **15 tests passed** on 2026-10-25 for this implementation:
 | All 30 room-bag slots and duplicate counts | M19 |
 | Independent eligible-group draws, zero RNG for nonmatches | M19–M21 |
 | Room/stage stacking through x144 and repeat-group eligibility | M21, C14 |
+| Scatter threshold/count 0–25, holes, no mutation or regular payout | B02–B03 |
 
 Runtime/error branches are source-audited, not claimed as full automated coverage. The build passed. New desktop/mobile browser checks verified separate room reveals, three simultaneous rolls, exact crediting, locked input, and the subsequent free stage. The temporary fixture was removed; details are in `CHANGELOG.md` and [07](07-calibration.md).
 

@@ -165,6 +165,236 @@ canvas:focus-visible {
   font-size: 0.7em;
 }
 
+.bonus-bank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 45%;
+  padding: 5px 8px;
+  border: 1px solid #bb82e6;
+  border-radius: 6px;
+  background: #190d25ed;
+  color: #f4d8ff;
+  font-size: clamp(9px, 2.5vw, 12px);
+  font-weight: 700;
+  white-space: pre-line;
+  text-shadow: 0 0 8px #bf74ff;
+}
+
+.scatter-bonus-dialog {
+  width: min(420px, calc(100% - 28px));
+  max-height: calc(100dvh - 28px);
+  box-sizing: border-box;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #8ba987;
+  border-radius: 16px;
+  color: #f6eedb;
+  background: #111914;
+  box-shadow: 0 0 0 4px #26332b, 0 0 70px #62ff934a, 0 22px 80px #000;
+}
+
+.scatter-bonus-dialog[open] {
+  animation: haunted-arrival 420ms ease-out both;
+}
+
+.scatter-bonus-dialog::backdrop {
+  background: #030607d9;
+  backdrop-filter: blur(5px);
+}
+
+.haunted-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 32px 24px 22px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse at 0 0, #7d080d99, transparent 35%),
+    radial-gradient(ellipse at 100% 45%, #74101455, transparent 22%),
+    radial-gradient(ellipse at 50% 90%, #224d3355, transparent 65%),
+    linear-gradient(130deg, #1d2721, #090e0d 65%, #18231a);
+}
+
+.haunted-card > :not(.bonus-web, .bonus-dust, .blood-drips, .bonus-ooze) {
+  position: relative;
+  z-index: 1;
+}
+
+.bonus-web {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 40%;
+  fill: none;
+  stroke: #d1d7bf;
+  stroke-width: 0.8;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.bonus-web-right {
+  left: auto;
+  right: 0;
+  transform: scaleX(-1);
+}
+
+.bonus-dust {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(circle, #d5cdbb 0 0.7px, transparent 1.4px),
+    radial-gradient(circle, #c7dba6 0 1px, transparent 1.7px);
+  background-size: 37px 61px, 83px 97px;
+  background-position: 0 0, 15px 12px;
+  animation: haunted-dust 8s linear infinite alternate;
+  pointer-events: none;
+}
+
+.blood-drips {
+  position: absolute;
+  top: 0;
+  left: 12%;
+  width: 76%;
+  height: 40px;
+  border-top: 5px solid #711018;
+  filter: drop-shadow(0 2px 2px #000);
+  pointer-events: none;
+}
+
+.blood-drips i {
+  position: absolute;
+  width: 6px;
+  height: 23px;
+  border-radius: 0 0 60% 60%;
+  background: linear-gradient(#711018, #a1232c 80%, #57080d);
+}
+
+.blood-drips i:nth-child(1) { left: 4%; height: 33px; }
+.blood-drips i:nth-child(2) { left: 16%; height: 13px; width: 4px; }
+.blood-drips i:nth-child(3) { left: 72%; height: 20px; width: 8px; }
+.blood-drips i:nth-child(4) { left: 84%; height: 37px; }
+.blood-drips i:nth-child(5) { left: 92%; height: 12px; width: 4px; }
+
+.bonus-eyebrow {
+  margin: 7px 0 12px;
+  color: #c4bea0;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+#scatter-bonus-title {
+  margin: 0;
+  color: #dbffc4;
+  font-family: Georgia, serif;
+  font-size: clamp(30px, 9vw, 46px);
+  line-height: 0.96;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 0 #133019, 0 0 24px #8dfc6b88, 2px 4px 2px #000;
+}
+
+.bonus-mansion {
+  display: block;
+  height: clamp(90px, 20dvh, 165px);
+  width: auto;
+  max-width: 60%;
+  object-fit: contain;
+  margin: 15px auto 8px;
+  filter: drop-shadow(0 0 18px #a064d880);
+}
+
+.bonus-award {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  color: #ecffd7;
+}
+
+.bonus-award strong {
+  font-size: clamp(40px, 12vw, 60px);
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 20px #a8ff6b88;
+}
+
+.bonus-award span {
+  max-width: 80px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#scatter-bonus-description {
+  max-width: 280px;
+  margin: 10px auto 18px;
+  color: #d4d7c6;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bonus-continue {
+  min-height: 48px;
+  width: 100%;
+  max-width: 280px;
+  border: 1px solid #daffa3;
+  border-radius: 7px;
+  background: linear-gradient(#d3f6a8, #83b95c);
+  color: #18240e;
+  box-shadow: 0 0 22px #9efa6c55, inset 0 1px #f2ffcc;
+  font: 800 16px system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.bonus-continue:hover { background: #e3ffc4; }
+.bonus-continue:focus-visible { outline: 3px solid #fff3d8; outline-offset: 4px; }
+.bonus-continue:active { transform: translateY(1px); }
+
+.bonus-footnote {
+  max-width: 270px;
+  margin: 13px auto 4px;
+  color: #b4bea8;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.bonus-ooze {
+  position: absolute;
+  bottom: -15px;
+  left: -10%;
+  width: 120%;
+  height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, #b7ff6c, #5c9b43 45%, #1f5c32 70%);
+  box-shadow: 0 -5px 25px #91ff5f77;
+  opacity: 0.6;
+  animation: haunted-ooze 3s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes haunted-arrival {
+  from { opacity: 0; transform: scale(0.9) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes haunted-dust { to { background-position: 7px -20px, 5px -3px; } }
+@keyframes haunted-ooze { to { opacity: 0.9; box-shadow: 0 -5px 40px #91ff5faa; } }
+
+@media (max-height: 550px) {
+  .haunted-card { padding: 18px 22px 16px; }
+  .bonus-eyebrow { margin: 2px 0 8px; }
+  #scatter-bonus-title { font-size: 27px; }
+  .bonus-mansion { height: 70px; margin: 8px auto; }
+  .bonus-award strong { font-size: 36px; }
+  #scatter-bonus-description { margin: 6px auto 10px; }
+  .bonus-footnote { margin-top: 8px; }
+}
+
 @keyframes room-bonus-reveal {
   0% { opacity: 1; transform: translate(-50%, -50%) scale(0.65); }
   20% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
@@ -173,7 +403,10 @@ canvas:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .multiplier.boosted,
-  .room-bonus-popup {
+  .room-bonus-popup,
+  .scatter-bonus-dialog[open],
+  .bonus-dust,
+  .bonus-ooze {
     animation: none;
   }
 }
