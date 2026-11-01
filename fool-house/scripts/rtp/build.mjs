@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+const zig=process.argv.find(a=>a.startsWith('--zig='))?.slice(6);
+if(!zig)throw Error('Usage: node scripts/rtp/build.mjs --zig=/path/to/zig[.exe]');
+fs.mkdirSync('.rtp-runs/compiler-temp',{recursive:true});
+const temp=path.resolve('.rtp-runs/compiler-temp');
+const env={...process.env,TMP:temp,TEMP:temp,TMPDIR:temp,ZIG_GLOBAL_CACHE_DIR:path.resolve('.rtp-runs/zig-cache'),ZIG_LOCAL_CACHE_DIR:path.resolve('.rtp-runs/zig-local-cache')};
+const result=spawnSync(zig,['c++','-O3','-march=native','-ffp-contract=off','scripts/rtp/simulator.cpp','-o',process.platform==='win32'?'.rtp-runs/native.exe':'.rtp-runs/native'],{env,stdio:'inherit',windowsHide:true});
+if(result.error)throw result.error;process.exitCode=result.status;

@@ -1,14 +1,14 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-31-v4
+ruleset_id: fool-house-2026-11-01-v12
 context: visible states, nominal animation timing, layout, input accessibility, failure paths
 read_when: UX comparison, runtime exceptions, rendering or timing changes
-branch_ids: U01-U16, E01-E09
+branch_ids: U01-U18, E01-E09
 ---
 
 # 05 — Runtime, presentation, and exceptional branches
 
-**Context packet:** the controller locks input for the entire paid-round chain. Its eleven states are `loading`, `ready`, `drawing`, `winning`, `room-bonus`, `bonus-trigger`, `removing`, `cleared`, `refilling`, `switching`, and `error`. Rendering does not choose outcomes. Scatter is nonpaying but awards saved moves via [08](08-scatter-bonus.md); tier tints identify symbols; teal identifies current room-bonus winners.
+**Context packet:** global states remain `loading`, `ready`, `drawing`, `winning`, `room-bonus`, `bonus-trigger`, `bonus`, `removing`, `cleared`, `refilling`, `switching`, `mystery-waiting`, `mystery-picking`, `mystery-reveal`, `error`. Inside bonus, subphases are walking/choosing/revealing/complete. Base stays locked until return/resolution completes. Rendering never consumes outcome RNG. See [10](10-door-adventure.md).
 
 **Authority:** [src/main.ts](../../src/main.ts), particularly `playPhase`, drawing helpers, `resize`, image loaders and `start`; [src/style.css](../../src/style.css) for media-query behavior, badge pulse, and HUD styling.
 
@@ -19,13 +19,17 @@ branch_ids: U01-U16, E01-E09
 | `loading` | `Loading Fool House…` | Until required artwork is ready or load fails. |
 | `ready`, first preview | `Tap or click to start · Bet 1.00` | Until accepted input. |
 | `drawing`, paid preparation | `Preparing the next round…` | Synchronous setup; not a separate timed phase. |
-| `drawing`, preview/paid board | `Drawing symbols…` | 740 ms. |
+| `drawing`, paid board | `Drawing symbols…` | 740 ms. |
+| `mystery-waiting` | `Reel results · Mystery reveal coming…` | 2000 ms after deal/refill has landed; full-size symbols, no picker/win evaluation, input locked. Also 2000 ms under reduced motion. No wait on Mystery-free boards. |
 | `winning` | `Win {base_batch_award} · x{stage_multiplier}` | 550 ms. Includes stage multiplication, before room bonus. |
 | `room-bonus` | `Room bonus ×{rolls} · Win {final_batch_award}` | 1100 ms, only when at least one group matches the room. |
-| `bonus-trigger` | `Bonus triggered · {N} free moves · Press Continue` | Indefinite native modal; only Continue resumes the chain. Saved moves also appear in a reel badge and settled status. |
+| `bonus-trigger` | `Bonus triggered · {N} free moves · Press Continue` | Indefinite native modal; Continue opens the bonus scene. |
+| `bonus` | Base status hidden; Walking / Choose a door / Opening / prize result / All moves complete | Walk 3000 ms, wait for door choice, open 700 ms, reveal 1600 ms (Ghost 1900), repeat or wait for Return. Prize/floor and step/win panels update as specified in D01–D18. |
 | `removing` | `Collecting {final_batch_award}…` | 240 ms, then removal/credit/collection commit. |
 | `cleared` | `Refilling empty cells…` | 120 ms. |
+| `cleared`, stalled partial room | `Finding the remaining {Room} symbols…` | 120 ms with regular cells empty and Scatters visible; no credit for discarded regular survivors. |
 | `refilling` | `Drawing replacement symbols…` | 740 ms. |
+| `refilling`, collection active | `Drawing {Room} symbols…` | 740 ms; new regular/empty slots only; retained Scatters do not regrow. |
 | `switching`, old stage | `Switching to the next stage` | 1200 ms with popup and old survivors. |
 | `switching`, cleared board | Same | 180 ms with popup and all cells empty. |
 | `drawing`, free board | `Free respin · x{multiplier}` | 740 ms. |
@@ -48,11 +52,13 @@ branch_ids: U01-U16, E01-E09
 | U09 | Viewport changes | Background center-crops to cover the viewport; title sits at top center; frame stays horizontally centered. Frame size reserves title space and room below for collection and HUD. On portrait screens at most 600 CSS px wide, use 4 px reel side margins, a maximum 10 px gap, and collection icons capped at 64 px / 8% of viewport height. Use the full available play-area height; retain vertical viewport centering when it fits, otherwise shift upward to keep all panels clear. Other viewports retain symmetric vertical reserves. Aspect ratios are preserved. Board, progress, counters, and RNG outcomes do not change. |
 | U10 | Viewport height is below 500 CSS px | Canvas uses compact collection icons/slots (64 px maximum slot width instead of 100), 13 px label reserve instead of 15. At height >=500, use normal canvas sizing. CSS compact message/statistics styles independently apply at height **<=500**, so exactly 500 has compact CSS with normal canvas sizing. |
 | U11 | Resize/density redraw | Use canvas CSS bounds, `devicePixelRatio || 1`, rounded backing dimensions at least 1 pixel, and a matching context transform. `ResizeObserver` watches canvas and HUD; window resize also redraws. There is no reroll on resize. |
-| U12 | Reduced-motion preference matches | Shorten timed phases other than `switching` and `room-bonus` to `min(original,180)` ms. Keep room-bonus text visible for all 1100 ms, without its CSS reveal animation. Growth is immediately full-size; winning glow is static (8), badge CSS pulse stops. Removal still shrinks briefly. Scatter modal entrance/dust/ooze animations stop, but its indefinite Continue wait remains. |
+| U12 | Reduced-motion preference matches | Shorten timed phases other than `switching`, `room-bonus` and `mystery-waiting` to `min(original,180)` ms. Keep room-bonus text visible for all 1100 ms, without its CSS reveal animation. Growth is immediately full-size; winning glow is static (8), badge CSS pulse stops. Removal still shrinks briefly. Scatter modal entrance/dust/ooze animations stop, but its indefinite Continue wait remains. |
 | U13 | Phase elapsed time is below / at least its stored duration | Draw and schedule another animation frame / draw and resolve its promise. Phases are sequential. Browser throttling or suspended animation frames may increase wall-clock time; no separate pause/resume/cancel feature exists. |
 | U14 | Accessible descriptions/status update | Canvas is a focusable button with a static start label and `aria-disabled` except while ready. Status is a polite live region. Hidden descriptions report each row (including `scatter`/`empty`), multiplier, and collected/waiting tiers. Descriptions refresh at phase starts and settlement, not just at initial load. |
 | U15 | Overlay/HUD is under a pointer | Reel overlay/HUD use `pointer-events: none`, allowing the canvas beneath to receive the action. The separate Scatter modal is interactive, blocks the background, and has an explicit Continue button. Otherwise the whole canvas is the start control; there is no Spin/Stop/Collect button. Keyboard behavior and lock guards are in [02](02-round-flow.md), modal behavior in [08](08-scatter-bonus.md). |
 | U16 | State is `room-bonus` | Show a centered room-name panel with one row per eligible winning group: tier, its x2/x3/x5/x8 roll, and stage-adjusted amount → final boosted amount. Reveal with a scale/glow animation; matched member cells turn teal. Stage multiplier badge remains separate. Hide and clear room highlights before removal; no additional input is accepted. |
+| U17 | State is `bonus` | Blueprint layer covers preserved/inert base. Show logo/Bonus title, prize/floor panel, corridor and bottom counters. Corridor matches reel rectangle when space fits, shrinking uniformly on constrained screens. Resize changes no outcome, move or RNG call. |
+| U18 | Door controls / motion | Buttons align to projected openings and enable only in choosing. Every new walk resets selected door, prior reveal/prize/caption/callback; focus returns to the bonus region when a choice is accepted and when the next step starts. No hover glow persists under a stationary pointer. Deliberate keyboard focus gets only a plain outline on an enabled door. Current-prize canvas effects last only through their own reveal. Repeat Enter/Space is prevented; reduced motion and completion-stop behavior remain as specified in D16. |
 
 ### Growth formula
 
@@ -86,9 +92,11 @@ If reduced motion is active, or the cell is not currently growing, `p = 1`. A wi
 | E03 | Image URL already has a cached promise | Return that same promise, whether decoding is pending or already fulfilled. No second image/decode request. |
 | E04 | Image URL is uncached / decode rejects | Create/cache an image decode promise. On rejection, delete that cache entry and propagate rejection. Cache eviction allows a future loader call to retry; the current UI does not automatically issue one. |
 | E05 | A required theme's background URL is absent from the Vite glob | Return a rejected promise containing `Missing background for {theme}`. Startup's combined load handles it as failure. |
-| E06 | Any error reaches `start()`'s catch (including any of 11 image loads) | Enter `error` with the artwork-reload message and log a console error. All backgrounds are required before play; there is no “skip bad room” or partial-load fallback. |
+| E06 | Any error reaches `start()`'s catch (including any of 12 image loads) | Enter `error` with the artwork-reload message and log a console error. All backgrounds, including bonus artwork, are required before play; there is no “skip bad room” or partial-load fallback. |
 | E07 | An error reaches the awaited `requestRound()` chain's catch | Enter `error` with the interrupted-round message and log a console error. No automatic rollback, refund, continuation, or ready-state retry. Existing counters may reflect partial work. |
 | E08 | Error occurs in an asynchronous animation-frame/observer/event callback outside those awaited catches | There is no general error boundary or promise rejection wiring from an animation callback exception. Do not assume E06/E07 handle every browser/rendering failure; a phase can remain unresolved. |
 | E09 | Input arrives after error, or page is reloaded | Error-state input is discarded by the normal ready guard. Reload creates a fresh unpaid preview and zero session; it does not recover the interrupted chain. |
 
 All room images are decoded up front, so successful gameplay does not fetch a new room image during a free-stage transition. There are no deliberate round-time network/API/database branches. Internal helpers that require assets (`applyTheme`, collection description, drawing, and the resolution loop guard) return/do nothing if assets are absent; normal accepted play cannot enter that condition.
+
+Mystery phases: `mystery-waiting` holds full reel results for 2000 ms after landing, then `mystery-picking` (1600 ms) keeps pink question marks pulsing while cycling the three actual room icons. `mystery-reveal` (450 ms) replaces the whole group with one shared choice and pink light/growth. Inputs stay locked and Scatter/wins wait until reveal finishes. Reduced motion keeps the full 2000 ms waiting phase and caps only selection/reveal at 180 ms with a static choice/glow. Startup uses a static nonwinning regular-only preview and runs no phases. No new image assets. See [14](14-mystery.md).

@@ -5,18 +5,24 @@ import lowSymbolsUrl from './assets/symbols/low.png';
 import midSymbolsUrl from './assets/symbols/mid.png';
 import highSymbolsUrl from './assets/symbols/high.png';
 import scatterUrl from './assets/symbols/scatter.png';
+import bonusBackgroundUrl from './assets/background/bonus.png';
 import {
-  applyRoomMultipliers, BET_CENTS, collectWins, findWins, generateBoard, getMultiplier, getScatterBonusMoves, isCollectionComplete,
-  REEL_COLUMNS, REEL_ROWS, refillBoard, removeWins, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
+  applyRoomMultipliers, BET_CENTS, clearForFloor, collectWins, createPreviewBoard, findWins, generateBoard, getMultiplier, getScatterBonusMoves, isCollectionComplete,
+  REEL_COLUMNS, REEL_ROWS, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
 } from './game';
-import type { Board, SymbolKind, SymbolTier } from './game';
+import type { Board, RegularSymbol, SymbolKind, SymbolTier } from './game';
+import { applyBonusPrize, BONUS_COIN_CENTS, createBonusState, drawBonusPrize, formatCents, MAX_BONUS_FLOOR } from './bonus';
+import type { BonusPrize } from './bonus';
+import { BonusCorridor } from './bonus-scene';
 
-const app = document.querySelector<HTMLDivElement>('#app');
+const root = document.querySelector<HTMLDivElement>('#app');
 
-if (!app) throw new Error('Missing app element');
+if (!root) throw new Error('Missing app element');
+const app = root;
 
 app.innerHTML = `
   <main class="game">
+    <div class="base-scene">
     <canvas role="button" tabindex="0" aria-label="Start a Fool House round" aria-disabled="true"
       aria-describedby="game-message collection-description reels-description">Fool House requires a browser with canvas support.</canvas>
     <p id="collection-description" class="sr-only"></p>
@@ -41,6 +47,49 @@ app.innerHTML = `
         </dl>
       </div>
     </section>
+    </div>
+    <section class="bonus-scene" aria-label="Fool House bonus game" tabindex="-1" hidden>
+      <img class="bonus-blueprint" src="${bonusBackgroundUrl}" alt="">
+      <header class="bonus-header">
+        <img class="bonus-logo" src="${titleUrl}" alt="Fool House">
+        <h1 class="bonus-heading">Bonus</h1>
+      </header>
+      <div class="bonus-content">
+        <section class="bonus-prizes" aria-label="Potential bonus prizes">
+          <div class="bonus-floor"><strong data-bonus-floor>Floor 1</strong><span data-bonus-floor-factor>Coin prizes ×1</span></div>
+          <div class="bonus-prize-grid">
+            <div><span>Coin · 35%</span><strong data-bonus-coin>1.00</strong></div>
+            <div><span>Multiplier · 25%</span><strong>×2–×8</strong></div>
+            <div><span>Stairs · 5%</span><strong data-bonus-stairs>Floor 2 ↑</strong></div>
+            <div><span>Ghost · 35%</span><strong>0.00</strong></div>
+          </div>
+        </section>
+        <div class="bonus-corridor">
+          <canvas class="corridor-canvas" aria-hidden="true"></canvas>
+          <div class="bonus-doors">
+            <button type="button" class="bonus-door" aria-label="Choose left door" disabled>Left</button>
+            <button type="button" class="bonus-door" aria-label="Choose middle door" disabled>Middle</button>
+            <button type="button" class="bonus-door" aria-label="Choose right door" disabled>Right</button>
+          </div>
+          <div class="bonus-complete" hidden>
+            <h2>Bonus complete</h2><p data-bonus-final-win>0.00</p>
+            <button type="button" class="bonus-collect">Return to mansion</button>
+          </div>
+        </div>
+        <p class="bonus-action" role="status" aria-live="polite">Walking through the corridor…</p>
+      </div>
+      <section class="bonus-status" aria-label="Bonus status">
+        <dl class="bonus-stats" aria-live="polite" aria-atomic="true">
+          <div class="bonus-step-count">
+            <dt>Steps</dt>
+            <dd><span data-bonus-stat="current-step">1</span> of <span data-bonus-stat="total-steps">0</span> steps</dd>
+            <small><span data-bonus-stat="remaining-steps">0</span> remaining</small>
+          </div>
+          <div><dt>Step win</dt><dd data-bonus-stat="step-win">0.00</dd></div>
+          <div><dt>Total bonus win</dt><dd data-bonus-stat="total-win">0.00</dd></div>
+        </dl>
+      </section>
+    </section>
     <dialog class="scatter-bonus-dialog" aria-labelledby="scatter-bonus-title" aria-describedby="scatter-bonus-description">
       <div class="haunted-card">
         <svg class="bonus-web" viewBox="0 0 160 160" aria-hidden="true">
@@ -63,7 +112,7 @@ app.innerHTML = `
         <p class="bonus-award"><strong data-bonus-award>6</strong><span>FREE MOVES</span></p>
         <p id="scatter-bonus-description"></p>
         <button class="bonus-continue" type="button" autofocus>Continue</button>
-        <p class="bonus-footnote">Your moves are saved for the upcoming bonus feature.</p>
+        <p class="bonus-footnote">Your free moves await inside.</p>
         <div class="bonus-ooze" aria-hidden="true"></div>
       </div>
     </dialog>
@@ -90,27 +139,37 @@ const bonusAward = app.querySelector<HTMLElement>('[data-bonus-award]')!;
 const bonusDescription = app.querySelector<HTMLParagraphElement>('#scatter-bonus-description')!;
 const bonusContinue = app.querySelector<HTMLButtonElement>('.bonus-continue')!;
 const bonusBank = app.querySelector<HTMLSpanElement>('.bonus-bank')!;
+const baseScene = app.querySelector<HTMLDivElement>('.base-scene')!;
+const bonusScene = app.querySelector<HTMLElement>('.bonus-scene')!;
+const bonusStat = (name: string): HTMLElement => app.querySelector<HTMLElement>(`[data-bonus-stat="${name}"]`)!;
+const bonusContent = app.querySelector<HTMLDivElement>('.bonus-content')!;
+const bonusPrizes = app.querySelector<HTMLElement>('.bonus-prizes')!;
+const bonusCorridorFrame = app.querySelector<HTMLDivElement>('.bonus-corridor')!;
+const corridorCanvas = app.querySelector<HTMLCanvasElement>('.corridor-canvas')!;
+const bonusDoors = [...app.querySelectorAll<HTMLButtonElement>('.bonus-door')];
+const bonusAction = app.querySelector<HTMLParagraphElement>('.bonus-action')!;
+const bonusComplete = app.querySelector<HTMLDivElement>('.bonus-complete')!;
+const bonusCollect = app.querySelector<HTMLButtonElement>('.bonus-collect')!;
 const statSpins = app.querySelector<HTMLElement>('[data-stat="spins"]')!;
 const statRtp = app.querySelector<HTMLElement>('[data-stat="rtp"]')!;
 const statTotalWin = app.querySelector<HTMLElement>('[data-stat="total-win"]')!;
 const statRoundWin = app.querySelector<HTMLElement>('[data-stat="round-win"]')!;
 
 type GameState = 'loading' | 'ready' | 'drawing' | 'winning' | 'room-bonus' | 'bonus-trigger' | 'removing' | 'cleared'
-  | 'refilling' | 'switching' | 'error';
+  | 'refilling' | 'switching' | 'mystery-waiting' | 'mystery-picking' | 'mystery-reveal' | 'bonus' | 'error';
 let gameState: GameState = 'loading';
 let bonusMoves = 0;
 let scatterBonusAwarded = false;
-const session = { spins: 0, totalWagerCents: 0, totalWinCents: 0, roundWinCents: 0 };
-const winFormat = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-const formatWin = (cents: number): string => winFormat.format(cents / 100);
+let bonusSession = createBonusState(1);
+let bonusPhase: 'walking' | 'choosing' | 'revealing' | 'complete' = 'walking';
+let bonusCorridor: BonusCorridor | undefined;
+const session = { spins: 0, totalWagerCents: 0n, totalWinCents: 0n, roundWinCents: 0n };
+const formatWin = formatCents;
 
 function renderStats(): void {
   statSpins.textContent = session.spins.toLocaleString('en-US');
-  statRtp.textContent = session.totalWagerCents > 0
-    ? `${(session.totalWinCents / session.totalWagerCents * 100).toFixed(2)}%`
+  statRtp.textContent = session.totalWagerCents > 0n
+    ? `${(Number(session.totalWinCents) / Number(session.totalWagerCents) * 100).toFixed(2)}%`
     : '—';
   statTotalWin.textContent = formatWin(session.totalWinCents);
   statRoundWin.textContent = formatWin(session.roundWinCents);
@@ -132,21 +191,18 @@ async function requestRound(): Promise<void> {
     scatterBonusAwarded = false;
     board = generateBoard();
     session.spins++;
-    session.totalWagerCents += BET_CENTS;
-    session.roundWinCents = 0;
+    session.totalWagerCents += BigInt(BET_CENTS);
+    session.roundWinCents = 0n;
     renderStats();
     growingCells = allCells();
     await playPhase('drawing', 'Drawing symbols…', DEAL_DURATION);
-    await resolveRound();
+    if (await resolveRound()) return;
     growingCells.clear();
     updateBoardDescription();
     setGameState('ready', `Won ${formatWin(session.roundWinCents)} · Tap or click · Bet 1.00${bonusMoves ? ` · Bonus: ${bonusMoves} moves saved` : ''}`);
     draw();
   } catch (error) {
-    roomBonusPopup.hidden = true;
-    roomBonusCells.clear();
-    setGameState('error', 'Round interrupted. Please reload.');
-    console.error('Failed to resolve Fool House round:', error);
+    interruptRound(error);
   }
 }
 
@@ -187,7 +243,7 @@ interface SceneAssets {
   title: HTMLImageElement;
   theme: Theme;
   collection: CollectionSymbol[];
-  sprites: Record<SymbolKind, HTMLImageElement>;
+  sprites: Record<Exclude<SymbolKind, 'mystery'>, HTMLImageElement>;
 }
 
 let assets: SceneAssets | undefined;
@@ -197,6 +253,11 @@ let board: Board = [];
 let collected = new Set<SymbolTier>();
 let growingCells = new Set<number>();
 let winningCells = new Set<number>();
+const mysteryCells = new Set<number>();
+let mysteryChoice: RegularSymbol | null = null;
+const MYSTERY_PICK_DURATION = 1600;
+const MYSTERY_RESULTS_DURATION = 500;
+const MYSTERY_REVEAL_DURATION = 450;
 const roomBonusCells = new Map<number, number>();
 let phaseStartedAt = 0;
 let phaseDuration = 1;
@@ -243,7 +304,7 @@ function nextTheme(): Theme {
 function updateCollectionDescription(): void {
   if (!assets) return;
   collectionDescription.textContent = `${assets.theme.name} collection: ${SYMBOL_TIERS.map((tier) =>
-    `${tier} ${collected.has(tier) ? 'collected' : 'waiting'}`).join(', ')}. Icon index ${assets.theme.symbolIndex}.`;
+    `${tier} ${collected.has(tier) ? 'collected' : 'waiting'}`).join(', ')}. Icon index ${assets.theme.symbolIndex}.${collected.size ? ' Refills use this room’s symbols until the set is complete.' : ''}`;
 }
 
 function applyTheme(theme: Theme): void {
@@ -273,13 +334,13 @@ function allCells(): Set<number> {
 function updateBoardDescription(): void {
   reelsDescription.textContent = `Multiplier x${multiplier}. ${REEL_COLUMNS} columns and ${REEL_ROWS} rows. ${board.map((row, index) =>
     `Row ${index + 1}: ${row.map((symbol) => !symbol ? 'empty'
-      : symbol.tier === 'scatter' ? 'scatter' : `${symbol.tier}[${symbol.index}]`).join(', ')}.`).join(' ')}`;
+      : symbol.tier === 'scatter' ? 'scatter' : symbol.tier === 'mystery' ? 'mystery question mark' : `${symbol.tier}[${symbol.index}]`).join(', ')}.`).join(' ')}`;
 }
 
 function playPhase(state: GameState, message: string, duration: number): Promise<void> {
   setGameState(state, message);
   phaseStartedAt = performance.now();
-  phaseDuration = reducedMotion.matches && state !== 'switching' && state !== 'room-bonus'
+  phaseDuration = reducedMotion.matches && state !== 'switching' && state !== 'room-bonus' && state !== 'mystery-waiting'
     ? Math.min(duration, 180) : duration;
   updateBoardDescription();
   draw();
@@ -293,11 +354,143 @@ function playPhase(state: GameState, message: string, duration: number): Promise
   });
 }
 
-async function checkScatterBonus(): Promise<void> {
-  if (scatterBonusAwarded) return;
-  const moves = getScatterBonusMoves(board);
-  if (!moves) return;
-  // Persistent Scatters must not award again on every refill of this same room stage.
+function renderBonusStats(currentStep: number): void {
+  bonusStat('current-step').textContent = String(currentStep);
+  bonusStat('total-steps').textContent = String(bonusSession.totalSteps);
+  bonusStat('remaining-steps').textContent = String(bonusSession.totalSteps - bonusSession.completedSteps);
+  bonusStat('step-win').textContent = formatWin(bonusSession.stepWinCents);
+  bonusStat('total-win').textContent = formatWin(bonusSession.totalWinCents);
+  app.querySelector<HTMLElement>('[data-bonus-floor]')!.textContent = `Floor ${bonusSession.floor}`;
+  app.querySelector<HTMLElement>('[data-bonus-floor-factor]')!.textContent = `Coin prizes ×${bonusSession.floor}`;
+  app.querySelector<HTMLElement>('[data-bonus-coin]')!.textContent = formatWin(BONUS_COIN_CENTS * bonusSession.floor);
+  app.querySelector<HTMLElement>('[data-bonus-stairs]')!.textContent = bonusSession.floor < MAX_BONUS_FLOOR
+    ? `Floor ${bonusSession.floor + 1} ↑` : 'Top floor';
+}
+
+function layoutBonusScene(): void {
+  if (bonusScene.hidden) return;
+  const baseFrame = reelOverlay.getBoundingClientRect();
+  const header = app.querySelector<HTMLElement>('.bonus-header')!.getBoundingClientRect();
+  const footer = app.querySelector<HTMLElement>('.bonus-status')!.getBoundingClientRect();
+  // Keep four prize columns readable even when the landscape reel frame is narrow.
+  const contentWidth = Math.min(width - 12, Math.max(320, baseFrame.width));
+  bonusContent.style.width = `${contentWidth}px`;
+  const extra = bonusPrizes.getBoundingClientRect().height + bonusAction.getBoundingClientRect().height + 12;
+  const available = footer.top - header.bottom - 12;
+  const stageHeight = Math.max(60, Math.min(baseFrame.height, available - extra));
+  const stageWidth = Math.min(contentWidth, stageHeight * 1164 / 1351);
+  const actualHeight = stageWidth * 1351 / 1164;
+  bonusCorridorFrame.style.width = `${stageWidth}px`;
+  bonusCorridorFrame.style.height = `${actualHeight}px`;
+  bonusContent.style.top = `${header.bottom + 6 + Math.max(0, (available - actualHeight - extra) / 2)}px`;
+  bonusCorridor?.resize();
+}
+
+function enterBonusScene(): void {
+  bonusSession = createBonusState(bonusMoves);
+  bonusComplete.hidden = true;
+  bonusCollect.disabled = false;
+  bonusCorridor ??= new BonusCorridor(corridorCanvas, bonusDoors);
+  setGameState('bonus', `Bonus · ${bonusSession.totalSteps} steps`);
+  baseScene.inert = true;
+  baseScene.setAttribute('aria-hidden', 'true');
+  bonusScene.hidden = false;
+  renderBonusStats(1);
+  layoutBonusScene();
+  void startBonusStep().catch(interruptRound);
+}
+
+async function startBonusStep(): Promise<void> {
+  bonusPhase = 'walking';
+  bonusScene.focus({ preventScroll: true });
+  bonusDoors.forEach((door) => { door.disabled = true; });
+  renderBonusStats(bonusSession.completedSteps + 1);
+  bonusAction.textContent = 'Walking through the corridor…';
+  layoutBonusScene();
+  await bonusCorridor!.walk();
+  bonusPhase = 'choosing';
+  bonusDoors.forEach((door) => { door.disabled = false; });
+  bonusAction.textContent = 'Choose a door: left, middle or right';
+}
+
+function bonusPrizeText(prize: BonusPrize, next: typeof bonusSession): string {
+  if (prize.kind === 'coin') return `Coin · +${formatWin(next.stepWinCents)}`;
+  if (prize.kind === 'multiplier') return `×${prize.multiplier} · Bonus total ${formatWin(next.totalWinCents)}`;
+  if (prize.kind === 'stairs') return next.floor === bonusSession.floor ? 'Already on the top floor · ×6' : `Upstairs · Floor ${next.floor} · Coin prizes ×${next.floor}`;
+  return 'Ghost · No win';
+}
+
+async function chooseBonusDoor(index: number): Promise<void> {
+  if (gameState !== 'bonus' || bonusPhase !== 'choosing') return;
+  bonusPhase = 'revealing';
+  bonusScene.focus({ preventScroll: true });
+  bonusDoors.forEach((door) => { door.disabled = true; });
+  bonusStat('step-win').textContent = '0.00';
+  bonusAction.textContent = 'Opening the door…';
+  const prize = drawBonusPrize();
+  const next = applyBonusPrize(bonusSession, prize);
+  const text = bonusPrizeText(prize, next);
+  await bonusCorridor!.reveal(index, prize, text, () => {
+    bonusSession = next;
+    // Credit only the increase to the bonus pot; never pay the multiplied total a second time.
+    session.totalWinCents += next.stepWinCents;
+    session.roundWinCents += next.stepWinCents;
+    renderStats();
+    renderBonusStats(next.completedSteps);
+    bonusAction.textContent = text;
+  });
+  if (bonusSession.completedSteps === bonusSession.totalSteps) {
+    bonusPhase = 'complete';
+    bonusAction.textContent = 'All moves complete';
+    app.querySelector<HTMLElement>('[data-bonus-final-win]')!.textContent = formatWin(bonusSession.totalWinCents);
+    bonusComplete.hidden = false;
+    bonusCollect.focus({ preventScroll: true });
+  } else await startBonusStep();
+}
+
+bonusDoors.forEach((door,index) => door.addEventListener('click', () => { void chooseBonusDoor(index).catch(interruptRound); }));
+bonusDoors.forEach((door) => door.addEventListener('keydown', (event) => {
+  if (event.repeat && (event.key === 'Enter' || event.key === ' ')) event.preventDefault();
+}));
+bonusCollect.addEventListener('click', () => { void returnFromBonus().catch(interruptRound); });
+
+async function returnFromBonus(): Promise<void> {
+  if (gameState !== 'bonus' || bonusPhase !== 'complete') return;
+  bonusCollect.disabled = true;
+  bonusCorridor?.stop();
+  bonusMoves = 0;
+  bonusBank.hidden = true;
+  bonusScene.hidden = true;
+  baseScene.inert = false;
+  baseScene.removeAttribute('aria-hidden');
+  setGameState('drawing', 'Returning to the mansion…');
+  canvas.focus({ preventScroll: true });
+  if (await resolveRound()) return;
+  growingCells.clear();
+  updateBoardDescription();
+  setGameState('ready', `Won ${formatWin(session.roundWinCents)} · Tap or click · Bet 1.00`);
+  draw();
+}
+
+function interruptRound(error: unknown): void {
+  bonusCorridor?.stop();
+  bonusScene.hidden = true;
+  baseScene.inert = false;
+  baseScene.removeAttribute('aria-hidden');
+  roomBonusPopup.hidden = true;
+  roomBonusCells.clear();
+  setGameState('error', 'Round interrupted. Please reload.');
+  console.error('Failed to resolve Fool House round:', error);
+}
+
+for (const target of [bonusPrizes, bonusAction, app.querySelector('.bonus-header')!, app.querySelector('.bonus-status')!]) {
+  new ResizeObserver(layoutBonusScene).observe(target);
+}
+
+async function checkScatterBonus(): Promise<boolean> {
+  const moves = getScatterBonusMoves(board, scatterBonusAwarded);
+  if (!moves) return false;
+  // Retain this guard through every floor until the next paid round.
   scatterBonusAwarded = true;
   bonusMoves += moves;
   bonusBank.hidden = false;
@@ -309,13 +502,12 @@ async function checkScatterBonus(): Promise<void> {
   growingCells.clear();
   draw();
   scatterBonusDialog.showModal();
-  await new Promise<void>((resolve) => {
+  return new Promise<boolean>((resolve) => {
     bonusContinue.addEventListener('click', () => {
+      enterBonusScene();
       scatterBonusDialog.close();
-      // Lock input synchronously before the modal releases focus back to the canvas.
-      setGameState('drawing', 'Continuing the round…');
-      canvas.focus({ preventScroll: true });
-      resolve();
+      bonusScene.focus({ preventScroll: true });
+      resolve(true);
     }, { once: true });
   });
 }
@@ -323,11 +515,46 @@ async function checkScatterBonus(): Promise<void> {
 // The explicit Continue action is required; neither Escape nor a backdrop click dismisses it.
 scatterBonusDialog.addEventListener('cancel', (event) => event.preventDefault());
 
-async function resolveRound(): Promise<void> {
+async function refillCurrentRoom(clearBoard = false): Promise<void> {
+  if (!assets) return;
+  if (clearBoard) board = clearForFloor(board);
+  await playPhase('cleared', clearBoard ? `Finding the remaining ${assets.theme.name} symbols…` : 'Refilling empty cells…', 120);
+  growingCells = new Set(board.flatMap((row, rowIndex) => row.flatMap((symbol, column) =>
+    symbol ? [] : [rowIndex * REEL_COLUMNS + column])));
+  board = refillForRoom(board, collected, assets.theme.symbolIndex);
+  await playPhase('refilling', collected.size ? `Drawing ${assets.theme.name} symbols…` : 'Drawing replacement symbols…', DEAL_DURATION);
+  growingCells.clear();
+}
+
+async function revealMysterySymbols(): Promise<void> {
+  if (!assets) return;
+  if (!board.some((row) => row.some((symbol) => symbol?.tier === 'mystery'))) return;
+  growingCells.clear();
+  await playPhase('mystery-waiting', 'Reel results · Mystery reveal coming…', MYSTERY_RESULTS_DURATION);
+  const reveal = revealMysteries(board, assets.theme.symbolIndex);
+  if (!reveal.symbol) return;
+  mysteryChoice = reveal.symbol;
+  reveal.cells.forEach(({ row, column }) => mysteryCells.add(row * REEL_COLUMNS + column));
+  await playPhase('mystery-picking', `${assets.theme.name} mystery · Choosing one symbol…`, MYSTERY_PICK_DURATION);
+  board = reveal.board;
+  await playPhase('mystery-reveal', `Mystery reveals ${reveal.symbol.tier.toUpperCase()} · ${assets.theme.name}`, MYSTERY_REVEAL_DURATION);
+  mysteryCells.clear();
+  mysteryChoice = null;
+}
+
+// True hands control to the bonus scene after the entire base chain has settled.
+async function resolveRound(): Promise<boolean> {
   while (assets) {
-    await checkScatterBonus();
+    await revealMysterySymbols();
     const baseWins = findWins(board, multiplier);
-    if (baseWins.length === 0) return;
+    if (baseWins.length === 0) {
+      // Retained Scatters keep accumulating through cascades, room features and free floors.
+      // Only the final board awards bonus moves; Return then settles without retriggering.
+      if (!shouldContinueRoom(collected, board)) return checkScatterBonus();
+      // No award for clearing unmatched survivors; retain room, progress and Scatter guard.
+      await refillCurrentRoom(true);
+      continue;
+    }
     winningCells = new Set(baseWins.flatMap((win) => win.cells.map((cell) => cell.row * REEL_COLUMNS + cell.column)));
     const baseAward = baseWins.reduce((sum, win) => sum + win.winCents, 0);
     await playPhase('winning', `Win ${formatWin(baseAward)} · x${multiplier}`, 550);
@@ -354,8 +581,8 @@ async function resolveRound(): Promise<void> {
     board = removeWins(board, wins);
     collected = collectWins(collected, wins, assets.theme.symbolIndex);
     winningCells.clear();
-    session.totalWinCents += award;
-    session.roundWinCents += award;
+    session.totalWinCents += BigInt(award);
+    session.roundWinCents += BigInt(award);
     renderStats();
     updateCollectionDescription();
 
@@ -363,27 +590,24 @@ async function resolveRound(): Promise<void> {
       stagePopup.hidden = false;
       stageDetail.textContent = `Free respin · x${getMultiplier(respinNumber + 1)}`;
       await playPhase('switching', 'Switching to the next stage', 1200);
-      board = Array.from({ length: REEL_ROWS }, () => Array(REEL_COLUMNS).fill(null));
+      board = clearForFloor(board);
       await playPhase('switching', 'Switching to the next stage', 180);
       applyTheme(nextTheme());
-      scatterBonusAwarded = false;
       respinNumber++;
       updateMultiplier();
       session.spins++;
       renderStats();
       stagePopup.hidden = true;
-      board = generateBoard();
-      growingCells = allCells();
-      await playPhase('drawing', `Free respin · x${multiplier}`, DEAL_DURATION);
-    } else {
-      await playPhase('cleared', 'Refilling empty cells…', 120);
       growingCells = new Set(board.flatMap((row, rowIndex) => row.flatMap((symbol, column) =>
         symbol ? [] : [rowIndex * REEL_COLUMNS + column])));
       board = refillBoard(board);
-      await playPhase('refilling', 'Drawing replacement symbols…', DEAL_DURATION);
+      await playPhase('drawing', `Free respin · x${multiplier}`, DEAL_DURATION);
+    } else {
+      await refillCurrentRoom();
     }
     growingCells.clear();
   }
+  return false;
 }
 
 function drawTierOverlay(tier: SymbolTier, x: number, y: number, width: number, height: number): void {
@@ -428,6 +652,72 @@ function drawScatterAccent(x: number, y: number, width: number, height: number, 
   ctx.restore();
 }
 
+function drawMysterySymbol(x: number, y: number, width: number, height: number, growth: number): void {
+  const pulse = reducedMotion.matches ? 1 : .87 + Math.sin(performance.now() / 145) * .13;
+  const cx = x + width / 2, cy = y + height / 2;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(growth * pulse, growth * pulse);
+  const aura = ctx.createRadialGradient(0, 0, 0, 0, 0, width * .65);
+  aura.addColorStop(0, '#ff80d5aa');
+  aura.addColorStop(1, '#ed258e00');
+  ctx.fillStyle = aura;
+  ctx.fillRect(-width / 2, -height / 2, width, height);
+  ctx.strokeStyle = '#ff9bdd';
+  ctx.lineWidth = Math.max(1.5, width * .035);
+  ctx.shadowColor = '#ff37ae';
+  ctx.shadowBlur = width * .3;
+  ctx.beginPath();
+  ctx.roundRect(-width * .4, -height * .42, width * .8, height * .84, width * .14);
+  ctx.stroke();
+  const ink = ctx.createLinearGradient(0, -height * .36, 0, height * .36);
+  ink.addColorStop(0, '#fff4fd');
+  ink.addColorStop(.55, '#ffb7e6');
+  ink.addColorStop(1, '#ff45b8');
+  ctx.fillStyle = ink;
+  ctx.font = `900 ${height * .77}px Georgia, serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('?', 0, height * .035, width * .7);
+  ctx.restore();
+}
+
+function drawMysteryPicker(left: number, top: number, width: number, height: number): void {
+  if (!assets || !mysteryChoice) return;
+  const progress = Math.min(1, (performance.now() - phaseStartedAt) / phaseDuration);
+  const selected = reducedMotion.matches || progress >= .78
+    ? SYMBOL_TIERS.indexOf(mysteryChoice.tier) : Math.floor(10 * (1 - (1 - progress) ** 2)) % 3;
+  const w = Math.min(390, width * .88), h = Math.min(190, height * .32);
+  const x = left + (width - w) / 2, y = top + (height - h) / 2;
+  ctx.save();
+  ctx.fillStyle = '#20091bf5';
+  ctx.strokeStyle = '#ff7ed1';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#ff3bb5';
+  ctx.shadowBlur = reducedMotion.matches ? 10 : 22;
+  ctx.beginPath();ctx.roundRect(x, y, w, h, 12);ctx.fill();ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#ffd4f0';ctx.font = `800 ${Math.max(10, h * .1)}px system-ui, sans-serif`;
+  ctx.textAlign = 'center';ctx.textBaseline = 'middle';
+  ctx.fillText(`${assets.theme.name.toUpperCase()} MYSTERY`, x + w / 2, y + h * .13, w * .9);
+  SYMBOL_TIERS.forEach((tier, index) => {
+    const slotX = x + w * (.04 + index * .32), slotW = w * .28;
+    if (selected === index) {
+      ctx.fillStyle = '#b92c7b99';ctx.strokeStyle = '#ffe4f7';
+      ctx.beginPath();ctx.roundRect(slotX, y + h * .25, slotW, h * .68, 7);ctx.fill();ctx.stroke();
+    }
+    const sprite = assets!.sprites[tier], frameW = sprite.width / SYMBOLS_PER_SPRITE;
+    const scale = Math.min(slotW * .9 / frameW, h * .49 / sprite.height);
+    const iconW = frameW * scale, iconH = sprite.height * scale;
+    ctx.drawImage(sprite, assets!.theme.symbolIndex * frameW, 0, frameW, sprite.height,
+      slotX + (slotW - iconW) / 2, y + h * .29 + (h * .49 - iconH) / 2, iconW, iconH);
+    ctx.fillStyle = selected === index ? '#fff2fb' : '#b68ca6';
+    ctx.font = `800 ${Math.max(8, h * .085)}px system-ui, sans-serif`;
+    ctx.fillText(tier.toUpperCase(), slotX + slotW / 2, y + h * .85, slotW);
+  });
+  ctx.restore();
+}
+
 function drawReelSymbols(left: number, top: number, scale: number): void {
   if (!assets) return;
   const sprites = assets.sprites;
@@ -448,18 +738,22 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
     const isWinner = winningCells.has(cellId);
     const isRoomBonus = gameState === 'room-bonus' && roomBonusCells.has(cellId);
     const removalScale = gameState === 'removing' && isWinner ? 1 - phaseProgress : 1;
-    const growth = (1 - (1 - progress) ** 3) * removalScale;
+    const isMysteryReveal = gameState === 'mystery-reveal' && mysteryCells.has(cellId);
+    const growth = (1 - (1 - progress) ** 3) * removalScale * (isMysteryReveal ? .7 + .3 * (1 - (1 - phaseProgress) ** 3) : 1);
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(x, y, cellWidth, cellHeight, 16 * scale);
     ctx.clip();
     const isScatter = symbol?.tier === 'scatter';
-    ctx.fillStyle = isRoomBonus ? '#175648f2' : isWinner ? '#624014ed' : isScatter ? '#2a103ff2' : '#0c080ce6';
+    const isMystery = symbol?.tier === 'mystery';
+    ctx.fillStyle = isRoomBonus ? '#175648f2' : isWinner ? '#624014ed' : isMystery ? '#3b092df2' : isScatter ? '#2a103ff2' : '#0c080ce6';
     ctx.fillRect(x, y, cellWidth, cellHeight);
-    if (symbol && symbol.tier !== 'scatter' && !isWinner) {
+    if (symbol && symbol.tier !== 'scatter' && symbol.tier !== 'mystery' && !isWinner) {
       drawTierOverlay(symbol.tier, x, y, cellWidth, cellHeight);
     }
-    if (symbol && growth > 0) {
+    if (isMystery && growth > 0) {
+      drawMysterySymbol(x, y, cellWidth, cellHeight, growth);
+    } else if (symbol && symbol.tier !== 'mystery' && growth > 0) {
       const sprite = sprites[symbol.tier];
       const frameWidth = sprite.width / (isScatter ? 1 : SYMBOLS_PER_SPRITE);
       const labelSpace = isScatter ? cellHeight * 0.25 : 0;
@@ -476,6 +770,13 @@ function drawReelSymbols(left: number, top: number, scale: number): void {
       ctx.drawImage(sprite, symbol.index * frameWidth, 0, frameWidth, sprite.height,
         x + (cellWidth - iconWidth) / 2, y + labelSpace + (iconAreaHeight - iconHeight) / 2, iconWidth, iconHeight);
       if (isScatter) drawScatterAccent(x, y, cellWidth, cellHeight, growth);
+      if (isMysteryReveal) {
+        ctx.strokeStyle = '#ff9cde';
+        ctx.shadowColor = '#ff45bc';
+        ctx.shadowBlur = reducedMotion.matches ? 8 : 24 * (1 - phaseProgress);
+        ctx.lineWidth = Math.max(2, cellWidth * .04);
+        ctx.strokeRect(x + 2, y + 2, cellWidth - 4, cellHeight - 4);
+      }
     }
     ctx.restore();
     if (isWinner) {
@@ -541,6 +842,7 @@ function draw(): void {
   multiplierBadge.style.fontSize = `${Math.max(16, Math.min(36, reelsWidth * 0.11))}px`;
   drawReelSymbols(reelsLeft, reelsTop, reelsScale);
   ctx.drawImage(reels, reelsLeft, reelsTop, reelsWidth, reelsHeight);
+  if (gameState === 'mystery-picking') drawMysteryPicker(reelsLeft, reelsTop, reelsWidth, reelsHeight);
 
   const collectionTop = (reelsTop + reelsHeight + hudTop - collectionHeight) / 2;
   const slotWidth = Math.min(compact ? 64 : 100, (width - padding * 2) / 3);
@@ -594,6 +896,7 @@ function resize(): void {
   canvas.height = Math.max(1, Math.round(height * pixelRatio));
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   draw();
+  layoutBonusScene();
 }
 
 new ResizeObserver(resize).observe(canvas);
@@ -607,17 +910,15 @@ async function start(): Promise<void> {
     const [roomImages, reels, title, low, mid, high, scatter] = await Promise.all([
       Promise.all(themes.map(loadBackground)), loadImage(reelsUrl), loadImage(titleUrl),
       loadImage(lowSymbolsUrl), loadImage(midSymbolsUrl), loadImage(highSymbolsUrl),
-      loadImage(scatterUrl),
+      loadImage(scatterUrl), loadImage(bonusBackgroundUrl),
     ]);
     themes.forEach((room, index) => backgrounds.set(room.id, roomImages[index]));
     const sprites = { low, mid, high, scatter };
     assets = { background: backgrounds.get(theme.id)!, reels, title, theme, sprites, collection: [] };
     applyTheme(theme);
-    // Populate the opening scene without charging or counting a player spin.
-    board = generateBoard();
-    growingCells = allCells();
-    await playPhase('drawing', 'Drawing symbols…', DEAL_DURATION);
-    growingCells.clear();
+    // Show a quiet, nonwinning preview. The first player tap starts all gameplay.
+    board = createPreviewBoard();
+    updateBoardDescription();
     setGameState('ready', 'Tap or click to start · Bet 1.00');
     draw();
   } catch (error) {

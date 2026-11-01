@@ -3,9 +3,19 @@ export const REEL_ROWS = 5;
 export const SYMBOLS_PER_SPRITE = 5;
 export const BET_CENTS = 100;
 export const SYMBOL_TIERS = ['low', 'mid', 'high'] as const;
-// Lower-paying tiers appear more often. Payout rebalancing is deferred by user choice.
-export const SYMBOL_WEIGHTS = { low: 57, mid: 23.75, high: 14.25, scatter: 5 } as const;
-export interface SymbolWeights { low: number; mid: number; high: number; scatter: number }
+export const PRE_MYSTERY_WEIGHTS = { low: 49.5, mid: 27.0875, high: 16.2525, scatter: 7.16 } as const;
+export const MYSTERY_WEIGHT = 10;
+const regularShare = (100 - PRE_MYSTERY_WEIGHTS.scatter - MYSTERY_WEIGHT) / (100 - PRE_MYSTERY_WEIGHTS.scatter);
+// Reserve Mystery's 10% while keeping Scatter and the relative regular-tier distribution.
+export const SYMBOL_WEIGHTS = {
+  low: PRE_MYSTERY_WEIGHTS.low * regularShare,
+  mid: PRE_MYSTERY_WEIGHTS.mid * regularShare,
+  high: PRE_MYSTERY_WEIGHTS.high * regularShare,
+  scatter: PRE_MYSTERY_WEIGHTS.scatter,
+  mystery: MYSTERY_WEIGHT,
+} as const;
+export const KEEP_SCATTERS_ON_FLOOR_CHANGE = true;
+export interface SymbolWeights { low: number; mid: number; high: number; scatter: number; mystery?: number }
 export const ROOM_MULTIPLIERS = [
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
   3, 3, 3, 3, 3, 3, 3, 3,
@@ -22,17 +32,18 @@ export const PAYTABLE_CENTS = {
 const MULTIPLIERS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] as const;
 
 export type SymbolTier = 'low' | 'mid' | 'high';
-export type SymbolKind = SymbolTier | 'scatter';
+export type SymbolKind = SymbolTier | 'scatter' | 'mystery';
 
 export interface RegularSymbol {
   tier: SymbolTier;
   index: number;
 }
-export type ReelSymbol = RegularSymbol | { tier: 'scatter'; index: 0 };
+export type ReelSymbol = RegularSymbol | { tier: 'scatter'; index: 0 } | { tier: 'mystery'; index: 0 };
 
 export type Board = (ReelSymbol | null)[][];
 
-export function getScatterBonusMoves(board: Board): number {
+export function getScatterBonusMoves(board: Board, alreadyAwarded = false): number {
+  if (alreadyAwarded) return 0;
   const count = board.reduce((total, row) => total + row.filter((symbol) => symbol?.tier === 'scatter').length, 0);
   return count >= MIN_BONUS_SCATTERS ? count : 0;
 }
@@ -47,18 +58,55 @@ export interface RoomWinGroup extends WinGroup {
   unboostedWinCents: number;
 }
 
-export function drawSymbol(random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol {
+export function drawSymbol(
+  random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS, roomIndex?: number,
+): ReelSymbol {
   const roll = random();
+  const mysteryEnd = (weights.mystery ?? 0) / 100;
+  if (roll < mysteryEnd) return { tier: 'mystery', index: 0 };
   if (roll >= (100 - weights.scatter) / 100) return { tier: 'scatter', index: 0 };
-  const tier: SymbolTier = roll < weights.low / 100 ? 'low'
-    : roll < (weights.low + weights.mid) / 100 ? 'mid' : 'high';
-  return { tier, index: Math.floor(random() * SYMBOLS_PER_SPRITE) };
+  const tier: SymbolTier = roll < mysteryEnd + weights.low / 100 ? 'low'
+    : roll < mysteryEnd + (weights.low + weights.mid) / 100 ? 'mid' : 'high';
+  return { tier, index: roomIndex ?? Math.floor(random() * SYMBOLS_PER_SPRITE) };
 }
 
-// Row-major board. Each cell draws independently from fifteen regular icons plus one scatter.
+// Independent row-major raw draws: fifteen regular icons, Scatter and Mystery.
 export function generateBoard(random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol[][] {
   return Array.from({ length: REEL_ROWS }, () =>
     Array.from({ length: REEL_COLUMNS }, () => drawSymbol(random, weights)));
+}
+
+// Decorative startup board only: every regular identity appears at most twice.
+// No feature symbols, game RNG, evaluation or awards until the player starts a round.
+export function createPreviewBoard(): RegularSymbol[][] {
+  return Array.from({ length: REEL_ROWS }, (_, row) =>
+    Array.from({ length: REEL_COLUMNS }, (_, column) => {
+      const identity = ((row * REEL_COLUMNS + column) * 7) % (SYMBOL_TIERS.length * SYMBOLS_PER_SPRITE);
+      return { tier: SYMBOL_TIERS[Math.floor(identity / SYMBOLS_PER_SPRITE)], index: identity % SYMBOLS_PER_SPRITE };
+    }));
+}
+
+// Floor changes/room-feature clears retain Scatters in their original cells.
+// Fresh paid rounds still use generateBoard and start with a clean board.
+export function clearForFloor(board: Board): Board {
+  return board.map((row) => row.map((symbol) => symbol?.tier === 'scatter' ? symbol : null));
+}
+
+export interface MysteryReveal {
+  board: Board;
+  cells: CellPosition[];
+  symbol: RegularSymbol | null;
+}
+
+// One shared, uniformly chosen room symbol for the whole pending Mystery group.
+export function revealMysteries(board: Board, roomIndex: number, random: () => number = Math.random): MysteryReveal {
+  const cells: CellPosition[] = [];
+  board.forEach((row, r) => row.forEach((symbol, c) => {
+    if (symbol?.tier === 'mystery') cells.push({ row: r, column: c });
+  }));
+  if (!cells.length) return { board, cells, symbol: null };
+  const symbol: RegularSymbol = { tier: SYMBOL_TIERS[Math.floor(random() * SYMBOL_TIERS.length)]!, index: roomIndex };
+  return { board: board.map((row) => row.map((cell) => cell?.tier === 'mystery' ? symbol : cell)), cells, symbol };
 }
 
 export function applyRoomMultipliers(
@@ -79,7 +127,7 @@ export function findWins(board: Board, multiplier = 1): WinGroup[] {
   const groups = new Map<string, WinGroup>();
   board.forEach((row, rowIndex) => row.forEach((symbol, column) => {
     // Scatter awards bonus moves separately; it never joins paying regular groups.
-    if (!symbol || symbol.tier === 'scatter') return;
+    if (!symbol || symbol.tier === 'scatter' || symbol.tier === 'mystery') return;
     const key = `${symbol.tier}:${symbol.index}`;
     let group = groups.get(key);
     if (!group) {
@@ -103,8 +151,25 @@ export function removeWins(board: Board, wins: WinGroup[]): Board {
   return result;
 }
 
-export function refillBoard(board: Board, random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS): ReelSymbol[][] {
-  return board.map((row) => row.map((symbol) => symbol ?? drawSymbol(random, weights)));
+export function refillBoard(
+  board: Board, random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS, roomIndex?: number,
+): ReelSymbol[][] {
+  return board.map((row) => row.map((symbol) => symbol ?? drawSymbol(random, weights, roomIndex)));
+}
+
+export function refillForRoom(
+  board: Board, collected: ReadonlySet<SymbolTier>, roomIndex: number,
+  random: () => number = Math.random, weights: SymbolWeights = SYMBOL_WEIGHTS,
+): ReelSymbol[][] {
+  return refillBoard(board, random, weights, collected.size > 0 ? roomIndex : undefined);
+}
+
+// Partial rooms continue while protected Scatters leave room for a five-symbol win.
+export function shouldContinueRoom(collected: ReadonlySet<SymbolTier>, board?: Board): boolean {
+  const regularSlots = board?.flat().filter((symbol) => symbol?.tier !== 'scatter').length;
+  // Protected Scatters can leave too few slots for any five-symbol win.
+  return collected.size > 0 && !isCollectionComplete(collected)
+    && (regularSlots === undefined || regularSlots >= MIN_WIN_COUNT);
 }
 
 export function collectWins(

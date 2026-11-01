@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  applyRoomMultipliers, BET_CENTS, collectWins, drawSymbol, findWins, generateBoard, getMultiplier,
-  getScatterBonusMoves, isCollectionComplete, refillBoard, removeWins, ROOM_MULTIPLIERS, SYMBOL_WEIGHTS,
+  applyRoomMultipliers, BET_CENTS, clearForFloor, collectWins, drawSymbol, findWins, generateBoard, getMultiplier,
+  getScatterBonusMoves, isCollectionComplete, refillBoard, refillForRoom, removeWins, shouldContinueRoom, ROOM_MULTIPLIERS, SYMBOL_WEIGHTS,
 } from '../src/game.ts';
 
 test('Scatter bonus awards the exact count from six through all 25 cells, ignoring regular symbols and holes', () => {
@@ -18,19 +18,26 @@ test('Scatter bonus awards the exact count from six through all 25 cells, ignori
   assert.deepEqual(findWins(Array.from({ length: 5 }, () => Array(5).fill({ tier: 'scatter', index: 0 }))), []);
 });
 
-test('draw boundaries preserve Low > Mid > High frequency with a fixed 5% Scatter rate', () => {
+const mysteryEnd=SYMBOL_WEIGHTS.mystery/100;
+const lowEnd=mysteryEnd+SYMBOL_WEIGHTS.low/100;
+const midEnd=mysteryEnd+(SYMBOL_WEIGHTS.low+SYMBOL_WEIGHTS.mid)/100;
+const regularEnd=(100-SYMBOL_WEIGHTS.scatter)/100;
+const drawBoundaries=[
+  [0,'mystery'],[mysteryEnd-1e-9,'mystery'],[mysteryEnd,'low'],[lowEnd-1e-9,'low'],[lowEnd,'mid'],
+  [midEnd-1e-9,'mid'],[midEnd,'high'],[regularEnd-1e-9,'high'],
+  [regularEnd,'scatter'],[1-1e-9,'scatter'],
+];
+test('calibrated draw boundaries preserve Low > Mid > High and the full probability pool', () => {
   for (const [roll, tier] of [
-    [0, 'low'], [0.569999, 'low'], [0.57, 'mid'],
-    [0.807499, 'mid'], [0.8075, 'high'], [0.949999, 'high'],
-    [0.95, 'scatter'], [0.999999, 'scatter'],
+    ...drawBoundaries,
   ]) {
     const samples = [roll, 0];
     assert.deepEqual(drawSymbol(() => samples.shift()), { tier, index: 0 });
-    assert.equal(samples.length, tier === 'scatter' ? 1 : 0);
+    assert.equal(samples.length, tier === 'scatter' || tier === 'mystery' ? 1 : 0);
   }
   assert.ok(Math.abs(Object.values(SYMBOL_WEIGHTS).reduce((sum, weight) => sum + weight, 0) - 100) < 1e-9);
   assert.ok(SYMBOL_WEIGHTS.low > SYMBOL_WEIGHTS.mid && SYMBOL_WEIGHTS.mid > SYMBOL_WEIGHTS.high);
-  assert.equal(SYMBOL_WEIGHTS.scatter, 5);
+  assert.ok(Object.values(SYMBOL_WEIGHTS).every(w=>w>0));
 });
 
 test('every icon is reachable within every tier, including both ends of each sprite', () => {
@@ -62,13 +69,14 @@ test('a seeded sample distributes probability across fifteen regular icons and o
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
     return seed / 0x100000000;
   };
-  const counts = { low: Array(5).fill(0), mid: Array(5).fill(0), high: Array(5).fill(0), scatter: [0] };
+  const counts = { low: Array(5).fill(0), mid: Array(5).fill(0), high: Array(5).fill(0), scatter: [0], mystery: [0] };
   const samples = 100000;
   for (let i = 0; i < samples; i++) {
     const symbol = drawSymbol(random);
     counts[symbol.tier][symbol.index]++;
   }
-  for (const [tier, probability] of [['low', 0.114], ['mid', 0.0475], ['high', 0.0285], ['scatter', 0.05]]) {
+  for (const [tier, weight] of Object.entries(SYMBOL_WEIGHTS)) {
+    const probability=weight/100/(tier==='scatter'||tier==='mystery'?1:5);
     for (const count of counts[tier]) {
       assert.ok(Math.abs(count / samples - probability) < 0.004,
         `${tier}: observed ${count / samples}, expected ${probability}`);
@@ -78,6 +86,129 @@ test('a seeded sample distributes probability across fifteen regular icons and o
 
 const emptyBoard = () => Array.from({ length: 5 }, () => Array(5).fill(null));
 const symbol = (tier, index) => ({ tier, index });
+
+test('floor changes and feature clears keep Scatters in place while drawing only other cells', () => {
+  const original=Array.from({length:5},(_,r)=>Array.from({length:5},(_,c)=>
+    (r*5+c)%6===0?{tier:'scatter',index:0}:symbol('high',(r+c)%5)));
+  const before=structuredClone(original);
+  let board=original;
+  for(const room of [0,3,1]){
+    const cleared=clearForFloor(board);
+    let calls=0;
+    const fresh=refillBoard(cleared,()=>{calls++;return .1;});
+    assert.equal(calls,40); // Five retained Scatters; twenty regular draws × two RNG calls.
+    for(let i=0;i<25;i++)if(i%6===0)assert.equal(fresh[Math.floor(i/5)][i%5],original[Math.floor(i/5)][i%5]);
+    calls=0;
+    board=refillForRoom(clearForFloor(fresh),new Set(['low']),room,()=>{calls++;return .7;});
+    assert.equal(calls,20);
+    assert.ok(board.flat().every(s=>s.tier==='scatter'||s.tier==='mid'&&s.index===room));
+  }
+  assert.deepEqual(original,before);
+});
+
+test('retained Scatters accumulate into a six-symbol trigger on a later floor', () => {
+  const board=emptyBoard();
+  for(let i=0;i<5;i++)board[i][i]={tier:'scatter',index:0};
+  assert.equal(getScatterBonusMoves(board),0);
+  const rolls=[.99,...Array(38).fill(.1)];
+  const next=refillBoard(clearForFloor(board),()=>rolls.shift());
+  assert.equal(rolls.length,0);
+  assert.equal(getScatterBonusMoves(next),6);
+  assert.equal(getScatterBonusMoves(generateBoard(()=>.1)),0); // A new paid round resets the board.
+});
+
+test('a paid-chain bonus award prevents retriggers through later floors until eligibility resets', () => {
+  const board=emptyBoard();
+  for(let i=0;i<6;i++)board[Math.floor(i/5)][i%5]={tier:'scatter',index:0};
+  assert.equal(getScatterBonusMoves(board,false),6);
+  let next=board;
+  for(let floor=0;floor<4;floor++){
+    next=refillBoard(clearForFloor(next),()=>.1);
+    assert.equal(getScatterBonusMoves(next,true),0);
+  }
+  next[4][4]={tier:'scatter',index:0};
+  assert.equal(getScatterBonusMoves(next,true),0); // Even a seventh Scatter cannot re-award this chain.
+  assert.equal(getScatterBonusMoves(next,false),7); // A fresh paid-chain guard is eligible.
+});
+
+test('Scatters cannot trap a partial room when fewer than five regular slots remain', () => {
+  for(let count=0;count<=25;count++){
+    const board=Array.from({length:5},(_,r)=>Array.from({length:5},(_,c)=>r*5+c<count?{tier:'scatter',index:0}:null));
+    assert.equal(shouldContinueRoom(new Set(['low']),board),count<=20);
+    assert.equal(shouldContinueRoom(new Set(),board),false);
+    assert.equal(shouldContinueRoom(new Set(['low','mid','high']),board),false);
+  }
+  const allScatters=Array.from({length:5},()=>Array(5).fill({tier:'scatter',index:0}));
+  let calls=0;
+  assert.deepEqual(refillBoard(clearForFloor(allScatters),()=>{calls++;return .1;}),allScatters);
+  assert.equal(calls,0);
+});
+
+test('collected room refills pin all regular identities to that room, including index zero, with unchanged tier/Scatter boundaries', () => {
+  for(let room=0;room<5;room++) for(const [roll,tier] of drawBoundaries) {
+    const board=[[null]];
+    let calls=0;
+    const result=refillForRoom(board,new Set(['mid']),room,()=>{calls++;return roll;});
+    assert.deepEqual(result[0][0],{tier,index:tier==='scatter'||tier==='mystery'?0:room});
+    assert.equal(calls,1);
+    assert.equal(board[0][0],null);
+  }
+});
+
+test('before any collection and after a room reset, refills retain the all-room pool and independent index draws', () => {
+  for(const room of [0,2,4]) {
+    const rolls=[.1,.7,.7,.3,.9,.99,.97];
+    const result=refillForRoom([[null,null,null,null]],new Set(),room,()=>rolls.shift());
+    assert.deepEqual(result[0],[symbol('low',3),symbol('mid',1),symbol('high',4),{tier:'scatter',index:0}]);
+    assert.equal(rolls.length,0);
+  }
+});
+
+test('room refills replace holes only and preserve foreign survivors and Scatters without RNG calls', () => {
+  const foreign=symbol('high',4), scatter={tier:'scatter',index:0};
+  const board=[[foreign,null,scatter,null],[null,null,foreign,scatter]];
+  const rolls=[.1,.7,.9,.98];
+  const result=refillForRoom(board,new Set(['low']),2,()=>rolls.shift());
+  assert.deepEqual(result,[[foreign,symbol('low',2),scatter,symbol('mid',2)],[symbol('high',2),scatter,foreign,scatter]]);
+  assert.equal(result[0][0],foreign);
+  assert.equal(result[0][2],scatter);
+  assert.equal(rolls.length,0);
+  assert.equal(board[0][1],null);
+});
+
+test('first removed room win immediately unlocks refills that collect the other two room tiers', () => {
+  const room=1;
+  const pool=['low','mid','high'].flatMap(tier=>Array.from({length:5},(_,index)=>symbol(tier,index))).filter(s=>s.tier!=='low'||s.index!==room);
+  const cells=[...Array.from({length:5},()=>symbol('low',room)),...Array.from({length:20},(_,i)=>pool[i%pool.length])];
+  let board=Array.from({length:5},(_,row)=>cells.slice(row*5,row*5+5));
+  let collected=new Set();
+  let wins=findWins(board);
+  collected=collectWins(collected,wins,room);
+  assert.deepEqual([...collected],['low']);
+  board=refillForRoom(removeWins(board,wins),collected,room,()=>.9);
+  wins=findWins(board);
+  assert.ok(wins.some(win=>win.symbol.tier==='high'&&win.symbol.index===room));
+  collected=collectWins(collected,wins,room);
+  board=refillForRoom(removeWins(board,wins),collected,room,()=>.7);
+  collected=collectWins(collected,findWins(board),room);
+  assert.ok(isCollectionComplete(collected));
+});
+
+test('a room with partial progress must continue when it stalls, while empty/complete collections may leave the stage', () => {
+  assert.equal(shouldContinueRoom(new Set()),false);
+  assert.equal(shouldContinueRoom(new Set(['low'])),true);
+  assert.equal(shouldContinueRoom(new Set(['mid','high'])),true);
+  assert.equal(shouldContinueRoom(new Set(['low','mid','high'])),false);
+  const collected=new Set(['low']);
+  const stalled=emptyBoard();
+  for(let i=0;i<25;i++)stalled[Math.floor(i/5)][i%5]=i<4?{tier:'scatter',index:0}:symbol(['low','mid','high'][i%3],i%5);
+  assert.equal(findWins(stalled).length,0);
+  const cleared=emptyBoard();
+  const result=refillForRoom(cleared,collected,3,()=>.9);
+  assert.ok(result.flat().every(s=>s.tier==='high'&&s.index===3));
+  assert.deepEqual([...collected],['low']);
+  assert.equal(findWins(result)[0].cells.length,25);
+});
 
 test('five identical symbols win anywhere; four matches, tier alone, or index alone do not', () => {
   const board = emptyBoard();
@@ -149,7 +280,7 @@ test('remove and refill affect only winning positions and leave original boards 
   assert.deepEqual(cleared[0], [null, symbol('mid', 2), null, symbol('high', 4), null]);
   assert.notEqual(board[0][0], null);
   let calls = 0;
-  const refilled = refillBoard(cleared, () => { calls++; return 0; });
+  const refilled = refillBoard(cleared, () => { calls++; return .1; });
   assert.equal(calls, 46); // 23 holes, two independent draws per hole.
   assert.equal(refilled[0][1], board[0][1]);
   assert.equal(refilled[0][3], board[0][3]);

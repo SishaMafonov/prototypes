@@ -1,9 +1,9 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-10-31-v4
+ruleset_id: fool-house-2026-11-01-v12
 context: fixed wager, cumulative wins, spin count, observed session RTP
 read_when: financial model, statistics, simulation denominators, reset behavior
-branch_ids: A01-A13
+branch_ids: A01-A14
 ---
 
 # 04 — Session and award accounting
@@ -25,7 +25,7 @@ branch_ids: A01-A13
 | --- | --- | --- |
 | A01 | Accepted paid start reaches the accounting step | Add 1 spin; add 100 cents to total wager; reset Round win to 0. Prior session awards remain. The whole wager is recorded before its deal animation/resolution. |
 | A02 | A completed collection creates a free stage | Add 1 spin; add zero wager; keep Round win and Session win; use the new multiplier for subsequent awards. |
-| A03 | Ordinary hole refill | Add no spins and no wager. Even if every currently empty cell is replaced, it is still a refill. |
+| A03 | Ordinary hole refill or extra clear/refill for a stalled partial room | Add no spins/wager. Clearing unmatched regular cells while keeping Scatters adds no award or collection credit. Existing monetary credits remain intact; only subsequent winning groups pay. |
 | A04 | A winning batch finishes removal | Add the sum of its already-multiplied group awards once to both win totals. Update the UI before refill or stage transition. A pre-removal “Win …” message announces an award that is not committed to counters until this point. |
 | A05 | Paid-round chain ends normally | Keep Round win visible; it is the sum over all winning evaluations in all stages of that round. Zero-win rounds display 0.00. No additional end-of-round award or deduction. |
 | A06 | Total wager equals 0 | Display RTP as `—`, including the unpaid preview. Never divide by zero. |
@@ -35,7 +35,8 @@ branch_ids: A01-A13
 | A10 | A startup/round error occurs | No rollback/refund transaction exists. In a caught round failure, any wager/spins/awards already mutated remain in memory until reload; the error state disables new requests. Do not model interrupted rounds as automatically refunded. |
 | A11 | Player-facing balance/net profit would be needed | No such field is implemented. Wins are gross awards, not `awards - wager`. The game does not track deposits, cash-out, remaining credits, or insufficient funds. |
 | A12 | Room bonus is revealed | It announces a recalculated group award, not a separately credited payment. Credit only the final group amount at A04: table × stage × room. Do not add both the unboosted and boosted amounts. Other simultaneous groups remain included once. |
-| A13 | Scatter entry awards N moves / Continue | Increment the separate in-memory `bonusMoves` bank by N once per qualifying stage. Do not increment Spins, wager, win totals, multiplier, or collection. Continue resumes the same board. Moves are neither played nor consumed yet; future bonus payouts are excluded from current RTP studies. Reload clears the bank. |
+| A13 | Scatter entry awards N moves / Continue | Allocate the final accumulated Scatter count in moves once per paid chain, only after all base resolution ends. Entry itself adds no Spins, wager or wins. Start bonus at floor 1, zero pot/step win and all moves remaining; preserve the settled base board; all base awards have already been credited. See D01–D18 for playable moves/return. |
+| A14 | Door prize is revealed / bonus returns | Add only the bonus-pot increase to Round/Session win once at 700 ms door opening. Coin adds floor ×100 cents; multiplier credits new minus old pot; stairs/ghost add zero. Door choices increment completed steps, not Spins/wagers. Return adds no further bonus award; the settled base board returns to ready without further base awards. Money fields use exact BigInt cents, formatted with two cent digits. |
 
 ## Formulas and measurement units
 
@@ -48,7 +49,7 @@ observed_RTP_percent = 100 * session_win_cents / totalWagerCents
 analysis_net_cents = session_win_cents - totalWagerCents   # derived; not displayed
 ```
 
-Use **paid wagers** as the RTP denominator. Dividing by Spins incorrectly charges free stages and changes the reported return. Likewise, splitting a free stage into an independent paid-round observation changes round hit frequency and win-distribution metrics.
+Use **paid wagers** as the RTP denominator. Include door awards in the same paid chain. Dividing by Spins incorrectly charges free stages; door choices are separate moves, not reel-board deals. Splitting any bonus/free stage into an independent paid observation changes the return model. Displayed RTP uses a floating ratio of exact stored totals.
 
 Both multiplier types affect awards only. They do not increase bets, charge for refills, or add completion prizes. x144 caps the stage multiplier, while the independent room multiplier can reach x8 (combined x1152). Neither is a total-win cap. There is no implemented limit on cumulative awards in a paid round.
 

@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
-  applyRoomMultipliers, BET_CENTS, collectWins, findWins, generateBoard,
-  getMultiplier, isCollectionComplete, refillBoard, removeWins, SYMBOL_WEIGHTS,
+  applyRoomMultipliers, BET_CENTS, clearForFloor, collectWins, findWins, generateBoard,
+  getMultiplier, getScatterBonusMoves, isCollectionComplete, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOL_WEIGHTS, PRE_MYSTERY_WEIGHTS,
 } from '../src/game.ts';
+import { applyBonusPrize, createBonusState, drawBonusPrize } from '../src/bonus.ts';
 
 const argumentsByName = Object.fromEntries(process.argv.slice(2).map((argument) => {
   const [name, value] = argument.replace(/^--/, '').split('=');
@@ -13,8 +14,8 @@ const argumentsByName = Object.fromEntries(process.argv.slice(2).map((argument) 
 const rounds = Number(argumentsByName.rounds ?? 100000);
 const seed = Number(argumentsByName.seed ?? 42);
 const weights = argumentsByName.weights
-  ? Object.fromEntries(['low', 'mid', 'high', 'scatter'].map((tier, index) => [tier, Number(argumentsByName.weights.split(',')[index])]))
-  : SYMBOL_WEIGHTS;
+  ? Object.fromEntries((argumentsByName.weights.split(',').length===5?['low','mid','high','scatter','mystery']:['low','mid','high','scatter']).map((tier, index) => [tier, Number(argumentsByName.weights.split(',')[index])]))
+  : argumentsByName.mystery === 'off' ? PRE_MYSTERY_WEIGHTS : SYMBOL_WEIGHTS;
 assert.ok(Number.isSafeInteger(rounds) && rounds > 1);
 assert.ok(Number.isSafeInteger(seed) && seed >= 0 && seed <= 0xffffffff);
 assert.ok(Object.values(weights).every((weight) => Number.isFinite(weight) && weight >= 0));
@@ -33,10 +34,16 @@ const otherRoom = (current) => {
   return choice >= current ? choice + 1 : choice;
 };
 const roomBonusEnabled = argumentsByName.bonus !== 'off';
+const doorBonusEnabled = argumentsByName['door-bonus'] !== 'off';
+const roomRefillsEnabled = argumentsByName['room-refills'] !== 'off';
+const keepScatters = argumentsByName['keep-scatters'] !== 'off';
+// Legacy studies used early entry; current play waits for the whole chain to settle.
+const bonusAtChainEnd = argumentsByName['scatter-timing'] === 'early' ? false : keepScatters;
 let room = Math.floor(random() * 5);
-// Consume the real unpaid preview draws, without resolving or awarding it.
-generateBoard(random, weights);
-let totalCents = 0;
+const staticPreview = keepScatters && argumentsByName.preview !== 'random';
+// Current decorative preview consumes no game RNG. Preserve historical replay explicitly.
+if (!staticPreview) revealMysteries(generateBoard(random, weights), room, random);
+let totalCents = 0n;
 let mean = 0;
 let m2 = 0;
 let hits = 0;
@@ -44,7 +51,13 @@ let freeStages = 0;
 let winningBatches = 0;
 let roomGroups = 0;
 let capStages = 0;
-let maximumRoundWinCents = 0;
+let maximumRoundWinCents = 0n;
+let doorBonuses = 0;
+let doorBonusSteps = 0;
+let doorBonusAwardsCents = 0n;
+const doorPrizeCounts = { coin: 0, multiplier: 0, stairs: 0, ghost: 0 };
+let extraRoomClears = 0;
+let roomRefillBatches = 0;
 let maximumEvaluations = 0;
 let maximumRespinNumber = 0;
 const winningGroupsByTier = { low: 0, mid: 0, high: 0 };
@@ -52,18 +65,48 @@ const awardsCentsByTier = { low: 0, mid: 0, high: 0 };
 const histogram = Array(11).fill(0);
 
 for (let round = 1; round <= rounds; round++) {
-  let roundWin = 0;
+  let roundWin = 0n;
+  let scatterAwarded = false;
   let respin = 0;
   let evaluations = 0;
   room = otherRoom(room);
   let collected = new Set();
   let board = generateBoard(random, weights);
+  const awardScatterBonus = () => {
+    if (doorBonusEnabled && !scatterAwarded) {
+      const moves = getScatterBonusMoves(board);
+      if (moves) {
+        scatterAwarded = true;
+        doorBonuses++;
+        let bonus = createBonusState(moves);
+        while (bonus.completedSteps < bonus.totalSteps) {
+          const prize = drawBonusPrize(random);
+          bonus = applyBonusPrize(bonus, prize);
+          doorPrizeCounts[prize.kind]++;
+          doorBonusSteps++;
+        }
+        roundWin += bonus.totalWinCents;
+        doorBonusAwardsCents += bonus.totalWinCents;
+      }
+    }
+  };
   while (true) {
     evaluations++;
     // Diagnostic stop fails the study instead of counting a truncated chain as settled.
     if (evaluations > 1000000) throw new Error(`Unsettled chain at paid round ${round}`);
+    board = revealMysteries(board, room, random).board;
+    if (!bonusAtChainEnd) awardScatterBonus();
     const baseWins = findWins(board, getMultiplier(respin));
-    if (baseWins.length === 0) break;
+    if (baseWins.length === 0) {
+      if (!roomRefillsEnabled || !shouldContinueRoom(collected, keepScatters ? board : undefined)) {
+        if (bonusAtChainEnd) awardScatterBonus();
+        break;
+      }
+      extraRoomClears++;
+      roomRefillBatches++;
+      board = refillForRoom(keepScatters ? clearForFloor(board) : Array.from({ length: 5 }, () => Array(5).fill(null)), collected, room, random, weights);
+      continue;
+    }
     const wins = roomBonusEnabled ? applyRoomMultipliers(baseWins, room, random) : baseWins;
     winningBatches++;
     roomGroups += wins.filter((win) => win.roomMultiplier > 1).length;
@@ -71,43 +114,50 @@ for (let round = 1; round <= rounds; round++) {
       winningGroupsByTier[win.symbol.tier]++;
       awardsCentsByTier[win.symbol.tier] += win.winCents;
     }
-    roundWin += wins.reduce((sum, win) => sum + win.winCents, 0);
+    roundWin += BigInt(wins.reduce((sum, win) => sum + win.winCents, 0));
     board = removeWins(board, wins);
     collected = collectWins(collected, wins, room);
     if (isCollectionComplete(collected)) {
       room = otherRoom(room);
       collected = new Set();
+      if (!keepScatters) scatterAwarded = false;
       respin++;
       freeStages++;
       histogram[Math.min(respin, 10)]++;
       if (respin >= 10) capStages++;
-      board = generateBoard(random, weights);
+      board = keepScatters ? refillBoard(clearForFloor(board), random, weights) : generateBoard(random, weights);
     } else {
-      board = refillBoard(board, random, weights);
+      if (roomRefillsEnabled) {
+        if (collected.size) roomRefillBatches++;
+        board = refillForRoom(board, collected, room, random, weights);
+      } else board = refillBoard(board, random, weights);
     }
   }
   totalCents += roundWin;
-  if (roundWin > 0) hits++;
-  const delta = roundWin - mean;
+  if (roundWin > 0n) hits++;
+  const delta = Number(roundWin) - mean;
   mean += delta / round;
-  m2 += delta * (roundWin - mean);
-  maximumRoundWinCents = Math.max(maximumRoundWinCents, roundWin);
+  m2 += delta * (Number(roundWin) - mean);
+  maximumRoundWinCents = maximumRoundWinCents > roundWin ? maximumRoundWinCents : roundWin;
   maximumEvaluations = Math.max(maximumEvaluations, evaluations);
   maximumRespinNumber = Math.max(maximumRespinNumber, respin);
 }
 const standardErrorRtp = Math.sqrt(m2 / (rounds - 1) / rounds) / BET_CENTS * 100;
-const rtp = totalCents / (rounds * BET_CENTS) * 100;
+const rtp = Number(totalCents) / (rounds * BET_CENTS) * 100;
+const jsonCents = (value) => value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : value.toString();
 const result = {
   study: 'completed-paid-round Monte Carlo; not certified RTP',
-  rounds, seed, weights, roomBonusEnabled,
-  totalWagerCents: rounds * BET_CENTS, totalWinCents: totalCents,
+  rounds, seed, weights, roomBonusEnabled, doorBonusEnabled, roomRefillsEnabled, keepScatters, bonusAtChainEnd, staticPreview,
+  totalWagerCents: rounds * BET_CENTS, totalWinCents: jsonCents(totalCents),
   rtpPercent: rtp, standardErrorRtpPercentagePoints: standardErrorRtp,
   sampleVarianceWinCents: m2 / (rounds - 1),
   approximate95PercentInterval: [rtp - 1.96 * standardErrorRtp, rtp + 1.96 * standardErrorRtp],
   hitPercent: hits / rounds * 100, freeStagesPerPaidRound: freeStages / rounds,
   winningBatchesPerPaidRound: winningBatches / rounds, roomGroupsPerPaidRound: roomGroups / rounds,
   freeStageHistogramByRespinNumberCappedAt10: histogram,
-  capStages, maximumRoundWinCents, maximumEvaluations, maximumRespinNumber,
+  capStages, maximumRoundWinCents: jsonCents(maximumRoundWinCents), maximumEvaluations, maximumRespinNumber,
+  doorBonuses, doorBonusSteps, doorBonusAwardsCents: jsonCents(doorBonusAwardsCents), doorPrizeCounts,
+  extraRoomClears, roomRefillBatches,
   winningGroupsByTier, awardsCentsByTier,
   truncatedChains: 0,
 };

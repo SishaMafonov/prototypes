@@ -8,7 +8,7 @@ branch_ids: R01-R08
 
 # 07 — Room bonus and prototype calibration
 
-**Superseded on 2026-10-31:** the user rejected the High-heavy frequency hierarchy and selected Low 57%, Mid 23.75%, High 14.25%, Scatter 5%, with payout rebalancing later. This module preserves the historical study. See [09](09-tier-frequency.md) for current weights and return; the 96% figures below do not apply to the shipped distribution.
+**Superseded on 2026-10-31:** the user rejected the High-heavy frequency hierarchy and selected Low 57%, Mid 23.75%, High 14.25%, Scatter 5%, with payout rebalancing later. This module preserves the historical study. See [12](12-rtp-balance.md) for current weights and return; [09](09-tier-frequency.md) preserves the subsequent tier-frequency correction; the 96% figures below do not apply to the shipped distribution.
 
 **Context packet:** fixed 1.00 paid wager; 25 independent cells; regular 5/6/7+ group awards; hole refills; collection-driven free stages at Fibonacci x2…x144. The user confirmed one random bonus per winning current-room group and a target of approximately 96% RTP. The paytable, five uniform indexes per tier, and 5% nonpaying Scatter were retained.
 
@@ -68,10 +68,10 @@ Combined totals: wager 200,000,000 cents; awards 192,151,280 cents. Hit rate = *
 Run from `fool-house/` with Node.js 24+:
 
 ```text
-npm run simulate -- --rounds=1000000 --seed=20261025 --weights=14.66,10,70.34,5
-npm run simulate -- --rounds=1000000 --seed=857 --weights=14.66,10,70.34,5
-npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5 --bonus=off
-npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5
+npm run simulate -- --rounds=1000000 --seed=20261025 --weights=14.66,10,70.34,5 --door-bonus=off --room-refills=off --keep-scatters=off
+npm run simulate -- --rounds=1000000 --seed=857 --weights=14.66,10,70.34,5 --door-bonus=off --room-refills=off --keep-scatters=off
+npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5 --bonus=off --door-bonus=off --room-refills=off --keep-scatters=off
+npm run simulate -- --rounds=100000 --seed=42 --weights=57,23.75,14.25,5 --door-bonus=off --room-refills=off --keep-scatters=off
 ```
 
 `--weights=low,mid,high,scatter` supplies a candidate percentage vector; default is the shipped constants. `--out=path.json` saves the raw result. `--bonus=off` reproduces the earlier no-room-bonus math. The script uses a seeded Mulberry32-style generator and the production draw, win, room-bonus, removal, refill, collection, and stage-multiplier helpers. It consumes the unpaid preview draws without awarding them, then simulates complete paid-round chains with exact room exclusion and bonus draw ordering.

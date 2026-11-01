@@ -1,0 +1,59 @@
+{
+  "document_type": "rtp_validation_summary",
+  "ruleset_id": "fool-house-2026-11-01-v8",
+  "context": "Fixed 1.00 wager, 5×5 complete paid chains. Base includes all regular payouts and collection free stages; bonus includes door-pot credits. Percentages use paid wagers.",
+  "complete": true,
+  "paid_rounds": 10000000000,
+  "seed": 20261105,
+  "workers": 8,
+  "weights_percent": {
+    "low": 49.5,
+    "mid": 27.0875,
+    "high": 16.2525,
+    "scatter": 7.16
+  },
+  "target_total_rtp_percent": 96,
+  "target_base_contribution_percentage_points": [
+    50,
+    60
+  ],
+  "measured_rtp_percent": {
+    "base": 54.8938944848,
+    "bonus": 41.08560492,
+    "total": 95.9794994048
+  },
+  "approximate_95_percent_interval": {
+    "base": [
+      54.89027381213739,
+      54.897515157462614
+    ],
+    "bonus": [
+      41.06248617524949,
+      41.108723664750514
+    ],
+    "total": [
+      95.9559031977004,
+      96.0030956118996
+    ]
+  },
+  "conditional_diagnostic_total_rtp_percent": 95.99582722455263,
+  "truncated_chains": 0,
+  "winning_groups": {
+    "low": 10974406669,
+    "mid": 3629522289,
+    "high": 1906302048
+  },
+  "tuning_profiles": 34,
+  "tuning_paid_chains_excluded_from_final_validation": 2021000000,
+  "room_label_permutations": 120,
+  "permutation_symmetry_cases": 600,
+  "convergence_prefixes": 125,
+  "configuration_id": "ffb1534991b77f669b7cdbc3cd916f3614e579c39c1e5e21ea7d0cebdc8b2df1",
+  "artifacts": {
+    "raw": "docs/game-rules/studies/rtp-10b.json",
+    "convergence": "docs/game-rules/studies/rtp-10b-convergence.csv",
+    "search": "docs/game-rules/studies/rtp-weight-search.json",
+    "rules": "docs/game-rules/12-rtp-balance.md"
+  },
+  "limitation": "Monte Carlo measurement with approximate uncertainty; short sessions vary. Conditional door expectation is separate from actual sampled awards."
+}

@@ -1,12 +1,14 @@
 ---
 document_type: calibration_study
 ruleset_id: fool-house-2026-10-31-v4
-context: Low > Mid > High draw/win frequency, explicit payout-rebalance deferral, current Monte Carlo
-read_when: current weights, tier rarity, return impact, simulation evidence
+context: Low > Mid > High draw/win frequency, original payout-rebalance deferral, historical Monte Carlo
+read_when: historical weight decision, tier rarity correction, original simulation evidence
 branch_ids: K01-K06
 ---
 
-# 09 — Corrected tier frequency and current math status
+# 09 — Historical tier-frequency correction
+
+**Historical base-only study:** doors and room-specific refills/extra clears now add payouts. See [12](12-rtp-balance.md) for current weights and results; reproduce this snapshot with `--weights=57,23.75,14.25,5 --door-bonus=off --room-refills=off`.
 
 **Context packet:** the user corrected the prior High-heavy model and explicitly chose Low 57%, Mid 23.75%, High 14.25%, Scatter 5%, with payout rebalancing later. This supersedes the old ~96% calibration. The existing 5/6/7+ paytable, room bag, Fibonacci stages, uniform regular indexes and Scatter entry remain unchanged.
 
@@ -50,7 +52,7 @@ Groups include every win in refills/free stages; several groups can occur in one
 ## K04 — Reproduce
 
 ```text
-npm run simulate -- --rounds=1000000 --seed=20261031 --out=docs/game-rules/studies/tier-order-validation.json
+npm run simulate -- --rounds=1000000 --seed=20261031 --weights=57,23.75,14.25,5 --door-bonus=off --room-refills=off --out=docs/game-rules/studies/tier-order-validation.json --keep-scatters=off
 ```
 
 The simulator uses production helpers. New `winningGroupsByTier` and `awardsCentsByTier` counters measure the hierarchy without extra RNG draws. Existing historical JSON outputs intentionally do not contain these new fields.
@@ -59,6 +61,8 @@ The simulator uses production helpers. New `winningGroupsByTier` and `awardsCent
 
 This is prototype Monte Carlo evidence, not exact/certified RTP. The interval uses observed paid-round variance and does not bound unobserved later Fibonacci tails. No stage x3 or above occurred. Saved Scatter moves are not yet played, so their future payouts and modal timing are excluded. The existing diagnostic evaluation limit fails instead of silently counting incomplete chains.
 
+The current door feature resumes the base board after its final reveal/Return, but its payouts are excluded from this historical study. Use the full-game simulation for the playable game.
+
 ## K06 — Regression and handoff
 
-The 16 math tests cover the new draw boundaries, Low > Mid > High constraint, fixed Scatter rate, reachability of all five icons per tier, seeded draw frequencies, and all existing payout/refill/collection/room-multiplier/Scatter-trigger behavior. Future payout work should preserve the explicit rarity hierarchy, evaluate full paid-round chains including playable bonus moves when implemented, and replace this current study rather than editing historical files.
+In this historical snapshot, the 16 math tests covered its draw boundaries, Low > Mid > High constraint, fixed Scatter rate, reachability of all five icons per tier, seeded draw frequencies, and all existing payout/refill/collection/room-multiplier/Scatter-trigger behavior. Future payout work should preserve the explicit rarity hierarchy, evaluate full paid-round chains including playable bonus moves when implemented, and publish a new study rather than editing historical files.
