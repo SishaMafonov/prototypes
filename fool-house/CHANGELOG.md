@@ -2,6 +2,11 @@
 
 Newest changes come first. Keep this history updated so future agents can understand the current behavior and the decisions behind it.
 
+## 2026-11-07 — Repair the GitHub Pages background paths
+
+- Regenerate the published `docs/fhouse` site with `npm run build -- --base=/prototypes/fhouse/`. Preserve the background lookup keys produced by Vite; only public asset URLs receive the Pages prefix. Replace the corrupted bundle and its HTML reference with generated output.
+- No game rules, artwork or probabilities changed. Verification: production build passed; published files match the fresh build byte-for-byte. Isolated mobile Chromium startup under `/prototypes/fhouse/` reached ready with all five room backgrounds plus the bonus background loaded, 12 PNG requests successful, no page errors or failed requests, and no E2E observer in production.
+
 ## 2026-11-07 — Plain-language player rules
 
 - Rewrite `GAME_RULES.md` as a simple player guide with the current paytable, Mystery reveals, room collection/boosts, free-floor multipliers, retained Scatters, end-of-round bonus entry and all door prizes. Explain combined round winnings, chances, status labels and session reset with short examples.
