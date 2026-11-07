@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: startup preview, accepted input, paid deal, repeated evaluation, settlement
 read_when: lifecycle, input guards, branch ordering, round termination
 branch_ids: F01-F19

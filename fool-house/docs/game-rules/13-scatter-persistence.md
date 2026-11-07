@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: Scatters persist across base-floor transitions/features; one bonus per paid chain; current weights and RTP in module15
 read_when: Scatter retention, reset scope, bonus deduplication, feature clears, current RTP status
 branch_ids: S01-S10
@@ -8,7 +8,7 @@ branch_ids: S01-S10
 
 # 13 — Persistent base-game Scatters
 
-**Context packet:** keep Scatters in their exact reel cells throughout one paid round and its free-floor chain, including room-feature extra clears. Only regular cells clear and refill. User confirmed **at most one bonus per paid-round chain**, with entry deferred until all base wins, room features and free floors finish. Count all final retained Scatters together. A new paid round replaces the whole board and resets bonus eligibility. Scatter is3%; [14](14-mystery.md) keeps Mystery10%. Current paytable and raw weights are in [01](01-math.md); current combined round-pot/15% stairs rules are in [10](10-door-adventure.md). **Current calibration is in [15](15-current-balance.md).** The v8 ten-billion-round study remains historical.
+**Context packet:** keep Scatters in their exact reel cells throughout one paid round and its free-floor chain, including room-feature extra clears. Only regular cells clear and refill. User confirmed **at most one bonus per paid-round chain**, with entry deferred until all base wins, room features and free floors finish. Count all final retained Scatters together. A new paid round replaces the whole board and resets bonus eligibility. Scatter is3%; [14](14-mystery.md) keeps Mystery10%. Current paytable and raw weights are in [01](01-math.md); current combined round-pot/15% stairs rules are in [10](10-door-adventure.md). Current v15 bonus prizes are unmeasured; see [16](16-bonus-floor-prizes.md). [15](15-current-balance.md) is historical v14 calibration. The v8 ten-billion-round study remains historical.
 
 **Authority:** [game.ts](../../src/game.ts): `clearForFloor`, `refillBoard`, `refillForRoom`, `shouldContinueRoom`, `getScatterBonusMoves`; [main.ts](../../src/main.ts): `requestRound`, `refillCurrentRoom`, `resolveRound`, `checkScatterBonus`.
 

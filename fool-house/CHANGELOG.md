@@ -2,6 +2,18 @@
 
 Newest changes come first. Keep this history updated so future agents can understand the current behavior and the decisions behind it.
 
+## 2026-11-07 — Refresh the GitHub Pages build with doubled bonus prizes
+
+- Rebuild with `npm run build -- --base=/prototypes/fhouse/` and copy the generated output into `docs/fhouse`. Replace the obsolete JavaScript bundle and update the generated HTML reference. Preserve Vite's internal background lookup keys and the public `/prototypes/fhouse/` asset URLs.
+- Include the latest six-floor coin/multiplier doubling. No further gameplay changes. Verification: build passed, published files match the generated output byte-for-byte, and isolated mobile Chromium reached ready under the Pages path with the latest bonus panel, all six backgrounds/12 PNGs loaded, no failed requests/page errors and no E2E observer.
+
+## 2026-11-07 — Double bonus coin and multiplier prizes on ascent
+
+- User confirmed Floor1 stays Coin1.00 and multipliers×2/×3/×5/×8. Each Stairs ascent doubles both future prize types, through the existing six-floor cap: coins1/2/4/8/16/32; Floor6 multipliers×64/×96/×160/×256. Keep door odds, base game, multiplier slot frequencies, combined-pot accounting, zero-pot behavior and move consumption unchanged. Stairs pays no immediate cash and remains a consumed move at the cap.
+- Share floor prizes between exact payouts, the potential-prize panel, factor label, door caption and rendered multiplier. Update player/agent rules and module16. Current RTP is unmeasured; no odds or payouts were rebalanced to restore96%.
+- Align JS/native/C# simulations with BonusFloorDoubling, omitted for historical profiles. Preserve v14 report/configuration and changed source bytes under studies/v14-source; its billion-round96% result is historical. Conditional expectations now track floor-dependent growth jointly with the pot, and native arithmetic rejects pot overflow explicitly.
+- Verification:48 Node tests and production build passed. Native/helper30,000 and independent C#3,000 complete paid chains matched exact credits, final rooms and RNG state; checkpoint replay passed. Historical v8/v14 helper replay3,000 chains each also passed. Full comparison passed:74 browser cases against72 PNG+7 scene baselines;96.32% lines,96.69% functions,92.14% branches. Maximum-floor mobile images reviewed; production observer guard and E2E types passed.
+
 ## 2026-11-07 — Repair the GitHub Pages background paths
 
 - Regenerate the published `docs/fhouse` site with `npm run build -- --base=/prototypes/fhouse/`. Preserve the background lookup keys produced by Vite; only public asset URLs receive the Pages prefix. Replace the corrupted bundle and its HTML reference with generated output.

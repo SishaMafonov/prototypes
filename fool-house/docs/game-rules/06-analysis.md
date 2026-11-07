@@ -1,6 +1,6 @@
 ---
 document_type: analysis_handoff
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: implemented scope, correct simulation model, non-claims, evidence and maintenance
 read_when: market-analysis brief, RTP study, comparison checklist, rules validation
 branch_ids: X01-X10
@@ -44,7 +44,7 @@ These are global-deal expectations, not settled-board counts. After collection s
 
 ## X03 — RTP status and analysis unit
 
-- Current v14 rules preserve Scatters through room-feature clears and floor transitions, with at most one bonus per paid-round chain, triggered only after all base wins/features/free floors finish, and 10% shared floor Mysteries. Current calibrated weights/paytable are in [01](01-math.md); doors still seed from the whole base round win, with stairs15%, Coin30%, Multiplier4.73%, Ghost50.27%. The current held-out calibration evidence is in [15](15-current-balance.md). Raw draws are independent, while Mysteries share their wave's outcome. The v8 ten-billion-chain result is historical; see [13](13-scatter-persistence.md) for current behavior and [12](12-rtp-balance.md) for the archived study.
+- Current v15 keeps the v14 base weights/paytable and door odds, but doubles coins and pot-multiplier values on every bonus ascent. Floor1 is unchanged and floor6 caps atCoin32.00 and×64/96/160/256. Current RTP is unmeasured; v14 one-billion-chain and v8 ten-billion-chain studies are historical. See [16](16-bonus-floor-prizes.md).
 - Final evidence records observed rare stages and bonus tails. Finite samples do not prove a maximum win/duration; no fixed completion/refill-time bound is implemented.
 - The UI's session RTP is a sample ratio of committed awards to paid wagers. A screenshot value, a constructed example, an old playtest, or a test assertion is not the mathematical expected RTP.
 - Historical results from the old 5×4 board, 3/4/5+ threshold, per-symbol paytable, or pre-Scatter weights are not valid measurements of this snapshot.
@@ -161,7 +161,7 @@ The original v9 desktop check was blocked; isolated headless v10 Mystery checks 
 | Room/stage stacking through x144 and repeat-group eligibility | M21, C14 |
 | Scatter threshold/count 0–25, holes, no mutation or regular payout | B02–B03 |
 
-Current regression coverage adds 46 Node tests and 72 Playwright cases with 68 PNG and 7 scene snapshots. Browser JavaScript coverage is 96.43% lines, 96.62% functions and 92.50% branches across main/game/bonus/bonus-scene/scene. This is measured execution coverage, not proof of every possible board. Deterministic clock/RNG scenarios, loading/error checks, baseline review and CI scope are documented in [the testing plan](../TESTING.md). Prior temporary checks remain historical evidence in `CHANGELOG.md` and [07](07-calibration.md).
+Current regression coverage:48 Node tests and74 Playwright cases with72 PNG and7 scene snapshots. Browser execution coverage is96.32% lines,96.69% functions and92.14% branches across main/game/bonus/bonus-scene/scene. This is not proof of every possible board. See [the testing plan](../TESTING.md) for deterministic scenarios, baseline review and CI scope. Current bonus floor rewards are in [16](16-bonus-floor-prizes.md); historical calibration is not current return evidence.
 
 ## X10 — Agent loading and staleness protocol
 

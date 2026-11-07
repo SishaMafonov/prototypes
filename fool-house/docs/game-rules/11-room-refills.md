@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: first collection unlocks current-room refills; extra clears prevent partial-room settlement
 read_when: room/floor symbol pool, guaranteed collection progression, refill RNG, extra clears, historical progression effect
 branch_ids: P01-P12

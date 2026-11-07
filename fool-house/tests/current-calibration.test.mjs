@@ -5,15 +5,21 @@ import test from 'node:test';
 import { config } from '../scripts/rtp/config.mjs';
 import { aggregate } from '../scripts/rtp/report.mjs';
 
-test('current v14 calibration audits one billion independent complete paid chains with base and bonus counted once',()=>{
+test('historical v14 calibration audits one billion paid chains before bonus floor doubling',()=>{
   const study=JSON.parse(fs.readFileSync(new URL('../docs/game-rules/studies/rtp-v14-1b.json',import.meta.url),'utf8'));
   assert.equal(study.complete,true);
   assert.equal(study.requestedPaidRounds,1000000000);
   assert.equal(study.summary.paidRounds,1000000000);
   assert.equal(study.configuration.Seed,20261111);
   assert.equal(study.workers,8);
-  assert.deepEqual(study.configuration,config({seed:20261111}));
-  for(const[file,hash]of Object.entries(study.sourceSha256))assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../'+file,import.meta.url))).digest('hex'),hash,`Calibration source changed: ${file}`);
+  assert.deepEqual(study.configuration,config({seed:20261111,bonusFloorDoubling:false}));
+  assert.equal(config().BonusFloorDoubling,true);
+  assert.notEqual(study.configuration.Id,config({seed:20261111}).Id);
+  for(const[file,hash]of Object.entries(study.sourceSha256)){
+    const archive=new URL('../docs/game-rules/studies/v14-source/'+file,import.meta.url);
+    const source=fs.existsSync(archive)?archive:new URL('../'+file,import.meta.url);
+    assert.equal(createHash('sha256').update(fs.readFileSync(source)).digest('hex'),hash,`Historical calibration source changed: ${file}`);
+  }
   assert.deepEqual(study.shards.map(r=>r.Worker).sort((a,b)=>a-b),[0,1,2,3,4,5,6,7]);
   const c=study.configuration,growth=1+c.Multiplier/100*(c.DoorBag.reduce((a,b)=>a+b,0)/c.DoorBag.length-1);
   const floors=[1,0,0,0,0,0],zeroSeedPot=[0];

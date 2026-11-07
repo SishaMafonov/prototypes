@@ -1,16 +1,18 @@
 ---
 document_type: rules_module
 ruleset_id: fool-house-2026-11-07-v14
-context: active ~96% combined paid-chain RTP, current weights/paytable, fixed profile, independent validation and statistical limits
+context: historical v14 calibration; superseded by v15 bonus floor doubling, whose RTP is unmeasured
 read_when: current RTP, base/bonus contribution, calibration provenance, reproduction or historical comparison
 branch_ids: V01-V10
 ---
 
-# 15 — Current combined-game calibration
+# 15 — Historical v14 combined-game calibration
 
-**Context packet:** one paid bet remains1.00. The target is ~96% for the **whole paid chain**, with50–60 percentage points from regular base/free-floor wins and the remainder from incremental bonus gains. The carried base seed is counted once. Mystery10%, stairs15%, full-room progression, retained Scatters, Fibonacci stages, x2–x8 door values and1.00–6.00 floor coins remain active. This module supersedes earlier “unmeasured/deferred” statements for the active v14 profile; archived studies keep their own configurations.
+**Historical scope:** v15 now doubles both coin and multiplier prizes on every bonus ascent. The values and96% evidence below describe v14, not current play. Current prizes/status are in [16](16-bonus-floor-prizes.md). Changed audited source bytes are retained in studies/v14-source/. No new RTP calibration has been run.
 
-**Authority:** [game.ts](../../src/game.ts), [bonus.ts](../../src/bonus.ts), [configuration](../../scripts/rtp/config.mjs), [profile search](../../scripts/rtp/calibrate.mjs), [paid-chain runner](../../scripts/rtp/run.mjs), [current audit tests](../../tests/current-calibration.test.mjs).
+**Historical v14 context packet:** one paid bet remains1.00. The target is ~96% for the **whole paid chain**, with50–60 percentage points from regular base/free-floor wins and the remainder from incremental bonus gains. The carried base seed is counted once. Mystery10%, stairs15%, full-room progression, retained Scatters, Fibonacci stages, x2–x8 door values and1.00–6.00 floor coins were active in v14. This historical module superseded earlier “unmeasured/deferred” statements for the frozen v14 profile; archived studies keep their own configurations.
+
+**Authority:** [game.ts](../../src/game.ts), [frozen bonus.ts](studies/v14-source/src/bonus.ts), [frozen configuration source](studies/v14-source/scripts/rtp/config.mjs), [profile search](../../scripts/rtp/calibrate.mjs), [paid-chain runner](../../scripts/rtp/run.mjs), [current audit tests](../../tests/current-calibration.test.mjs).
 
 ## Frozen game parameters
 
@@ -67,9 +69,9 @@ Rule tests cover all quantities2–25, payout ordering, draw boundaries, current
 ```powershell
 npm test
 npm run build
-node scripts/rtp/verify.mjs 10000
+node scripts/rtp/verify.mjs 10000 --floor-prizes=legacy
 node scripts/rtp/verify.mjs 1000 --legacy
-node scripts/rtp/run.mjs --rounds=1000000000 --workers=8 --seed=20261111 --batch=10000000 --dir=.rtp-runs/reproduce-v14
+node scripts/rtp/run.mjs --config=docs/game-rules/studies/v14-source/config.json --rounds=1000000000 --workers=8 --seed=20261111 --batch=10000000 --dir=.rtp-runs/reproduce-v14
 ```
 
 Use a fresh output directory. Checkpoints can resume only with the same frozen configuration and engine. Keep source/binary provenance with the report; native engine build/replay details are in the [laboratory guide](../../scripts/rtp/README.md).

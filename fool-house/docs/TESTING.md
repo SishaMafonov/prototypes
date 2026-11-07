@@ -15,9 +15,9 @@ entrypoints: package.json, playwright.config.ts, e2e/, tests/scene.test.mjs
 | --- | --- | --- |
 | Rule regression | Weighted draws, payouts, cascades, collections, Scatters, Mystery, seeded bonus accounting, historical/current RTP evidence | Existing `tests/*.test.mjs`; the billion-round study is audited, not rerun by CI |
 | Scene graph | Cover background, centered/aspect-preserving reels, 25 unique clipped apertures, nonoverlap, collection/HUD separation, frame/overlay layers, corridor projection and door order | `src/scene.ts` is consumed by the actual renderer; `tests/scene.test.mjs` checks geometry across six sizes; `layout.graph.spec.ts` checks live output/backing resolution and resize preservation |
-| Functional E2E | Idle startup; mouse/touch/keyboard; repeated/busy input; paid resets; exact Mystery hold/shared reveal; hole-only cascade; room extra clears; retained Scatters/free floors; delayed bonus; modal focus/Escape/backdrop; all four prize kinds; floor cap/zero seed; credits/return; art failure/reload | `e2e/functional.spec.ts`, real UI actions through production rules |
+| Functional E2E | Idle startup; mouse/touch/keyboard; repeated/busy input; paid resets; exact Mystery hold/shared reveal; hole-only cascade; room extra clears; retained Scatters/free floors; delayed bonus; modal focus/Escape/backdrop; all four prize kinds; all six doubled floor rewards/floor cap/zero seed; credits/return; art failure/reload | `e2e/functional.spec.ts`, real UI actions through production rules |
 | Visual layout | All five room backgrounds, title, frame, symbols/tints, collection and HUD | `layout.visual.spec.ts`, desktop/mobile/compact/landscape |
-| Visual motion/state | Growing symbols, landed Mystery, picker/reveal, winners/removal/holes, room multiplier/collection/floor popup, Scatter retention, intro/25 moves, corridor midpoint/doors/opening, all prizes/reset/completion | `animation.visual.spec.ts`, normal-motion virtual-time frames on desktop/mobile |
+| Visual motion/state | Growing symbols, landed Mystery, picker/reveal, winners/removal/holes, room multiplier/collection/floor popup, Scatter retention, intro/25 moves, corridor midpoint/doors/opening, all prizes/reset/completion and Floor6/×256 | `animation.visual.spec.ts`, normal-motion virtual-time frames on desktop/mobile |
 | Browser coverage | Merged source-mapped browser V8 lines/functions/branches from functional and visual cases | Five shipped source modules: main/game/bonus/bonus-scene/scene. Exclude test observer, test code, packages and generated assets. Separate from rule-test coverage or feature completion |
 
 No end-to-end case injects a completed board, awards money, skips to a game state or replaces a rule function. Named scenarios supply a finite uniform-RNG input stream before startup; unexpected draws fail loudly. Tests then click/tap/press keys and advance the clock. Snapshots and assertions exercise actual loaded artwork and the actual renderer.
@@ -78,13 +78,13 @@ Use `npm run test:e2e -- --project=mobile` or `--grep "Mystery"` to narrow a fai
 
 Verified locally on 2026-11-07 with Node24.13.0, Playwright1.65.0 and its pinned Chromium1254 (158.0.8127.18):
 
-- 46 Node tests passed; production build, production observer absence check and strict E2E type-check passed.
-- 72 browser cases passed when recording baselines (8.0minutes), then all72 passed again without updates (6.2minutes).
-- 68 recorded PNG goldens plus7 JSON scene snapshots; representative desktop/mobile/compact/landscape images were visually inspected.
-- Both runs measured96.43% lines (1296/1344),96.62% functions (143/148),92.50% branches (370/400),95.61% statements (370/387). All five expected application modules were present; coverage gates passed.
+- 48 Node tests passed; production build, production observer absence check and strict E2E type-check passed.
+- 74 browser cases passed without baseline updates (6.0 minutes), after focused bonus and maximum-floor visual checks.
+- 72 PNG goldens plus7 JSON scene snapshots. New Floor6 prize-panel and×256 reveal screenshots cover desktop/mobile; maximum-floor mobile images were visually inspected.
+- Current browser coverage:96.32% lines (1308/1358),96.69% functions (146/151),92.14% branches (375/407),95.69% statements (377/394). All five application modules were present; gates passed.
 - Windows GitHub Actions is configured; no remote CI run was performed from this session. See `docs/testing/verification.json` for compact machine-readable evidence.
 
 
-Game math, probabilities, payout tables and the existing calibrated study are unchanged by this testing work. Scene geometry is shared with drawing; clocks and scripted RNG are controlled from the test process. Existing historical/current calibration audits continue to protect the outcome math.
+Current v15 bonus rewards double both coins and multiplier values at each ascent. Unit, native/helper and browser regressions cover the new behavior; historical calibration audits use frozen source bytes. Current RTP is unmeasured.
 
 References: [Playwright clock](https://playwright.dev/docs/clock), [screenshot assertions](https://playwright.dev/docs/api/class-pageassertions#page-assertions-to-have-screenshot-1), [Monocart native coverage](https://github.com/cenfun/monocart-coverage-reports).

@@ -91,16 +91,27 @@ For each move, you walk down a dark corridor for about three seconds, then choos
 
 | Behind the door | Chance | What happens |
 | --- | ---: | --- |
-| Coin | 30% | Add 1.00 on Floor 1, 2.00 on Floor 2, and so on, up to 6.00 on Floor 6. |
-| Multiplier | 4.73% | Multiply everything won in this round so far by ×2, ×3, ×5 or ×8. ×2 is most common; ×8 is least common. |
-| Stairs | 15% | Move up one bonus floor. Future coin prizes increase by 1.00, up to Floor 6. |
+| Coin | 30% | Add the coin prize shown for your floor. It doubles each time you go upstairs. |
+| Multiplier | 4.73% | Multiply everything won in this round so far by one of the values shown for your floor. These values double each time you go upstairs too. |
+| Stairs | 15% | Move up one bonus floor and double future coin and multiplier prizes, up to Floor 6. |
 | Ghost | 50.27% | The ghost approaches and disappears. You gain nothing, but keep your winnings. |
 
 **Every door uses one move**, including a Ghost or Stairs. Stairs on Floor 6 leave you on Floor 6 and still use a move.
 
+| Bonus floor | Coin prize | Possible multipliers |
+| --- | ---: | --- |
+| 1 | 1.00 | ×2, ×3, ×5, ×8 |
+| 2 | 2.00 | ×4, ×6, ×10, ×16 |
+| 3 | 4.00 | ×8, ×12, ×20, ×32 |
+| 4 | 8.00 | ×16, ×24, ×40, ×64 |
+| 5 | 16.00 | ×32, ×48, ×80, ×128 |
+| 6 | 32.00 | ×64, ×96, ×160, ×256 |
+
+The smallest multiplier shown is most common; the largest is least common. Going upstairs changes future prizes. It does not immediately multiply the winnings you already have.
+
 For example, enter with 2.00 from the main game. A ×3 prize makes the round total 6.00. A Floor 1 Coin then makes it 7.00. After Stairs, a Coin adds 2.00, bringing it to 9.00.
 
-A multiplier also works on previous bonus prizes. Multiplying a total of zero still gives zero. Stairs increase coin prizes; they do not increase the multiplier numbers.
+A multiplier also works on previous bonus prizes. Multiplying a total of zero still gives zero. In the example above, a Floor 2 ×4 prize would turn 9.00 into 36.00.
 
 The panel above the doors shows your current floor and available prizes. The bottom panel shows your moves, the latest move’s win and the whole round’s total.
 
@@ -113,6 +124,6 @@ After the last move, select **Return to mansion**. Your round total already incl
 - **Session win:** all prizes won since opening the game, before subtracting bets.
 - **RTP:** how much your prizes add up to compared with your paid bets so far.
 
-The game aims to return about **96 credits in prizes for every 100 credits bet over very many rounds**, counting the main game and bonus together. This is an average, not a promise for an individual round or session. Some rounds pay nothing.
+The bigger bonus prizes change the game’s average return. A new return percentage has not been confirmed yet. The RTP on your screen only describes your own session. Some rounds pay nothing.
 
 Refreshing or closing the game clears the session totals and any unfinished round or bonus.

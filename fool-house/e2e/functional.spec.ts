@@ -63,16 +63,38 @@ test('bonus credits only at door reveal, compounds the base pot, resets doors an
  await game.choose();await game.advance(699);expect((await game.read()).bonus.completedSteps).toBe(0);await game.advance(32);
  expect((await game.read()).bonus.totalWinCents).toBe('3');expect((await game.read()).session.roundWin).toBe('3');
  await game.finishDoor();let s=await game.read();expect(s.corridor?.data?.selected).toBe(null);expect(s.corridor?.children?.every(n=>n.data?.selected===false)).toBe(true);
- const totals=['103','103','303','303','606'];for(const total of totals){await game.choose();await game.advance(720);expect((await game.read()).session.roundWin).toBe(total);await game.finishDoor();}
- s=await game.read();expect(s.bonus.phase).toBe('complete');expect(s.bonus.floor).toBe(2);expect(s.session.win).toBe('606');
- await page.getByRole('button',{name:'Return to mansion'}).click({force:true});expect((await game.read()).state).toBe('ready');expect((await game.read()).session.win).toBe('606');
- await game.clickCanvas();await game.until('ready');expect((await game.read()).session).toEqual({spins:2,wager:'200',roundWin:'0',win:'606'});
+ const totals=['103','103','303','303','1212'];for(const total of totals){await game.choose();await game.advance(720);expect((await game.read()).session.roundWin).toBe(total);await game.finishDoor();}
+ s=await game.read();expect(s.bonus.phase).toBe('complete');expect(s.bonus.floor).toBe(2);expect(s.session.win).toBe('1212');
+ await page.getByRole('button',{name:'Return to mansion'}).click({force:true});expect((await game.read()).state).toBe('ready');expect((await game.read()).session.win).toBe('1212');
+ await game.clickCanvas();await game.until('ready');expect((await game.read()).session).toEqual({spins:2,wager:'200',roundWin:'0',win:'1212'});
 });
 
 test('stairs cap at floor six, consume a move at the cap and preserve the starting pot',async({game})=>{
  await game.open(bonus(['stairs','stairs','stairs','stairs','stairs','stairs']));await game.clickCanvas();await game.enterBonus();
  for(let i=0;i<6;i++){await game.choose('right');await game.finishDoor();expect((await game.read()).bonus.floor).toBe(Math.min(6,i+2));expect((await game.read()).session.roundWin).toBe('1');}
  expect((await game.read()).bonus.completedSteps).toBe(6);expect((await game.read()).bonus.phase).toBe('complete');
+});
+
+test('each ascent doubles displayed and awarded coins and multipliers through the six-floor cap',async({game,page})=>{
+ test.setTimeout(120_000);
+ const prizes:import('./scenarios').Prize[]=[];for(let f=1;f<=6;f++)prizes.push('coin',8,'stairs');
+ await game.open(bonus(prizes));await game.clickCanvas();await game.enterBonus();let pot=1n;
+ for(let floor=1;floor<=6;floor++){
+  const factor=2**(floor-1);
+  await expect(page.locator('[data-bonus-floor]')).toHaveText(`Floor ${floor}`);
+  await expect(page.locator('[data-bonus-floor-factor]')).toHaveText(`Prize boost ×${factor}`);
+  await expect(page.locator('[data-bonus-coin]')).toHaveText(`${factor}.00`);
+  await expect(page.locator('[data-bonus-multipliers]')).toHaveText(`×${2*factor}–×${8*factor}`);
+  if(floor===6){await game.bonusReady();await game.shot('floor-six-prizes.png');}
+  await game.choose();await game.advance(720);pot+=BigInt(factor*100);expect((await game.read()).session.roundWin).toBe(String(pot));await game.finishDoor();
+  await game.choose('middle');await game.advance(720);pot*=BigInt(8*factor);expect((await game.read()).session.roundWin).toBe(String(pot));
+  await expect(page.locator('.bonus-action')).toContainText(`×${8*factor} · Round win`);
+  if(floor===6){await game.advance(300);await game.shot('floor-six-multiplier.png');}
+  await game.finishDoor();
+  await game.choose('right');await game.finishDoor();expect((await game.read()).bonus.floor).toBe(Math.min(6,floor+1));
+ }
+ const final=await game.read();expect(final.bonus.completedSteps).toBe(18);expect(final.bonus.phase).toBe('complete');
+ expect(final.session.win).toBe(String(pot));await expect(page.locator('[data-bonus-multipliers]')).toHaveText('×64–×256');
 });
 
 test('zero-win bonus entry still multiplies zero and later coins grow the pot',async({game})=>{

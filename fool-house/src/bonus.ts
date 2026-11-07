@@ -6,8 +6,16 @@ export type BonusWeights = { coin: number; multiplier: number; stairs: number; g
 export const BONUS_MULTIPLIERS = [2, 2, 2, 2, 2, 3, 3, 5, 5, 8] as const;
 export const BONUS_COIN_CENTS = 100;
 export const MAX_BONUS_FLOOR = 6;
+export function getBonusFloorPrizes(floor: number) {
+  const factor = 2 ** (Math.min(MAX_BONUS_FLOOR, Math.max(1, Math.floor(floor))) - 1);
+  return { factor, coinCents: BONUS_COIN_CENTS * factor, multipliers: BONUS_MULTIPLIERS.map(value => value * factor) };
+}
 export type BonusPrize = { kind: 'coin' | 'stairs' | 'ghost' }
   | { kind: 'multiplier'; multiplier: typeof BONUS_MULTIPLIERS[number] };
+export type RevealedBonusPrize = { kind: 'coin' | 'stairs' | 'ghost' } | { kind: 'multiplier'; multiplier: number };
+export function revealBonusPrize(prize: BonusPrize, floor: number): RevealedBonusPrize {
+  return prize.kind === 'multiplier' ? { ...prize, multiplier: prize.multiplier * getBonusFloorPrizes(floor).factor } : prize;
+}
 export interface BonusState {
   totalSteps: number;
   completedSteps: number;
@@ -31,10 +39,14 @@ export function drawBonusPrize(random: () => number = Math.random, weights: Bonu
   return { kind: 'ghost' };
 }
 
-export function applyBonusPrize(state: BonusState, prize: BonusPrize): BonusState {
+export function applyBonusPrize(state: BonusState, prize: BonusPrize, doubleFloorPrizes = true): BonusState {
   if (state.completedSteps >= state.totalSteps) throw new Error('Bonus has no moves remaining');
-  const totalWinCents = prize.kind === 'coin' ? state.totalWinCents + BigInt(BONUS_COIN_CENTS * state.floor)
-    : prize.kind === 'multiplier' ? state.totalWinCents * BigInt(prize.multiplier) : state.totalWinCents;
+  // Historical studies used linear coins and an unscaled multiplier bag.
+  const prizes = getBonusFloorPrizes(state.floor);
+  const revealed = doubleFloorPrizes ? revealBonusPrize(prize, state.floor) : prize;
+  const coinCents = doubleFloorPrizes ? prizes.coinCents : BONUS_COIN_CENTS * state.floor;
+  const totalWinCents = revealed.kind === 'coin' ? state.totalWinCents + BigInt(coinCents)
+    : revealed.kind === 'multiplier' ? state.totalWinCents * BigInt(revealed.multiplier) : state.totalWinCents;
   return {
     ...state,
     completedSteps: state.completedSteps + 1,

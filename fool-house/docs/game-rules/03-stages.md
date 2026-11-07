@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: background mapping, collection eligibility, stage completion, free respins
 read_when: bonus qualification, room changes, multiplier resets or cap
 branch_ids: C01-C14

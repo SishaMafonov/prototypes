@@ -34,8 +34,8 @@ export function cascade(){
 }
 export function bonus(prizes:Prize[]=[3,'coin','stairs','coin','ghost',2],seedWin=true){
  const s=new Script();s.room(0);s.room(1,0);
- if(seedWin){for(let i=0;i<5;i++)s.symbol('low',0);s.foreign(14,1,true);}else s.foreign(19,1);
- for(let i=0;i<6;i++)s.symbol('scatter');
+ if(seedWin){for(let i=0;i<5;i++)s.symbol('low',0);s.foreign(20-prizes.length,1,true);}else s.foreign(25-prizes.length,1);
+ for(let i=0;i<prizes.length;i++)s.symbol('scatter');
  if(seedWin)for(const[t,i]of [['low',2],['low',3],['mid',2],['mid',3],['high',3]] as const)s.symbol(t,i);
  prizes.forEach(p=>s.prize(p));s.room(0,1);s.quiet();return s.done(seedWin?'bonus-seeded':'bonus-zero');
 }
