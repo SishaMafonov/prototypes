@@ -1,3 +1,4 @@
 .gitignore
+!fool-house/.gitignore
 .idea
 .pnpm-store/

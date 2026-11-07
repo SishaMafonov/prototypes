@@ -1,0 +1,66 @@
+{
+  "study": "completed-paid-round Monte Carlo; not certified RTP",
+  "rounds": 100000,
+  "seed": 20261101,
+  "weights": {
+    "low": 57,
+    "mid": 23.75,
+    "high": 14.25,
+    "scatter": 5
+  },
+  "roomBonusEnabled": true,
+  "doorBonusEnabled": true,
+  "roomRefillsEnabled": true,
+  "totalWagerCents": 10000000,
+  "totalWinCents": 15352003,
+  "rtpPercent": 153.52003000000002,
+  "standardErrorRtpPercentagePoints": 2.1419286349388047,
+  "sampleVarianceWinCents": 458785.82771708106,
+  "approximate95PercentInterval": [
+    149.32184987551997,
+    157.71821012448007
+  ],
+  "hitPercent": 62.818,
+  "freeStagesPerPaidRound": 0.35735,
+  "winningBatchesPerPaidRound": 2.3305,
+  "roomGroupsPerPaidRound": 2.18789,
+  "freeStageHistogramByRespinNumberCappedAt10": [
+    0,
+    26265,
+    6987,
+    1849,
+    456,
+    125,
+    42,
+    10,
+    1,
+    0,
+    0
+  ],
+  "capStages": 0,
+  "maximumRoundWinCents": 102718,
+  "maximumEvaluations": 47,
+  "maximumRespinNumber": 8,
+  "doorBonuses": 2150,
+  "doorBonusSteps": 13404,
+  "doorBonusAwardsCents": 2462300,
+  "doorPrizeCounts": {
+    "coin": 4745,
+    "multiplier": 3350,
+    "stairs": 657,
+    "ghost": 4652
+  },
+  "extraRoomClears": 29158,
+  "roomRefillBatches": 132901,
+  "winningGroupsByTier": {
+    "low": 237934,
+    "mid": 63900,
+    "high": 37119
+  },
+  "awardsCentsByTier": {
+    "low": 4471428,
+    "mid": 3952800,
+    "high": 4465475
+  },
+  "truncatedChains": 0
+}

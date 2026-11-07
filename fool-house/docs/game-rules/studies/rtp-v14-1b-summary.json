@@ -1,0 +1,218 @@
+{
+  "ruleset": "fool-house-2026-11-07-v14",
+  "method": "fixed frozen profile; independently seeded complete paid-chain Monte Carlo",
+  "configuration": {
+    "Low": 35,
+    "Mid": 32.5,
+    "High": 19.5,
+    "Scatter": 3,
+    "Coin": 30,
+    "Multiplier": 4.73,
+    "Stairs": 15,
+    "Ghost": 50.27,
+    "Pay": [
+      [
+        1,
+        2,
+        3
+      ],
+      [
+        2,
+        3,
+        5
+      ],
+      [
+        3,
+        5,
+        10
+      ]
+    ],
+    "RoomBag": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      5,
+      5,
+      5,
+      5,
+      5,
+      8,
+      8,
+      8
+    ],
+    "Stage": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      13,
+      21,
+      34,
+      55,
+      89,
+      144
+    ],
+    "DoorBag": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      5,
+      5,
+      8
+    ],
+    "CoinCents": 100,
+    "FloorCap": 6,
+    "Seed": 20261111,
+    "KeepScatters": true,
+    "BonusOncePerPaidChain": true,
+    "BonusAtEndOfPaidChain": true,
+    "Mystery": 10,
+    "StaticPreview": true,
+    "BonusStartsWithRoundWin": true,
+    "Id": "4461e19a0ec7931305dfb48858b5cb5f121d5b2f3c4c2025a7035a050b6c2f9e"
+  },
+  "engineSha256": "9c2c9794e14552d1b2fdf31438c6972607bd28aea064688c2edae7bbd5f7b513",
+  "sourceSha256": {
+    "src/game.ts": "ff0699aa224216817d363e14ffd09039f833adf37b8a644f26a4769048dbf500",
+    "src/bonus.ts": "f93c3d86fd50ba9791e8c6133ff7e395f6ae9933013d4ea6a4991891562a59c9",
+    "scripts/rtp/simulator.cpp": "b7a38050239bfca8c78da1ca2e27e5591a5a0fc0837045c9cfe8a948123ddfcf",
+    "scripts/rtp/config.mjs": "1c636d5f29bf60d3b176b5fd11b99cad93e2b93909464e79370e23749c6f4e27",
+    "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+    "scripts/rtp/verify.mjs": "30846f5a605ae7d75235eb9d97d0bb702936485012f8eb0310b2c0d10133d2cc",
+    "scripts/rtp/run.mjs": "1468cdb0c2c6445f6f8f53766dce6d8c13532eddce95dc7e85487bc5f7cbab8e",
+    "scripts/rtp/report.mjs": "92746ba1645f87a85a0cd109c069fad0f08ef6c6244ee743337cd6c49dc2666e"
+  },
+  "startedAt": "2026-11-07T16:40:36.087Z",
+  "finishedAt": "2026-11-07T16:54:01.485Z",
+  "workers": 8,
+  "tuningProfiles": 84,
+  "tuningPaidRoundsExcluded": 303000000,
+  "baselinePaidRoundsExcluded": 1000000,
+  "summary": {
+    "updatedAt": "2026-11-07T16:54:01.483Z",
+    "paidRounds": 1000000000,
+    "wageredCents": "100000000000",
+    "base": {
+      "cents": "54888925116",
+      "rtpPercent": 54.888925116,
+      "standardErrorPercentagePoints": 0.0038504472791485002,
+      "approximate95PercentInterval": [
+        54.881378239332875,
+        54.89647199266713
+      ]
+    },
+    "bonus": {
+      "cents": "41164692597",
+      "rtpPercent": 41.164692597,
+      "standardErrorPercentagePoints": 0.02762308649804338,
+      "approximate95PercentInterval": [
+        41.11055134746383,
+        41.218833846536164
+      ]
+    },
+    "total": {
+      "cents": "96053617713",
+      "rtpPercent": 96.053617713,
+      "standardErrorPercentagePoints": 0.02847605964373224,
+      "approximate95PercentInterval": [
+        95.99780463609828,
+        96.10943078990171
+      ]
+    },
+    "conditionalExpectedBonusRtpPercent": 41.13716788112561,
+    "conditionalExpectedTotalRtpPercent": 96.02609299712562,
+    "conditionalStandardErrorPercentagePoints": 0.009702003491638982,
+    "hitRatePercent": 53.1629135,
+    "freeStages": 625409208,
+    "bonuses": 53547973,
+    "bonusMoves": 373008087,
+    "extraClears": 452948195,
+    "evaluations": 3524891079,
+    "maximumEvaluations": 108,
+    "maximumRespin": 12,
+    "tierGroups": [
+      1290826859,
+      1189343029,
+      718961872
+    ],
+    "tierCents": [
+      12951346720,
+      20193179319,
+      21744399077
+    ],
+    "prizeCounts": [
+      111897987,
+      17636166,
+      55957934,
+      187516000
+    ],
+    "stageCounts": [
+      0,
+      419969583,
+      147537396,
+      43754463,
+      11106535,
+      2457237,
+      482146,
+      85447,
+      13985,
+      2103,
+      313
+    ],
+    "bonusByMoves": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      25782933,
+      14234868,
+      7349568,
+      3547021,
+      1592399,
+      662725,
+      251817,
+      87133,
+      27153,
+      7820,
+      2209,
+      696,
+      209,
+      64,
+      17,
+      1259,
+      79,
+      3,
+      0,
+      0
+    ],
+    "randomCalls": 103698670180,
+    "truncatedChains": 0,
+    "workersReported": 8
+  }
+}

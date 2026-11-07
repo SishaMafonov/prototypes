@@ -1,0 +1,104 @@
+---
+document_type: rules_module
+ruleset_id: fool-house-2026-11-07-v14
+context: independent cell draws, global matching, group awards, in-place replacement
+read_when: probabilities, paytable, matching, refill semantics
+branch_ids: M01-M22
+---
+
+# 01 — Symbols and payout math
+
+**Context packet:** the board has 25 cells, arranged 5×5. A paid round costs 1.00. The active stage multiplier starts at x1 and can increase through collection-driven free stages. This module determines awards for one evaluated board; full-round return also includes subsequent refills/free stages.
+
+**Authority:** [src/game.ts](../../src/game.ts): `drawSymbol`, `generateBoard`, `findWins`, `applyRoomMultipliers`, `removeWins`, `refillBoard`. Default RNG is `Math.random`; tests/studies inject a seeded RNG and can supply candidate weights.
+
+## Symbol identities and random generation
+
+A regular symbol is `{tier: "low" | "mid" | "high", index: 0..4}`. Scatter is `{tier: "scatter", index: 0}`; Mystery is `{tier: "mystery", index: 0}` and transforms as a shared group before paying evaluation. See [14](14-mystery.md). A temporarily empty cell is `null`, not a symbol.
+
+| Tier | Total probability per newly drawn cell | Identities | Probability per particular identity |
+| --- | --- | --- | --- |
+| Low | 35% | `low[0]` … `low[4]` | 7% each |
+| Mid | 32.5% | `mid[0]` … `mid[4]` | 6.5% each |
+| High | 19.5% | `high[0]` … `high[4]` | 3.9% each |
+| Scatter | 3% | one mansion | 3% |
+| Mystery | 10% | one question mark | 10% before shared transformation |
+
+Low is the most common regular tier, Mid is next, and High is rarest. These are raw per-draw probabilities, not board/session quotas. Mystery retains10%; Scatter is3%; current regular weights are calibrated while keeping Low > Mid > High. See [15](15-current-balance.md) for current return evidence and [12](12-rtp-balance.md) for the historical v8 study.
+
+| ID | Condition | Exact result |
+| --- | --- | --- |
+| M01 | First RNG value `0.10 <= r < 0.10 + low_weight/100` | Select Low; consume another independent RNG value for the index. |
+| M02 | `0.10 + low_weight/100 <= r < 0.10 + (low_weight+mid_weight)/100` | Select Mid; draw the index independently. |
+| M03 | `0.10 + (low_weight+mid_weight)/100 <= r < 0.97` | Select High; draw the index independently. |
+| M04 | `0.97 <= r < 1` | Return Scatter at index 0; consume no index RNG draw. |
+| M05 | Regular tier selected, next RNG value `u` | Index = `floor(u * 5)`. Intervals `[0,.2)`, `[.2,.4)`, `[.4,.6)`, `[.6,.8)`, `[.8,1)` produce indexes 0–4. |
+| M06 | Fresh paid board requested | Generate all 25 cells independently, row-major. Startup instead uses `createPreviewBoard`: fixed dispersed regular identities, at most two each, no feature symbols or board RNG. Floor free deals preserve existing Scatters and draw only regular/empty slots; see S04. Only newly drawn regular symbols consume an extra index RNG value. |
+
+The same tier weights serve every draw. Paid deals, non-Scatter cells of free-floor deals, and refills before collection use the index probabilities above. After any current-room tier collects, `refillForRoom` fixes regular indexes to that room and consumes no index RNG draw; target Low/Mid/High have the raw tier chances above; other regular indexes 0%, Scatter 3%, Mystery 10%. Each shared Mystery outcome uses the current room. See [11](11-room-refills.md). Stage multiplier/previous awards/session RTP do not steer draws.
+
+## Global winning groups
+
+Scan the whole board in row-major order. A group's key is `tier:index`. Position, row, column, adjacency, connected components, and left-to-right reel order have no role in eligibility. All occurrences of one identity form one group, even if separated.
+
+| ID | Condition | Exact result |
+| --- | --- | --- |
+| M22 | First RNG value [0,.10) | Return Mystery/index 0, no icon draw. Transform pending Mysteries through T04–T07 before paying evaluation. |
+| M07 | Cell is `null` | Ignore it during evaluation. |
+| M08 | Cell is Scatter or unresolved Mystery | Ignore it during regular win evaluation regardless of the total count, including 25. It is not a Wild and does not substitute. The separate [Scatter bonus check](08-scatter-bonus.md) counts final accumulated 6+ only at complete paid-chain settlement, after regular wins and room continuation finish. |
+| M09 | Regular identity appears | Create its group on first occurrence; append later occurrences to the same group. Different tiers with the same index, or different indexes in the same tier, stay separate. |
+| M10 | Regular group contains 0–4 matches | No win, award, removal, or collection from that group. (Absent groups are not materialized.) |
+| M11 | Group contains exactly 5 | Select the five-match award. |
+| M12 | Group contains exactly 6 | Select the six-match award. |
+| M13 | Group contains 7–25 | Select the seven-match award once. Retain every member in its winning-cell list. Never split into several paying groups or multiply by count. |
+| M14 | One or more winning groups | `findWins` computes each table award times the current stage multiplier. Groups follow first-occurrence order in the row-major scan. The controller subsequently applies M19–M21 once to this batch before crediting its final total. |
+
+## Paytable
+
+Amounts are whole-group awards for the fixed 1.00 bet at x1, not payments for each removed symbol. They are represented as integer cents.
+
+| Tier | 5 matches | 6 matches | 7+ matches |
+| --- | --- | --- | --- |
+| Low | 0.01 (1 cent) | 0.02 (2 cents) | 0.03 (3 cents) |
+| Mid | 0.02 (2 cents) | 0.03 (3 cents) | 0.05 (5 cents) |
+| High | 0.03 (3 cents) | 0.05 (5 cents) | 0.10 (10 cents) |
+| Scatter | 0 | 0 | 0 |
+
+```text
+q = min(number_of_identical_regular_symbols, 7)
+group_win_cents = paytable_cents[tier][q] * stage_multiplier * room_multiplier
+evaluation_win_cents = sum(group_win_cents for every winning identity)
+```
+
+For non-room identities (room multiplier x1): six Low at stage x3 pay0.06; nine Mid at stage x2 pay0.10; five High plus seven Low at stage x5 pay0.30 total. A room High group of 7+ at stage x3 with room x8 instead pays `0.10 * 3 * 8 = 2.40`. Count is not multiplied into the award again.
+
+## Room-specific group multipliers
+
+The 30-slot bag is `[2×14, 3×8, 5×5, 8×3]`: x2 probability 14/30, x3 8/30, x5 5/30, x8 3/30. Mean = 101/30 ≈ 3.3667 for an eligible group, not for every group on the board.
+
+| ID | Condition | Exact result |
+| --- | --- | --- |
+| M19 | Winning regular group's index equals the current room index | Consume one RNG value; select `ROOM_MULTIPLIERS[floor(r * 30)]`. Multiply that group's stage-adjusted award by the selected value once. All its member cells share this group result. |
+| M20 | Winning group's index differs, or there are no wins | Use room x1 and consume no room RNG draw for that group. Merely visible target symbols below five matches also never reach this helper. |
+| M21 | Several room-specific groups win, or a matching tier wins again later | Draw independently per matching group in group enumeration order. Re-draw on each later winning batch, even for an already-collected tier. No per-cell rolls or collection-based eligibility restriction. |
+
+`applyRoomMultipliers` returns new group objects containing the final `winCents`, `roomMultiplier`, and `unboostedWinCents` (already stage-adjusted). It does not mutate the original groups. The controller calls it once on fresh `findWins` output; passing already boosted output back into it is outside that call contract. The x144 stage cap does not cap the room multiplier: effective multiplication can be 144×8 = 1152.
+
+## Removal and replacement
+
+| ID | Condition | Exact result |
+| --- | --- | --- |
+| M15 | Winning-cell list is applied | Copy the board rows and set every listed position to `null`. All groups remove simultaneously; no symbol moves. Empty win list produces a copied but otherwise identical board. |
+| M16 | Refill visits a `null` cell | Draw tier using M01–M04. Before room collection, choose uniform index with M05. After any room tier collects, force current-room index with no second RNG draw. Scatter remains 3%/index 0. |
+| M17 | Refill visits any nonempty cell | Preserve the existing symbol in that exact position and consume no RNG for it. This includes Scatter and unmatched regular symbols. |
+| M18 | Refill finishes | Return a full board. Re-evaluation includes both survivors and replacements; a survivor can join a new win. There is no automatic immunity for previously collected identities. |
+
+The controller can skip ordinary replacement when collection completes; see [stage priority](03-stages.md). Pure removal/refill helpers do not decide when to switch stages, count spins, charge wagers, or credit session awards.
+
+When no regular win remains in a partially collected room, controller clears regular cells without awards, retains Scatters, and refills through the room pool; this extra clear is the exception to ordinary survivor preservation. It retains collection/multiplier and adds no bet/spin. `shouldContinueRoom` is false for empty/complete collection or fewer than five non-Scatter slots; otherwise partial progress continues; see [11](11-room-refills.md).
+
+## Input contract for agents
+
+The normal caller supplies valid internal symbols, valid cell positions, and a finite integer multiplier from the game's Fibonacci sequence. Helpers do not validate arbitrary external board sizes, out-of-range indexes, malformed tier names, or RNG outputs outside `[0,1)`. Such inputs are outside this ruleset, not alternate player-accessible branches. Fractional/negative custom multipliers are likewise not normal gameplay.
+
+For historical callers, `shouldContinueRoom(collected)` checks collection alone. Runtime always supplies the current board as its second argument to enforce the non-Scatter-slot boundary.

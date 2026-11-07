@@ -1,0 +1,1367 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "fool-house-2026-11-07-v14",
+  "status": "implemented_working_tree_snapshot",
+  "audited_on": "2026-11-07",
+  "project_root": "fool-house",
+  "path_base": "project_root",
+  "entrypoint": "GAME_RULES.md",
+  "agent_entrypoint": "AGENT_RULES.md",
+  "source_of_truth": "Runtime code overrides stale documentation. Historical changelog entries are not current rules.",
+  "provenance": {
+    "git_commit": "15723537ad9c2312d1e52684172adfd044b29ab5",
+    "source_tree_before_documentation": "Calibrated v14 raw weights/paytable/door odds; whole-round seeded bonus, persistent Scatters and shared Mysteries. Frozen one-billion paid-chain held-out validation with exploratory profiles excluded. Added shared renderer geometry and deterministic Playwright/Monocart regression infrastructure; math unchanged.",
+    "hash_algorithm": "SHA-256 of raw file bytes; line-ending conversion changes hashes",
+    "source_hashes": {
+      "src/game.ts": "ff0699aa224216817d363e14ffd09039f833adf37b8a644f26a4769048dbf500",
+      "src/main.ts": "b18b183d1130c614282ec803da35a9df9596c11dee65cd66c1f97e947e186b9b",
+      "src/style.css": "de2214e938b2f84a32d319edf003d2bc599f78c96ea3178b720481e1086653e9",
+      "tests/game.test.mjs": "fccec57fc174cca66f2739b57957a02c86015ba43c977421154ba8661297676a",
+      "scripts/simulate.mjs": "2995f66e18794114dd1747b6c1ded7bfebb23dc7dbc0ab9fe027850a6f522d29",
+      "src/bonus.ts": "f93c3d86fd50ba9791e8c6133ff7e395f6ae9933013d4ea6a4991891562a59c9",
+      "src/bonus-scene.ts": "8b1835e4290baa864b724adc87114d0f7a1c69fb66a0ce70fa795e62f4419ac1",
+      "tests/bonus.test.mjs": "76f05a1d11eb86e035eb7d2bb50ab4e8f4a700f276080b7617f54a633e240701",
+      "tests/permutations.test.mjs": "ecde68482d7f4d6068f1e89aeb6c84483c385b3c151813317fe66b04a6c28032",
+      "scripts/rtp/simulator.cpp": "b7a38050239bfca8c78da1ca2e27e5591a5a0fc0837045c9cfe8a948123ddfcf",
+      "scripts/rtp/Simulator.cs": "8d43bddf91d7e937618922c50a79e1e0bd109317bae785dfedbb882c0d4e7bae",
+      "scripts/rtp/verify.mjs": "30846f5a605ae7d75235eb9d97d0bb702936485012f8eb0310b2c0d10133d2cc",
+      "scripts/rtp/run.mjs": "1468cdb0c2c6445f6f8f53766dce6d8c13532eddce95dc7e85487bc5f7cbab8e",
+      "scripts/rtp/config.mjs": "1c636d5f29bf60d3b176b5fd11b99cad93e2b93909464e79370e23749c6f4e27",
+      "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+      "scripts/rtp/report.mjs": "92746ba1645f87a85a0cd109c069fad0f08ef6c6244ee743337cd6c49dc2666e",
+      "tests/rtp.test.mjs": "b970ff3865a7bbb1770ff3fa06f2dcca9137d944d577e4fea26fe8b79cb4040f",
+      "scripts/rtp/convergence.mjs": "b3fe5c0168de667e5119b9f8a14cdf04c22dd4f39e32ce49e2e548da48903af6",
+      "scripts/rtp/build.mjs": "2d132c492664b06862e91d087c18420217fbd4ae23225df6951345a7b57194e1",
+      "scripts/rtp/screen.mjs": "c594ef6f40700f5435799e5408026c5a3ecc4939e1fa4f02e2d64f74362dd1c2",
+      "tests/calibration.test.mjs": "0ebbb630533c51f549b263b2faed33c9e3a571c3e37ab5bb71d8bd7c147c95c8",
+      "tests/mystery.test.mjs": "41239a016aacd204161ea07612b66e9d888a966f2806f9eec705cf2ad544080a",
+      "scripts/rtp/calibrate.mjs": "a65a46b42661dc52fbc4fc0acba3703d192ebeaad670a3a5ba16926289cabb4a",
+      "tests/current-calibration.test.mjs": "2abfd263eeea08c1a2e8a7b8c7555c2d6f7bb81340fb6f878f462951669fee34",
+      "e2e/animation.visual.spec.ts": "848a8de7fae4d40b1e1ee2c27b569300c649d2f68248e59ded736eae13afa854",
+      "e2e/check-production.mjs": "0a2873f7b9014d851dc6ba0abf46c432e432b0ca80a6cdd9a918daf239aae1ff",
+      "e2e/coverage-reporter.ts": "a0e7efc3fb071f5886315d2642e03b5300cdac6f9a4a693cfe9ea4f6680462a6",
+      "e2e/fixtures.ts": "bc5ce4930a6ff77088eb589c507fbed45f62515f5e045c9f8f66711cbddce487",
+      "e2e/functional.spec.ts": "8dfd027f25385a30d0f0c3482946c1c18503c5a0e824316b590d4808170a99a9",
+      "e2e/layout.graph.spec.ts": "43b2e5f3738f78e3c9fea4a841060a3f187c2ac2773ca045c295d789c4324fa7",
+      "e2e/layout.visual.spec.ts": "0f8b263c202d67d8e39bb491bf70b387947417a2f3ccacb9b85ff57ffaa0d210",
+      "e2e/production.spec.ts": "ad529dd286b29ec6c081c592559082105e107438b5233cb6d868631dec9412b9",
+      "e2e/run.mjs": "2efd2ae5a56390be287c517cf58959e58d57862bd437d674fe228329eab90b04",
+      "e2e/scenarios.ts": "bdbc378381e3f1d8662f298251e1beee9b144b72682286aa2b82c7ab0b64afb2",
+      "package-lock.json": "e9b97d81fe62f028eec675834bb4cbb436931d06d968b572730e4cf0e8d91767",
+      "package.json": "d86888b7c55e001f723a3c8eef6dbb6e34061712550402df731fabcf8a3eb83a",
+      "playwright.config.ts": "8feeb62f2bb3ac1bd06f2e36507f455ee64cecd7823a69fbe76e894a35667d91",
+      "src/e2e/bridge.ts": "068f16053e6eeb8a049ef1991d5e9f78525e907e8fcb532ac52c4487a99e3d37",
+      "src/scene.ts": "38a5e429adcff96fe064b7e937cac29de71123892028d95e2592b2b513575fd2",
+      "tests/scene.test.mjs": "ecabc6ad04b005086c2505ce06ee3e61085dc9c274ca1ebcf86b85a62d5044ee",
+      "tsconfig.e2e.json": "3e99517a5ae9dd3ac20f80888eb3fc45e77a53a2fefd49452deb19184b6569ec",
+      "tsconfig.json": "88e3dacaeaa6d8c444ac51df7114e291a2abf49ebfdbc613b808ffbde6e378f7"
+    },
+    "current_study_hashes": {
+      "docs/game-rules/studies/rtp-v14-1b.json": "25c51d983d773cbdd339bc3194cb5134da7abd33878dcb99853a5ec705ab01bc",
+      "docs/game-rules/studies/rtp-v14-1b-summary.json": "2e61a74f05e29078296c786ceb5bf887ae18e48c195fe364cd547f180765c23b",
+      "docs/game-rules/studies/rtp-v14-1b-convergence.csv": "eca9d51bce8d3aa9d50ab498bf365c8576bb3a5a24ae20217fd2efa9946741fb",
+      "docs/game-rules/studies/rtp-v14-search.json": "2f8c0fce144b779ace83257a542dd8bfb4df7ebd22107f7ac568d5bf19bedf0f"
+    }
+  },
+  "module_catalog": [
+    {
+      "path": "docs/game-rules/01-math.md",
+      "context": "Symbol draws, identity, global matches, paytable, removal/refill.",
+      "branch_ids": [
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20",
+        "M21",
+        "M22"
+      ],
+      "source_functions": [
+        "drawSymbol",
+        "generateBoard",
+        "findWins",
+        "removeWins",
+        "refillBoard",
+        "applyRoomMultipliers",
+        "revealMysteries"
+      ]
+    },
+    {
+      "path": "docs/game-rules/02-round-flow.md",
+      "context": "Unpaid preview, input guards, ordered paid-round flow, termination/reset.",
+      "branch_ids": [
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "F09",
+        "F10",
+        "F11",
+        "F12",
+        "F13",
+        "F14",
+        "F15",
+        "F16",
+        "F17",
+        "F18",
+        "F19"
+      ],
+      "source_functions": [
+        "start",
+        "requestRound",
+        "setGameState",
+        "playPhase",
+        "resolveRound",
+        "createPreviewBoard"
+      ]
+    },
+    {
+      "path": "docs/game-rules/03-stages.md",
+      "context": "Theme selection, collection eligibility, stage priority, free deals and multipliers.",
+      "branch_ids": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09",
+        "C10",
+        "C11",
+        "C12",
+        "C13",
+        "C14"
+      ],
+      "source_functions": [
+        "nextTheme",
+        "applyTheme",
+        "collectWins",
+        "isCollectionComplete",
+        "getMultiplier",
+        "updateMultiplier",
+        "resolveRound"
+      ]
+    },
+    {
+      "path": "docs/game-rules/04-accounting.md",
+      "context": "Cents, paid wagers, spin counting, gross awards, sample RTP, persistence.",
+      "branch_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12",
+        "A13",
+        "A14"
+      ],
+      "source_functions": [
+        "renderStats",
+        "requestRound",
+        "resolveRound",
+        "formatWin"
+      ]
+    },
+    {
+      "path": "docs/game-rules/05-runtime-ui.md",
+      "context": "Presentation, timing, accessibility, resizing, loading/cache/error paths.",
+      "branch_ids": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06",
+        "U07",
+        "U08",
+        "U09",
+        "U10",
+        "U11",
+        "U12",
+        "U13",
+        "U14",
+        "U15",
+        "U16",
+        "U17",
+        "U18",
+        "E01",
+        "E02",
+        "E03",
+        "E04",
+        "E05",
+        "E06",
+        "E07",
+        "E08",
+        "E09"
+      ],
+      "source_functions": [
+        "loadImage",
+        "loadBackground",
+        "playPhase",
+        "drawTierOverlay",
+        "drawScatterAccent",
+        "drawReelSymbols",
+        "draw",
+        "resize",
+        "start"
+      ]
+    },
+    {
+      "path": "docs/game-rules/06-analysis.md",
+      "context": "Market-analysis boundaries, simulation contract, edge cases, evidence, staleness protocol.",
+      "branch_ids": [
+        "X01",
+        "X02",
+        "X03",
+        "X04",
+        "X05",
+        "X06",
+        "X07",
+        "X08",
+        "X09",
+        "X10"
+      ],
+      "source_functions": []
+    },
+    {
+      "path": "docs/game-rules/07-calibration.md",
+      "context": "Confirmed 96% target, room bag, weight selection, two-million-round validation and limitations.",
+      "branch_ids": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08"
+      ],
+      "source_functions": [
+        "applyRoomMultipliers",
+        "drawSymbol",
+        "generateBoard",
+        "findWins",
+        "refillBoard"
+      ]
+    },
+    {
+      "path": "docs/game-rules/08-scatter-bonus.md",
+      "context": "Final-chain 6+ accumulated Scatter entry, mandatory Continue, door adventure and settled base return.",
+      "branch_ids": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B09",
+        "B10",
+        "B11",
+        "B12",
+        "B13",
+        "B14",
+        "B15"
+      ],
+      "source_functions": [
+        "getScatterBonusMoves",
+        "checkScatterBonus",
+        "enterBonusScene",
+        "resolveRound",
+        "requestRound"
+      ]
+    },
+    {
+      "path": "docs/game-rules/09-tier-frequency.md",
+      "context": "Historical Low > Mid > High correction at 57/23.75/14.25/5; superseded calibration, original evidence retained.",
+      "branch_ids": [
+        "K01",
+        "K02",
+        "K03",
+        "K04",
+        "K05",
+        "K06"
+      ],
+      "source_functions": [
+        "drawSymbol",
+        "generateBoard",
+        "findWins",
+        "refillBoard"
+      ]
+    },
+    {
+      "path": "docs/game-rules/10-door-adventure.md",
+      "context": "Combined base+bonus round pot, 15% stairs/proportional other odds, exact incremental credit, floors/doors/return and legacy replay.",
+      "branch_ids": [
+        "D01",
+        "D02",
+        "D03",
+        "D04",
+        "D05",
+        "D06",
+        "D07",
+        "D08",
+        "D09",
+        "D10",
+        "D11",
+        "D12",
+        "D13",
+        "D14",
+        "D15",
+        "D16",
+        "D17",
+        "D18",
+        "D19"
+      ],
+      "source_functions": [
+        "createBonusState",
+        "drawBonusPrize",
+        "applyBonusPrize",
+        "chooseBonusDoor",
+        "returnFromBonus",
+        "BonusCorridor"
+      ]
+    },
+    {
+      "path": "docs/game-rules/11-room-refills.md",
+      "context": "First collection pins refill indexes; partial rooms cannot settle; free extra clears, resets, RNG and historical progression study.",
+      "branch_ids": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "source_functions": [
+        "refillForRoom",
+        "shouldContinueRoom",
+        "refillCurrentRoom",
+        "drawSymbol",
+        "resolveRound"
+      ]
+    },
+    {
+      "path": "docs/game-rules/12-rtp-balance.md",
+      "context": "Historical v8 ten-billion-round calibration; excludes Scatter persistence/paid-chain bonus scope; not current RTP.",
+      "branch_ids": [
+        "Q01",
+        "Q02",
+        "Q03",
+        "Q04",
+        "Q05",
+        "Q06",
+        "Q07",
+        "Q08",
+        "Q09",
+        "Q10"
+      ],
+      "source_functions": [
+        "drawSymbol",
+        "refillForRoom",
+        "Engine::round",
+        "Engine::doors"
+      ]
+    },
+    {
+      "path": "docs/game-rules/13-scatter-persistence.md",
+      "context": "Persistent Scatters across features/free floors; one final-chain bonus, final count, paid reset and space-limit settlement.",
+      "branch_ids": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10"
+      ],
+      "source_functions": [
+        "clearForFloor",
+        "getScatterBonusMoves",
+        "shouldContinueRoom",
+        "refillCurrentRoom",
+        "resolveRound",
+        "requestRound"
+      ]
+    },
+    {
+      "path": "docs/game-rules/14-mystery.md",
+      "context": "Shared 10% Mystery, 500ms landed-results hold, picker/reveal, no startup feature, input/reduced-motion timing.",
+      "branch_ids": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11"
+      ],
+      "source_functions": [
+        "drawSymbol",
+        "revealMysteries",
+        "revealMysterySymbols",
+        "drawMysterySymbol",
+        "drawMysteryPicker",
+        "createPreviewBoard"
+      ]
+    },
+    {
+      "path": "docs/game-rules/15-current-balance.md",
+      "context": "Active ~96% whole-paid-chain calibration, fixed weights/paytable/door chances, independent one-billion validation, component accounting, confidence limits and replay.",
+      "branch_ids": [
+        "V01",
+        "V02",
+        "V03",
+        "V04",
+        "V05",
+        "V06",
+        "V07",
+        "V08",
+        "V09",
+        "V10"
+      ],
+      "source_functions": [
+        "config",
+        "findWins",
+        "drawBonusPrize",
+        "aggregate",
+        "Engine::round"
+      ]
+    }
+  ],
+  "facts": {
+    "grid": {
+      "rows": 5,
+      "columns": 5,
+      "cells": 25,
+      "storage_order": "row_major"
+    },
+    "bet": {
+      "paid_round_cents": 100,
+      "currency": "unspecified prototype credits",
+      "variable_bet": false,
+      "bankroll": false
+    },
+    "symbols": {
+      "regular_tiers": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "indexes_per_regular_tier": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "regular_identity_count": 15,
+      "scatter": {
+        "tier": "scatter",
+        "index": 0,
+        "pays": false,
+        "substitutes": false,
+        "collects": false,
+        "triggers_bonus": true,
+        "retained_on_refill": true,
+        "retained_on_floor_change": true,
+        "retained_on_feature_clear": true,
+        "resets_on_new_paid_round": true
+      },
+      "identity_count": 17,
+      "weights_percent": {
+        "low": 35,
+        "mid": 32.5,
+        "high": 19.5,
+        "scatter": 3,
+        "mystery": 10
+      },
+      "probability_per_regular_identity": {
+        "low": 0.06999999999999999,
+        "mid": 0.065,
+        "high": 0.039
+      },
+      "probability_per_regular_identity_scope": "global full deals/uncollected refills; active room-refill tier probabilities are listed under refill",
+      "rng": "Math.random by default; optional injected RNG in pure math helpers",
+      "tier_intervals": [
+        {
+          "tier": "mystery",
+          "minimum_inclusive": 0,
+          "maximum_exclusive": 0.1
+        },
+        {
+          "tier": "low",
+          "minimum_inclusive": 0.1,
+          "maximum_exclusive": 0.44999999999999996
+        },
+        {
+          "tier": "mid",
+          "minimum_inclusive": 0.44999999999999996,
+          "maximum_exclusive": 0.775
+        },
+        {
+          "tier": "high",
+          "minimum_inclusive": 0.775,
+          "maximum_exclusive": 0.97
+        },
+        {
+          "tier": "scatter",
+          "minimum_inclusive": 0.97,
+          "maximum_exclusive": 1
+        }
+      ],
+      "regular_index_rule": "global deals/uncollected refills: floor(second RNG * 5); collected-room refills: fixed current-room index without index RNG",
+      "rng_calls_per_regular": 2,
+      "rng_calls_per_regular_room_refill": 1,
+      "rng_calls_per_scatter": 1,
+      "weights_change_with_theme": false,
+      "weights_change_in_free_stages": false,
+      "mystery": {
+        "tier": "mystery",
+        "index": 0,
+        "pays_before_reveal": false,
+        "substitutes_as_wild": false,
+        "scatter": false,
+        "raw_probability_percent": 10,
+        "draw_rng_calls": 1,
+        "reveal_rng_calls_per_nonempty_wave": 1,
+        "reveal_scope": "all unresolved Mystery cells on one board share one regular symbol",
+        "reveal_tier_probability": {
+          "low": 0.3333333333333333,
+          "mid": 0.3333333333333333,
+          "high": 0.3333333333333333
+        },
+        "reveal_regular_index": "current base room, including zero",
+        "preview_reveals_without_awards": false,
+        "reveal_priority": "before regular wins after every draw/refill; Scatter entry only at terminal paid-chain settlement",
+        "raw_draws_independent": true,
+        "mystery_outcomes_within_wave_correlated": true,
+        "preview_contains_mystery": false,
+        "results_hold_before_picker_ms": 500,
+        "results_hold_reduced_motion_ms": 500,
+        "results_hold_only_when_mysteries_exist": true,
+        "outcome_draw_timing": "after results hold, at picker start",
+        "hold_scope": [
+          "paid deals",
+          "free-floor deals",
+          "ordinary refills",
+          "room-feature refills"
+        ],
+        "calibrated_raw_pool": "Mystery stays10%; regular odds and Scatter are the current independent v14 vector, with Low > Mid > High."
+      }
+    },
+    "matching": {
+      "eligible_tiers": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "identity_fields": [
+        "tier",
+        "index"
+      ],
+      "scope": "anywhere_on_board",
+      "minimum_count": 5,
+      "payout_count_buckets": [
+        5,
+        6,
+        7
+      ],
+      "cap_bucket_applies_to_counts": "7 through 25",
+      "adjacency_required": false,
+      "consecutive_reels_required": false,
+      "one_award_per_identity": true,
+      "all_groups_evaluated_simultaneously": true,
+      "remove_all_matching_members": true
+    },
+    "paytable_cents": {
+      "low": {
+        "5": 1,
+        "6": 2,
+        "7": 3
+      },
+      "mid": {
+        "5": 2,
+        "6": 3,
+        "7": 5
+      },
+      "high": {
+        "5": 3,
+        "6": 5,
+        "7": 10
+      }
+    },
+    "group_award_formula": "paytable_cents[tier][min(count,7)] * stage_multiplier * room_multiplier; eligible only if count >= 5",
+    "refill": {
+      "only_null_positions": true,
+      "gravity": false,
+      "survivors_stay_in_place": true,
+      "charges_wager": false,
+      "increments_spins": false,
+      "recheck_after_refill": true,
+      "room_restriction_activates_on": "any removed winning current-room tier collected",
+      "restricted_regular_index": "current room index for Low, Mid and High",
+      "restricted_tier_weights_percent": {
+        "low": 35,
+        "mid": 32.5,
+        "high": 19.5,
+        "scatter": 3,
+        "mystery": 10
+      },
+      "extra_clear_on_no_win_with_partial_collection": true,
+      "extra_clear_cells": "all non-Scatter cells; maximum 25",
+      "extra_clear_pays_or_collects": false,
+      "extra_clear_preserves": [
+        "Scatter objects and positions",
+        "room",
+        "collection",
+        "stage multiplier",
+        "paid-chain Scatter award guard"
+      ],
+      "progression_guarantee": "partial rooms continue while at least five non-Scatter slots remain; otherwise settle after any eligible bonus",
+      "resets_to_global_pool": "new background/full paid or free-stage deal resets collection",
+      "ordinary_survivor_rule_exception": "feature clears replace regular survivors while preserving Scatters",
+      "floor_transfer_retains_scatters": true,
+      "retained_scatter_rng_draws": 0,
+      "retained_scatter_grows": false,
+      "minimum_regular_slots_for_continuation": 5
+    },
+    "themes": [
+      {
+        "id": "basement",
+        "background": "basement.png",
+        "symbol_index": 0
+      },
+      {
+        "id": "hall",
+        "background": "hall.png",
+        "symbol_index": 1
+      },
+      {
+        "id": "museum",
+        "background": "museum.png",
+        "symbol_index": 2
+      },
+      {
+        "id": "guests",
+        "background": "guests.png",
+        "symbol_index": 3
+      },
+      {
+        "id": "attic",
+        "background": "attic.png",
+        "symbol_index": 4
+      }
+    ],
+    "theme_selection": {
+      "initial": "uniform among five",
+      "subsequent": "uniform among four excluding current",
+      "immediate_repeat_allowed": false,
+      "revisit_after_intervening_theme_allowed": true
+    },
+    "collection": {
+      "required_tiers": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "eligible_source": "removed winning groups with index equal to current theme index",
+      "repeated_collection_adds_progress": false,
+      "extra_completion_award_cents": 0,
+      "persists_across_refills": true,
+      "persists_across_theme_changes": false,
+      "on_partial_stall": "clear/refill regular cells while at least five regular slots remain; otherwise settle with partial progress visible",
+      "completion_check": "after simultaneous award/removal batch, before ordinary refill",
+      "on_complete": "pay; popup; clear regular cells and retain Scatters; new theme/reset collection; advance multiplier; globally fill non-Scatter holes; keep paid-chain bonus guard"
+    },
+    "multiplier": {
+      "by_respin_number": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        13,
+        21,
+        34,
+        55,
+        89,
+        144
+      ],
+      "maximum": 144,
+      "free_stages_continue_at_cap": true,
+      "resets_on_paid_start": true,
+      "increases_on_ordinary_refill": false
+    },
+    "startup_preview": {
+      "full_board": true,
+      "animated": false,
+      "cost_cents": 0,
+      "increments_spins": false,
+      "resolves_wins": false,
+      "collects": false,
+      "mystery_reveal": false,
+      "regular_only": true,
+      "nonwinning": true,
+      "scatter_count": 0,
+      "mystery_count": 0,
+      "maximum_count_per_identity": 2,
+      "board_rng_calls": 0,
+      "room_selection_rng_calls": 1,
+      "waits_for_first_input": true,
+      "generator": "createPreviewBoard",
+      "layout": "fixed dispersed regular identities; separate from paid draw weights"
+    },
+    "scatter_bonus": {
+      "minimum_count": 6,
+      "moves_awarded": "exact final accumulated Scatter count at terminal paid-chain settlement, if at least six and not already awarded",
+      "checks": "only when no regular winning groups and no room continuation remain, after all Mystery waves, cascades, extra clears and free floors; no preview check",
+      "deduplication": "one award per paid-round chain, including all free floors/features; reset only at accepted paid start",
+      "continue_required": true,
+      "escape_or_backdrop_dismisses": false,
+      "continue_effect": "open playable door adventure and start 3000 ms walk; preserve the settled base board until Return",
+      "bank_persists_across_paid_rounds": false,
+      "bank_persists_reload": false,
+      "move_execution_implemented": true,
+      "moves_consumed": true,
+      "adds_payout_or_wager_or_spins": "door prizes add payout; no additional wager or counted reel spins",
+      "door_adventure": {
+        "outcome_weights_percent": {
+          "coin": 30,
+          "multiplier": 4.73,
+          "stairs": 15,
+          "ghost": 50.27
+        },
+        "multiplier_bag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "multiplier_applies_to": "combined current base+bonus round pot including carried seed, prior coins and multiplier gains; credit only increase",
+        "coin_base_cents": 100,
+        "coin_floor_factors": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "stairs_floor_increment": 1,
+        "maximum_floor": 6,
+        "stairs_at_cap": "no cash or reroll, consume move",
+        "ghost": "zero win, approaches and fades; consumes move",
+        "walk_ms": 3000,
+        "door_open_ms": 700,
+        "prize_reveal_ms": 1600,
+        "ghost_reveal_ms": 1900,
+        "bonus_subphases": [
+          "walking",
+          "choosing",
+          "revealing",
+          "complete"
+        ],
+        "door_odds_equal": true,
+        "door_visual_reset_each_walk": "clear prior selected door, prize, revealed flag, caption and reveal callback",
+        "door_hover_glow": false,
+        "door_focus_policy": "focus bonus region after acceptance and at next walk; enabled keyboard focus uses plain outline only",
+        "outcome_drawn_on_selection": true,
+        "renders_consume_game_rng": false,
+        "spends_move_on_every_outcome": true,
+        "floor_affects_multiplier_bag": false,
+        "money_storage": "BigInt cents",
+        "scatter_draws_during_doors": false,
+        "remaining_weight_allocation": "v14 calibrated Coin30/Multiplier4.73/Stairs15/Ghost50.27; original multiplier bag, floor coins and full-round seed preserved",
+        "starting_win": "entire settled current base-round chain win, already credited; never earlier session wins",
+        "starting_win_storage": "startingWinCents BigInt, nonnegative; negative seed rejected",
+        "bonus_only_contribution": "final combined round pot minus startingWinCents",
+        "seed_credited_on_entry": false,
+        "pot_credited_on_return": false,
+        "zero_seed_allowed": true,
+        "ui_total_label": "Round win",
+        "config_flag": "BonusStartsWithRoundWin",
+        "legacy_replay": "absent flag gives zero seed; original odds explicit via PRE_ROUND_POT_BONUS_WEIGHTS or legacy config"
+      },
+      "scene": {
+        "background": "src/assets/background/bonus.png",
+        "background_fit": "center cover",
+        "logo": "src/assets/reels/title.png",
+        "title": "Bonus",
+        "title_effect": "static green glow below logo",
+        "status_layout": "current of total steps and remaining | step win | combined Round win",
+        "initial_current_step": 1,
+        "initial_total_steps": "awarded move bank",
+        "initial_completed_steps": 0,
+        "remaining_steps": "totalSteps - completedSteps; includes current unplayed step",
+        "initial_step_win_cents": 0,
+        "initial_total_win_cents": "final already-credited current base-chain round win",
+        "base_scene_preserved": true,
+        "base_scene_inert_and_aria_hidden": true,
+        "move_controls_implemented": true,
+        "return_to_base_implemented": true
+      },
+      "future_retrigger_policy_confirmed": "Current base entry is once per paid chain. Prior bonus-retrigger preference requires a future feature that actually draws Scatters; current doors draw none.",
+      "retained_across_floor_transfers": true,
+      "retained_across_feature_clears": true,
+      "new_paid_start": "discard old board/Scatters and reset bonus eligibility",
+      "trigger_priority": [
+        "reveal pending Mysteries",
+        "resolve all regular winning groups and credit awards",
+        "continue refills, room extra clears and collection-triggered free floors",
+        "on terminal no-win/no-continuation board, check final 6+ Scatters once",
+        "mandatory Continue then door bonus",
+        "Return restores settled base board and becomes ready; guard prevents retrigger"
+      ],
+      "mid_chain_threshold_behavior": "retain Scatters without triggering; later Scatters increase final move count",
+      "terminal_space_limit": "partial collection with fewer than five non-Scatter slots is terminal; check final Scatter entry before paid-ready",
+      "return_behavior": "re-evaluate the unchanged settled board with awarded guard set; no pending base win, refill or floor transition; no duplicate bonus credit"
+    },
+    "accounting": {
+      "spins": "paid full deals plus free full deals",
+      "total_wager_cents": "100 per accepted paid round; zero per refill or free stage",
+      "round_win_cents": "current base-chain awards plus incremental combined round-pot gains during bonus; never credit the carried base seed twice",
+      "total_win_cents": "all committed awards in this page session",
+      "award_commit": "after winning and optional room-bonus reveal, then removal; credit final boosted sum once",
+      "rtp_if_no_wager": "—",
+      "rtp_percent_formula": "100 * totalWinCents / totalWagerCents",
+      "rtp_display_decimals": 2,
+      "win_display_decimals": 2,
+      "display_locale": "en-US",
+      "wins_are_gross": true,
+      "persistence": false,
+      "automatic_error_refund": false,
+      "bonus_contribution": "combined pot final minus base startingWinCents"
+    },
+    "limits": {
+      "refill_count": null,
+      "free_stage_count": null,
+      "total_round_win": null,
+      "meaning_of_null": "no explicit configured gameplay cap"
+    },
+    "input": {
+      "accepted": [
+        "canvas click/tap",
+        "focused Enter",
+        "focused Space"
+      ],
+      "ready_state_required": true,
+      "busy_input": "discard",
+      "held_key_repeat": "ignore",
+      "queue": false
+    },
+    "states": [
+      "loading",
+      "ready",
+      "drawing",
+      "winning",
+      "room-bonus",
+      "bonus-trigger",
+      "bonus",
+      "removing",
+      "cleared",
+      "refilling",
+      "switching",
+      "error",
+      "mystery-picking",
+      "mystery-reveal",
+      "mystery-waiting"
+    ],
+    "timing_ms": {
+      "symbol_growth": 340,
+      "column_stagger": 65,
+      "row_stagger": 35,
+      "full_deal_or_refill": 740,
+      "winning": 550,
+      "removing": 240,
+      "cleared": 120,
+      "switching_popup": 1200,
+      "switching_empty_board": 180,
+      "reduced_motion_non_switching_maximum": 180,
+      "room_bonus": 1100,
+      "mystery_pick": 1600,
+      "mystery_reveal": 450,
+      "mystery_total": 2050,
+      "mystery_results_hold": 500,
+      "mystery_including_results_hold": 2550
+    },
+    "reduced_motion": {
+      "growth_immediate": true,
+      "winning_glow_static": true,
+      "multiplier_css_pulse": false,
+      "removal_still_shrinks": true,
+      "switching_durations_unchanged": true,
+      "room_bonus_duration_unchanged": true,
+      "room_bonus_css_animation": false,
+      "mystery_results_hold_unchanged": true
+    },
+    "ui": {
+      "mid": "light red translucent backing",
+      "high": "light gold translucent backing",
+      "low": "dark backing",
+      "scatter": "violet backing, silver/violet border and glow, SCATTER label above mansion",
+      "winning": "strong gold backing/glow/outline",
+      "collected": "gold panel highlight and checkmark",
+      "multiplier_location": "reel top right",
+      "popup_text": "Switching to the next stage",
+      "canvas_compact_height_condition": "height < 500 CSS pixels",
+      "css_compact_height_condition": "height <= 500 CSS pixels",
+      "room_bonus": "separate teal popup; tier/roll/before-after rows; teal highlights on matching group cells",
+      "mobile_portrait_layout": "width <= 600 CSS px and height > width: 4 px reel side margins, gap <= 10 px, collection icon height <= min(64 px, 8vh); use available play-area height and shift reels upward only when viewport centering does not fit",
+      "reel_icon_fit": "98% aperture width; regular sprite height allowance 108%, Scatter icon area height 100%; uniform scale and aperture clipping",
+      "mystery": "code-drawn pink glowing/pulsing question mark, shared three-icon current-room selector, regular identity reveal with pink light/growth; reduced motion static"
+    },
+    "assets": {
+      "active_frame": "src/assets/reels/main-5x5.png",
+      "frame_dimensions": [
+        1164,
+        1351
+      ],
+      "title": "src/assets/reels/title.png",
+      "regular_sheets": [
+        "src/assets/symbols/low.png",
+        "src/assets/symbols/mid.png",
+        "src/assets/symbols/high.png"
+      ],
+      "scatter": "src/assets/symbols/scatter.png",
+      "bonus_background": "src/assets/background/bonus.png",
+      "required_images_before_play": 12,
+      "frame_columns_x_width": [
+        [
+          143,
+          147
+        ],
+        [
+          321,
+          153
+        ],
+        [
+          505,
+          154
+        ],
+        [
+          690,
+          153
+        ],
+        [
+          875,
+          146
+        ]
+      ],
+      "frame_rows_y_height": [
+        [
+          202,
+          143
+        ],
+        [
+          377,
+          161
+        ],
+        [
+          572,
+          164
+        ],
+        [
+          769,
+          160
+        ],
+        [
+          963,
+          162
+        ]
+      ],
+      "mystery": "procedural canvas question mark; no additional asset"
+    },
+    "recovery": {
+      "startup_catch": "error; reload instruction",
+      "round_catch": "error; reload instruction; no rollback",
+      "missing_app_or_context": "uncaught initialization throw",
+      "asynchronous_callback_error_boundary": false
+    },
+    "room_bonus": {
+      "bag": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        3,
+        5,
+        5,
+        5,
+        5,
+        5,
+        8,
+        8,
+        8
+      ],
+      "slot_counts": {
+        "2": 14,
+        "3": 8,
+        "5": 5,
+        "8": 3
+      },
+      "eligible": "winning regular group with index equal to current room index",
+      "draw_scope": "one independent roll per matching group per winning batch",
+      "eligible_if_tier_already_collected": true,
+      "nonmatching_multiplier": 1,
+      "rng_draws_per_eligible_group": 1,
+      "rng_draws_per_nonmatching_group": 0,
+      "expected_eligible_multiplier": 3.3666666666666667,
+      "maximum": 8,
+      "stacks_with_stage_multiplier": true,
+      "maximum_effective_stage_times_room": 1152,
+      "credited_separately_from_final_group_award": false
+    }
+  },
+  "evidence": {
+    "math_tests_passed": 43,
+    "math_tests_run_on": "2026-11-07",
+    "production_build_passed": true,
+    "unit_tests_passed": 46,
+    "regression_evidence": "docs/testing/verification.json",
+    "browser_tests_passed": 72,
+    "visual_baselines": 68,
+    "scene_baselines": 7,
+    "browser_coverage_percent": { "lines": 96.43, "functions": 96.62, "branches": 92.5 },
+    "validation_scope": "43 tests/build; one billion independently seeded complete paid chains; current source/config/raw report audits; native/helper replay30000, C# and historical replay3000 each; exact credits/room/RNG and checkpoint continuity; final isolated mobile calibrated bonus sequence/Return passed.",
+    "production_helper_verified_paid_rounds": 30000,
+    "historical_replay_verified_paid_rounds": 3000,
+    "current_rtp_study_run": true,
+    "monte_carlo_paid_rounds": 1000000000,
+    "monte_carlo_complete": true,
+    "historical_v8": {
+      "study": "docs/game-rules/12-rtp-balance.md",
+      "raw": "docs/game-rules/studies/rtp-10b.json",
+      "paid_rounds": 10000000000,
+      "total_rtp_percent": 95.9794994048,
+      "status": "historical; does not describe v9 rules"
+    },
+    "ui_validation": {
+      "method": "isolated headless Chrome",
+      "viewport": [
+        390,
+        844
+      ],
+      "reduced_motion": true,
+      "base_seed_cents": 1,
+      "prizes": [
+        "x3",
+        "coin",
+        "stairs",
+        "coin",
+        "ghost",
+        "x2"
+      ],
+      "combined_round_totals_cents": [
+        3,
+        103,
+        103,
+        303,
+        303,
+        606
+      ],
+      "final_round_win_cents": 606,
+      "return_win_cents": 606,
+      "new_odds_labels_verified": {
+        "coin": 30,
+        "multiplier": 4.73,
+        "stairs": 15,
+        "ghost": 50.27
+      },
+      "session_matches_round": true,
+      "entry_duplicate_credit": false,
+      "return_duplicate_credit": false,
+      "page_errors": 0,
+      "initial_load_timeout_resolved_with_longer_wait": true
+    },
+    "ui_validation_prior_mystery": {
+      "method": "isolated headless Chrome",
+      "outcomes": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "rooms": [
+        1,
+        1,
+        4
+      ],
+      "viewports": [
+        [
+          390,
+          844
+        ],
+        [
+          1280,
+          800
+        ],
+        [
+          375,
+          667
+        ]
+      ],
+      "observed_reveal_ms": [
+        2079.6,
+        2076.8,
+        2078.6
+      ],
+      "busy_clicks_ignored": true,
+      "page_errors": 0
+    },
+    "ui_validation_prior_scatter": {
+      "method": "isolated headless Chrome",
+      "viewport": [
+        390,
+        844
+      ],
+      "reduced_motion": true,
+      "free_floors_before_popup": 2,
+      "scatters_on_intermediate_winning_board": 6,
+      "final_scatter_count": 7,
+      "awarded_moves": 7,
+      "credited_base_win_cents_before_popup": 116,
+      "bonus_choices": [
+        "ghost",
+        "ghost",
+        "ghost",
+        "ghost",
+        "ghost",
+        "ghost",
+        "ghost"
+      ],
+      "return_preserves_settled_board": true,
+      "duplicate_trigger": false,
+      "next_paid_reset_passed": true,
+      "page_errors": 0
+    },
+    "ui_validation_prior_preview": {
+      "method": "isolated headless Chrome",
+      "viewport": [
+        390,
+        844
+      ],
+      "quiet_nonwinning_preview": true,
+      "preview_board_rng_calls": 0,
+      "preview_room_rng_calls": 1,
+      "initial_spins_and_wins_zero": true,
+      "idle_observation_ms": 2300,
+      "first_input_starts_paid_results": true,
+      "cases": [
+        {
+          "name": "paid-low",
+          "results_hold_ms": 2015.7,
+          "picker_ms": 1608.1
+        },
+        {
+          "name": "paid-high-reduced",
+          "results_hold_ms": 2017.1,
+          "picker_ms": 178.9
+        },
+        {
+          "name": "refill-mid",
+          "results_hold_ms": 2019.5,
+          "picker_ms": 1611.4
+        },
+        {
+          "name": "plain",
+          "results_hold_ms": null,
+          "picker_ms": null
+        }
+      ],
+      "busy_clicks_ignored": true,
+      "page_errors": 0
+    },
+    "current_study": {
+      "ruleset": "fool-house-2026-11-07-v14",
+      "raw": "docs/game-rules/studies/rtp-v14-1b.json",
+      "summary": "docs/game-rules/studies/rtp-v14-1b-summary.json",
+      "convergence": "docs/game-rules/studies/rtp-v14-1b-convergence.csv",
+      "search": "docs/game-rules/studies/rtp-v14-search.json",
+      "paid_rounds": 1000000000,
+      "workers": 8,
+      "seed": 20261111,
+      "config_id": "4461e19a0ec7931305dfb48858b5cb5f121d5b2f3c4c2025a7035a050b6c2f9e",
+      "engine_sha256": "9c2c9794e14552d1b2fdf31438c6972607bd28aea064688c2edae7bbd5f7b513",
+      "tuning_profiles_excluded": 84,
+      "tuning_paid_rounds_excluded": 303000000,
+      "baseline_paid_rounds_excluded": 1000000,
+      "truncated_chains": 0
+    }
+  },
+  "analysis_status": {
+    "target_rtp_percent": 96,
+    "target_status": "Completed fixed v14 calibration; one-billion-chain held-out Monte Carlo return is consistent with the ~96% target.",
+    "required_regular_frequency_order": [
+      "low",
+      "mid",
+      "high"
+    ],
+    "long_run_rtp": null,
+    "estimated_rtp_percent": 96.053617713,
+    "approximate_95_percent_interval": [
+      95.99780463609828,
+      96.10943078990171
+    ],
+    "component_rtp_percent": {
+      "base": 54.888925116,
+      "bonus": 41.164692597
+    },
+    "observed_hit_percent": 53.1629135,
+    "runtime_bonus_scope": "Entire paid chain: cascades, room refills/extra clears, all Fibonacci floors, final persistent Scatters and complete base-seeded doors; count bonus increments only.",
+    "study": "docs/game-rules/15-current-balance.md",
+    "current_rtp_measured": true,
+    "historical_v8_calibration": {
+      "target_rtp_percent": 96,
+      "target_status": "Completed fixed-weight calibration; ten-billion-round held-out Monte Carlo result is consistent with the ~96% target.",
+      "required_regular_frequency_order": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "long_run_rtp": null,
+      "runtime_bonus_scope": "current-room refills/extra clears, full doors and resumed base board included; prior studies are historical",
+      "estimated_rtp_percent": 95.9794994048,
+      "approximate_95_percent_interval": [
+        95.9559031977004,
+        96.0030956118996
+      ],
+      "observed_hit_percent": 46.93927443,
+      "volatility": "observed variance in raw studies; rare tails not comprehensively calibrated",
+      "study": "docs/game-rules/12-rtp-balance.md",
+      "combined_raw_result": "docs/game-rules/studies/rtp-10b.json",
+      "winning_groups_by_tier": {
+        "low": 10974406669,
+        "mid": 3629522289,
+        "high": 1906302048
+      },
+      "rare_free_stage_limit": "Observed 77 free stages at x144; longest paid chain reached 12 free stages. Finite simulation does not prove a maximum win/duration or certify exact theoretical RTP.",
+      "external_market_research_performed": false,
+      "target_base_contribution_percentage_points": [
+        50,
+        60
+      ],
+      "target_bonus_contribution_percentage_points": [
+        36,
+        46
+      ],
+      "component_rtp_percent": {
+        "base": 54.8938944848,
+        "bonus": 41.08560492
+      },
+      "component_approximate_95_percent_interval": {
+        "base": [
+          54.89027381213739,
+          54.897515157462614
+        ],
+        "bonus": [
+          41.06248617524949,
+          41.108723664750514
+        ]
+      },
+      "conditional_diagnostic_total_rtp_percent": 95.99582722455263,
+      "compact_summary": "docs/game-rules/studies/rtp-10b-summary.json",
+      "convergence": "docs/game-rules/studies/rtp-10b-convergence.csv",
+      "truncated_chains": 0,
+      "status": "historical; excludes current retention and paid-chain guard"
+    },
+    "external_market_research_performed": false,
+    "component_approximate_95_percent_interval": {
+      "base": [
+        54.881378239332875,
+        54.89647199266713
+      ],
+      "bonus": [
+        41.11055134746383,
+        41.218833846536164
+      ]
+    },
+    "combined_raw_result": "docs/game-rules/studies/rtp-v14-1b.json",
+    "compact_summary": "docs/game-rules/studies/rtp-v14-1b-summary.json",
+    "convergence": "docs/game-rules/studies/rtp-v14-1b-convergence.csv",
+    "conditional_diagnostic_total_rtp_percent": 96.02609299712562,
+    "conditional_standard_error_percentage_points": 0.009702003491638982,
+    "target_base_contribution_percentage_points": [
+      50,
+      60
+    ],
+    "target_bonus_contribution_percentage_points": [
+      36,
+      46
+    ],
+    "winning_groups_by_tier": {
+      "low": 1290826859,
+      "mid": 1189343029,
+      "high": 718961872
+    },
+    "paid_rounds": 1000000000,
+    "bonus_trigger_percent": 5.3547972999999995,
+    "free_stages_per_paid_round": 0.625409208,
+    "truncated_chains": 0,
+    "volatility": "Empirical per-paid-chain variance; approximate95% combined interval uses covariance. Finite Monte Carlo does not prove exact theoretical RTP or guarantee short-session return.",
+    "rare_free_stage_limit": "Observed 313 free stages at x144, maximum 12 free floors and 108 evaluations in one paid chain; these observations do not establish absolute caps."
+  }
+}

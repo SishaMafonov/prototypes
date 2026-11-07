@@ -1,0 +1,1402 @@
+{
+  "document_type": "weight_search_evidence",
+  "ruleset_id": "fool-house-2026-11-01-v8",
+  "context": "Exploratory full paid-chain tuning. Correlated search streams; excluded from the independent final ten-billion-round validation.",
+  "weightsOrder": [
+    "low",
+    "mid",
+    "high",
+    "scatter"
+  ],
+  "tuningProfiles": 34,
+  "recordedTuningPaidChains": 2021000000,
+  "coarse": [
+    {
+      "weights": {
+        "low": 40,
+        "mid": 34.375,
+        "high": 20.625,
+        "scatter": 5
+      },
+      "rounds": 100000,
+      "base": 30.21835,
+      "bonus": 3.02,
+      "total": 33.238350000000004,
+      "seconds": 0.3708217
+    },
+    {
+      "weights": {
+        "low": 40,
+        "mid": 33.125,
+        "high": 19.875,
+        "scatter": 7
+      },
+      "rounds": 100000,
+      "base": 28.51738,
+      "bonus": 17.686,
+      "total": 46.203379999999996,
+      "seconds": 0.4349672
+    },
+    {
+      "weights": {
+        "low": 40,
+        "mid": 35.625,
+        "high": 21.375,
+        "scatter": 3
+      },
+      "rounds": 100000,
+      "base": 33.15198,
+      "bonus": 0.112,
+      "total": 33.263980000000004,
+      "seconds": 0.4512882
+    },
+    {
+      "weights": {
+        "low": 40,
+        "mid": 31.875,
+        "high": 19.125,
+        "scatter": 9
+      },
+      "rounds": 100000,
+      "base": 26.10969,
+      "bonus": 49.146,
+      "total": 75.25569,
+      "seconds": 0.5070141
+    },
+    {
+      "weights": {
+        "low": 44,
+        "mid": 33.125,
+        "high": 19.875,
+        "scatter": 3
+      },
+      "rounds": 100000,
+      "base": 40.86748,
+      "bonus": 0.277,
+      "total": 41.14448,
+      "seconds": 0.37760459999999996
+    },
+    {
+      "weights": {
+        "low": 44,
+        "mid": 31.875,
+        "high": 19.125,
+        "scatter": 5
+      },
+      "rounds": 100000,
+      "base": 37.80912,
+      "bonus": 4.598,
+      "total": 42.40712,
+      "seconds": 0.364679
+    },
+    {
+      "weights": {
+        "low": 44,
+        "mid": 30.625,
+        "high": 18.375,
+        "scatter": 7
+      },
+      "rounds": 100000,
+      "base": 35.28028,
+      "bonus": 24.138,
+      "total": 59.418279999999996,
+      "seconds": 0.38493099999999997
+    },
+    {
+      "weights": {
+        "low": 44,
+        "mid": 29.375,
+        "high": 17.625,
+        "scatter": 9
+      },
+      "rounds": 100000,
+      "base": 33.56877,
+      "bonus": 65.554,
+      "total": 99.12277,
+      "seconds": 0.39549409999999996
+    },
+    {
+      "weights": {
+        "low": 48,
+        "mid": 30.625,
+        "high": 18.375,
+        "scatter": 3
+      },
+      "rounds": 100000,
+      "base": 52.98746,
+      "bonus": 0.455,
+      "total": 53.44246,
+      "seconds": 0.42857419999999996
+    },
+    {
+      "weights": {
+        "low": 48,
+        "mid": 29.375,
+        "high": 17.625,
+        "scatter": 5
+      },
+      "rounds": 100000,
+      "base": 51.44474,
+      "bonus": 6.217,
+      "total": 57.66174,
+      "seconds": 0.6525740999999999
+    },
+    {
+      "weights": {
+        "low": 48,
+        "mid": 28.125,
+        "high": 16.875,
+        "scatter": 7
+      },
+      "rounds": 100000,
+      "base": 49.02004,
+      "bonus": 29.957,
+      "total": 78.97704,
+      "seconds": 0.4879387
+    },
+    {
+      "weights": {
+        "low": 48,
+        "mid": 26.875,
+        "high": 16.125,
+        "scatter": 9
+      },
+      "rounds": 100000,
+      "base": 45.1889,
+      "bonus": 80.838,
+      "total": 126.02689999999998,
+      "seconds": 0.4276483
+    },
+    {
+      "weights": {
+        "low": 52,
+        "mid": 28.125,
+        "high": 16.875,
+        "scatter": 3
+      },
+      "rounds": 100000,
+      "base": 75.18061,
+      "bonus": 0.59,
+      "total": 75.77061,
+      "seconds": 0.5099918
+    },
+    {
+      "weights": {
+        "low": 52,
+        "mid": 26.875,
+        "high": 16.125,
+        "scatter": 5
+      },
+      "rounds": 100000,
+      "base": 72.94612,
+      "bonus": 12.245,
+      "total": 85.19112,
+      "seconds": 0.5192377
+    },
+    {
+      "weights": {
+        "low": 52,
+        "mid": 25.625,
+        "high": 15.375,
+        "scatter": 7
+      },
+      "rounds": 100000,
+      "base": 70.71253,
+      "bonus": 47.248,
+      "total": 117.96053,
+      "seconds": 0.5488875
+    },
+    {
+      "weights": {
+        "low": 52,
+        "mid": 24.375,
+        "high": 14.625,
+        "scatter": 9
+      },
+      "rounds": 100000,
+      "base": 66.70831,
+      "bonus": 121.645,
+      "total": 188.35331,
+      "seconds": 0.48600649999999995
+    },
+    {
+      "weights": {
+        "low": 56,
+        "mid": 25.625,
+        "high": 15.375,
+        "scatter": 3
+      },
+      "rounds": 100000,
+      "base": 117.04517,
+      "bonus": 1.41,
+      "total": 118.45517,
+      "seconds": 0.6097024999999999
+    },
+    {
+      "weights": {
+        "low": 56,
+        "mid": 23.125,
+        "high": 13.875,
+        "scatter": 7
+      },
+      "rounds": 100000,
+      "base": 108.06163,
+      "bonus": 79.565,
+      "total": 187.62662999999998,
+      "seconds": 0.6257337
+    },
+    {
+      "weights": {
+        "low": 56,
+        "mid": 24.375,
+        "high": 14.625,
+        "scatter": 5
+      },
+      "rounds": 100000,
+      "base": 113.40431,
+      "bonus": 22.204,
+      "total": 135.60831,
+      "seconds": 0.633918
+    },
+    {
+      "weights": {
+        "low": 56,
+        "mid": 21.875,
+        "high": 13.125,
+        "scatter": 9
+      },
+      "rounds": 100000,
+      "base": 104.19364,
+      "bonus": 193.005,
+      "total": 297.19864,
+      "seconds": 0.5398866
+    }
+  ],
+  "fine": [
+    {
+      "weights": {
+        "low": 49,
+        "mid": 27.34375,
+        "high": 16.40625,
+        "scatter": 7.25
+      },
+      "rounds": 1000000,
+      "base": 52.623383,
+      "bonus": 41.8491,
+      "total": 94.472483,
+      "seconds": 5.5274149
+    },
+    {
+      "weights": {
+        "low": 49,
+        "mid": 27.1875,
+        "high": 16.3125,
+        "scatter": 7.5
+      },
+      "rounds": 1000000,
+      "base": 52.217398,
+      "bonus": 46.5241,
+      "total": 98.741498,
+      "seconds": 6.169970999999999
+    },
+    {
+      "weights": {
+        "low": 49.5,
+        "mid": 27.1875,
+        "high": 16.3125,
+        "scatter": 7
+      },
+      "rounds": 1000000,
+      "base": 55.252675,
+      "bonus": 36.3855,
+      "total": 91.638175,
+      "seconds": 6.5133423
+    },
+    {
+      "weights": {
+        "low": 49,
+        "mid": 27.5,
+        "high": 16.5,
+        "scatter": 7
+      },
+      "rounds": 1000000,
+      "base": 52.451369,
+      "bonus": 37.8506,
+      "total": 90.301969,
+      "seconds": 7.0355944
+    },
+    {
+      "weights": {
+        "low": 50,
+        "mid": 26.875,
+        "high": 16.125,
+        "scatter": 7
+      },
+      "rounds": 1000000,
+      "base": 58.058702,
+      "bonus": 39.8158,
+      "total": 97.874502,
+      "seconds": 5.1429181999999996
+    },
+    {
+      "weights": {
+        "low": 49.5,
+        "mid": 26.875,
+        "high": 16.125,
+        "scatter": 7.5
+      },
+      "rounds": 1000000,
+      "base": 54.163878,
+      "bonus": 49.4169,
+      "total": 103.580778,
+      "seconds": 5.5278816
+    },
+    {
+      "weights": {
+        "low": 50,
+        "mid": 26.71875,
+        "high": 16.03125,
+        "scatter": 7.25
+      },
+      "rounds": 1000000,
+      "base": 57.392809,
+      "bonus": 46.0406,
+      "total": 103.433409,
+      "seconds": 5.6491299999999995
+    },
+    {
+      "weights": {
+        "low": 49.5,
+        "mid": 27.03125,
+        "high": 16.21875,
+        "scatter": 7.25
+      },
+      "rounds": 1000000,
+      "base": 54.885051,
+      "bonus": 43.0899,
+      "total": 97.974951,
+      "seconds": 8.018086499999999
+    },
+    {
+      "weights": {
+        "low": 50,
+        "mid": 26.5625,
+        "high": 15.9375,
+        "scatter": 7.5
+      },
+      "rounds": 1000000,
+      "base": 57.175552,
+      "bonus": 51.9666,
+      "total": 109.14215200000001,
+      "seconds": 5.4024711
+    }
+  ],
+  "pilots": [
+    {
+      "configuration": {
+        "Low": 49.5,
+        "Mid": 27.09375,
+        "High": 16.25625,
+        "Scatter": 7.15,
+        "Coin": 35,
+        "Multiplier": 25,
+        "Stairs": 5,
+        "Ghost": 35,
+        "Pay": [
+          [
+            1,
+            5,
+            10
+          ],
+          [
+            5,
+            10,
+            25
+          ],
+          [
+            10,
+            25,
+            50
+          ]
+        ],
+        "RoomBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5,
+          5,
+          8,
+          8,
+          8
+        ],
+        "Stage": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          13,
+          21,
+          34,
+          55,
+          89,
+          144
+        ],
+        "DoorBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "CoinCents": 100,
+        "FloorCap": 6,
+        "Seed": 20261103,
+        "Id": "4d2ae5768e2e53987084ddb9cd1918f911abd9f2a313fa3a487be51a7aeb2318"
+      },
+      "paidRounds": 10000000,
+      "baseRtpPercent": 54.8163231,
+      "bonusRtpPercent": 40.94436,
+      "totalRtpPercent": 95.7606831,
+      "conditionalExpectedTotalRtpPercent": 95.71319744921877
+    },
+    {
+      "configuration": {
+        "Low": 49.5,
+        "Mid": 27.084375,
+        "High": 16.250625,
+        "Scatter": 7.165,
+        "Coin": 35,
+        "Multiplier": 25,
+        "Stairs": 5,
+        "Ghost": 35,
+        "Pay": [
+          [
+            1,
+            5,
+            10
+          ],
+          [
+            5,
+            10,
+            25
+          ],
+          [
+            10,
+            25,
+            50
+          ]
+        ],
+        "RoomBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5,
+          5,
+          8,
+          8,
+          8
+        ],
+        "Stage": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          13,
+          21,
+          34,
+          55,
+          89,
+          144
+        ],
+        "DoorBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "CoinCents": 100,
+        "FloorCap": 6,
+        "Seed": 20261104,
+        "Id": "fb0c978206c0c299fe5148f15853a1f25e6525757e43bdbc061a4a7c3b0d2682"
+      },
+      "seed": 20261104,
+      "complete": true,
+      "paidRounds": 100000000,
+      "summary": {
+        "updatedAt": "2026-11-01T17:22:34.750Z",
+        "paidRounds": 100000000,
+        "wageredCents": "10000000000",
+        "base": {
+          "cents": "5491421543",
+          "rtpPercent": 54.91421543,
+          "standardErrorPercentagePoints": 0.01848136363775096,
+          "approximate95PercentInterval": [
+            54.877991957270005,
+            54.95043890272999
+          ]
+        },
+        "bonus": {
+          "cents": "4116497600",
+          "rtpPercent": 41.164976,
+          "standardErrorPercentagePoints": 0.11599080637726365,
+          "approximate95PercentInterval": [
+            40.937634019500564,
+            41.39231798049944
+          ]
+        },
+        "total": {
+          "cents": "9607919143",
+          "rtpPercent": 96.07919143,
+          "standardErrorPercentagePoints": 0.11846555825969234,
+          "approximate95PercentInterval": [
+            95.846998935811,
+            96.31138392418899
+          ]
+        },
+        "conditionalExpectedBonusRtpPercent": 41.24771417237115,
+        "hitRatePercent": 46.940183,
+        "freeStages": 17843429,
+        "bonuses": 3409785,
+        "bonusMoves": 21512886,
+        "extraClears": 15479242,
+        "evaluations": 231814186,
+        "maximumEvaluations": 53,
+        "maximumRespin": 9,
+        "tierGroups": [
+          109767032,
+          36293987,
+          19065445
+        ],
+        "tierCents": [
+          1576775498,
+          1864346445,
+          2050299600
+        ],
+        "prizeCounts": [
+          7529212,
+          5377453,
+          1076496,
+          7529725
+        ],
+        "stageCounts": [
+          0,
+          15138994,
+          2294960,
+          347400,
+          52766,
+          7932,
+          1168,
+          174,
+          32,
+          3,
+          0
+        ],
+        "bonusByMoves": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2576984,
+          652309,
+          145955,
+          29056,
+          4706,
+          688,
+          84,
+          3,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "randomCalls": 7385326780,
+        "truncatedChains": 0,
+        "workersReported": 8
+      },
+      "sourceSha256": {
+        "src/game.ts": "d0f0d57dd74acac1b6ff27cfd5d968fbb44bf29d8aa7d9980fb160914b365532",
+        "src/bonus.ts": "5a1d749bdbef85afdd6ecfaef65462cd2a568b1b9579fc2d692db8546fa60864",
+        "scripts/rtp/simulator.cpp": "a1de23b9f0ead2fea7ed0cb5f33180dd3802e2ba31577b1a9357cec9e62e2a40",
+        "scripts/rtp/config.mjs": "d1e92ca1f3464e38e5d61484c86b6974743457c3667aa79f0020d9f0feb55696",
+        "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+        "scripts/rtp/verify.mjs": "8e9cc54358ec29881e9a38fde572559aecc3871af07c3dc44e0e4490298f5add",
+        "scripts/rtp/run.mjs": "5741aef680a9f917c1b875a3a8f7c95fe01b3d41d5ff62872c45832d166c74ff",
+        "scripts/rtp/report.mjs": "6dd3378988aad08ebab9054bed38c9f1572777cee08fe01113e1257c941c8204"
+      }
+    },
+    {
+      "configuration": {
+        "Low": 49.5,
+        "Mid": 27.089375,
+        "High": 16.253625,
+        "Scatter": 7.157,
+        "Coin": 35,
+        "Multiplier": 25,
+        "Stairs": 5,
+        "Ghost": 35,
+        "Pay": [
+          [
+            1,
+            5,
+            10
+          ],
+          [
+            5,
+            10,
+            25
+          ],
+          [
+            10,
+            25,
+            50
+          ]
+        ],
+        "RoomBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5,
+          5,
+          8,
+          8,
+          8
+        ],
+        "Stage": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          13,
+          21,
+          34,
+          55,
+          89,
+          144
+        ],
+        "DoorBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "CoinCents": 100,
+        "FloorCap": 6,
+        "Seed": 20261102,
+        "Id": "4da9b105602e6b5f1f5d5c9a378dbb5e77f6ecc4a2283d4c4f7212a5851b048d"
+      },
+      "seed": 20261102,
+      "complete": false,
+      "paidRounds": 1700000000,
+      "summary": {
+        "paidRounds": 1700000000,
+        "wageredCents": "170000000000",
+        "base": {
+          "cents": "93325093720",
+          "rtpPercent": 54.897113952941176,
+          "standardErrorPercentagePoints": 0.004481080051910619,
+          "approximate95PercentInterval": [
+            54.88833103603943,
+            54.90589686984292
+          ]
+        },
+        "bonus": {
+          "cents": "69754738100",
+          "rtpPercent": 41.032198882352944,
+          "standardErrorPercentagePoints": 0.02880373089032001,
+          "approximate95PercentInterval": [
+            40.97574356980792,
+            41.08865419489797
+          ]
+        },
+        "total": {
+          "cents": "163079831820",
+          "rtpPercent": 95.92931283529411,
+          "standardErrorPercentagePoints": 0.029389873844272472,
+          "approximate95PercentInterval": [
+            95.87170868255934,
+            95.98691698802888
+          ]
+        },
+        "conditionalExpectedBonusRtpPercent": 41.02853372397343,
+        "hitRatePercent": 46.938784705882355,
+        "freeStages": 303307340,
+        "bonuses": 57673482,
+        "bonusMoves": 363847844,
+        "extraClears": 263093884,
+        "evaluations": 3940473380,
+        "maximumEvaluations": 60,
+        "maximumRespin": 11,
+        "tierGroups": [
+          1865604379,
+          617073132,
+          324083747
+        ],
+        "tierCents": [
+          26792616740,
+          31689245370,
+          34843231610
+        ],
+        "prizeCounts": [
+          127321242,
+          90972369,
+          18192322,
+          127361911
+        ],
+        "stageCounts": [
+          0,
+          257386415,
+          38967861,
+          5900831,
+          893336,
+          134912,
+          20433,
+          3029,
+          437,
+          73,
+          13
+        ],
+        "bonusByMoves": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          43604269,
+          11020509,
+          2468056,
+          486318,
+          81797,
+          11149,
+          1256,
+          117,
+          10,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "randomCalls": 125546621153,
+        "truncatedChains": 0
+      },
+      "sourceSha256": {
+        "src/game.ts": "5eb33df511188203dcf0b3120099f7d3c1c3b3ab3d75bd78ff71d4dbabacc4e2",
+        "src/bonus.ts": "5a1d749bdbef85afdd6ecfaef65462cd2a568b1b9579fc2d692db8546fa60864",
+        "scripts/rtp/simulator.cpp": "798633b8f95f0783a3f6d0f12b59ee3916301a676313a547878a79a9b3e25144",
+        "scripts/rtp/config.mjs": "d1e92ca1f3464e38e5d61484c86b6974743457c3667aa79f0020d9f0feb55696",
+        "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+        "scripts/rtp/verify.mjs": "5c6b291b4a856dac10b18a33e6f1694698116e0938039f00c3fcee506b69b620",
+        "scripts/rtp/run.mjs": "5741aef680a9f917c1b875a3a8f7c95fe01b3d41d5ff62872c45832d166c74ff",
+        "scripts/rtp/report.mjs": "6dd3378988aad08ebab9054bed38c9f1572777cee08fe01113e1257c941c8204"
+      },
+      "conditionalExpectedTotalRtpPercent": 95.92564767691461,
+      "stopReason": "Extended pilot detected approximately 0.07 percentage-point shortfall; not counted toward final validation.",
+      "notFinalValidation": true
+    },
+    {
+      "configuration": {
+        "Low": 49.5,
+        "Mid": 27.120625,
+        "High": 16.272375,
+        "Scatter": 7.107,
+        "Coin": 35,
+        "Multiplier": 25,
+        "Stairs": 5,
+        "Ghost": 35,
+        "Pay": [
+          [
+            1,
+            5,
+            10
+          ],
+          [
+            5,
+            10,
+            25
+          ],
+          [
+            10,
+            25,
+            50
+          ]
+        ],
+        "RoomBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5,
+          5,
+          8,
+          8,
+          8
+        ],
+        "Stage": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          13,
+          21,
+          34,
+          55,
+          89,
+          144
+        ],
+        "DoorBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "CoinCents": 100,
+        "FloorCap": 6,
+        "Seed": 20261106,
+        "Id": "b203c041c07fc65ee34a6cb57005ab8d3bff3d616ed55063065a78ecb9d4e616"
+      },
+      "seed": 20261106,
+      "complete": true,
+      "paidRounds": 100000000,
+      "summary": {
+        "updatedAt": "2026-11-01T17:39:27.313Z",
+        "paidRounds": 100000000,
+        "wageredCents": "10000000000",
+        "base": {
+          "cents": "5493461439",
+          "rtpPercent": 54.93461439,
+          "standardErrorPercentagePoints": 0.018472447107468818,
+          "approximate95PercentInterval": [
+            54.898408393669364,
+            54.97082038633064
+          ]
+        },
+        "bonus": {
+          "cents": "3968251300",
+          "rtpPercent": 39.682513,
+          "standardErrorPercentagePoints": 0.11377665278110143,
+          "approximate95PercentInterval": [
+            39.459510760549044,
+            39.905515239450956
+          ]
+        },
+        "total": {
+          "cents": "9461712739",
+          "rtpPercent": 94.61712739,
+          "standardErrorPercentagePoints": 0.11627380954784415,
+          "approximate95PercentInterval": [
+            94.38923072328622,
+            94.84502405671377
+          ]
+        },
+        "conditionalExpectedBonusRtpPercent": 39.83919291850908,
+        "hitRatePercent": 46.934991,
+        "freeStages": 17852725,
+        "bonuses": 3298857,
+        "bonusMoves": 20805550,
+        "extraClears": 15472500,
+        "evaluations": 231824874,
+        "maximumEvaluations": 49,
+        "maximumRespin": 9,
+        "tierGroups": [
+          109727509,
+          36351738,
+          19080440
+        ],
+        "tierCents": [
+          1575417169,
+          1866161995,
+          2051882275
+        ],
+        "prizeCounts": [
+          7279586,
+          5199288,
+          1040267,
+          7286409
+        ],
+        "stageCounts": [
+          0,
+          15147779,
+          2295999,
+          347252,
+          52361,
+          7862,
+          1252,
+          191,
+          26,
+          3,
+          0
+        ],
+        "bonusByMoves": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2497495,
+          628833,
+          140014,
+          27320,
+          4484,
+          628,
+          72,
+          9,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "randomCalls": 7386539007,
+        "truncatedChains": 0,
+        "workersReported": 4
+      },
+      "sourceSha256": {
+        "src/game.ts": "5eb33df511188203dcf0b3120099f7d3c1c3b3ab3d75bd78ff71d4dbabacc4e2",
+        "src/bonus.ts": "5a1d749bdbef85afdd6ecfaef65462cd2a568b1b9579fc2d692db8546fa60864",
+        "scripts/rtp/simulator.cpp": "798633b8f95f0783a3f6d0f12b59ee3916301a676313a547878a79a9b3e25144",
+        "scripts/rtp/config.mjs": "d1e92ca1f3464e38e5d61484c86b6974743457c3667aa79f0020d9f0feb55696",
+        "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+        "scripts/rtp/verify.mjs": "5c6b291b4a856dac10b18a33e6f1694698116e0938039f00c3fcee506b69b620",
+        "scripts/rtp/run.mjs": "5741aef680a9f917c1b875a3a8f7c95fe01b3d41d5ff62872c45832d166c74ff",
+        "scripts/rtp/report.mjs": "6dd3378988aad08ebab9054bed38c9f1572777cee08fe01113e1257c941c8204"
+      }
+    },
+    {
+      "configuration": {
+        "Low": 49.5,
+        "Mid": 27.058125,
+        "High": 16.234875,
+        "Scatter": 7.207,
+        "Coin": 35,
+        "Multiplier": 25,
+        "Stairs": 5,
+        "Ghost": 35,
+        "Pay": [
+          [
+            1,
+            5,
+            10
+          ],
+          [
+            5,
+            10,
+            25
+          ],
+          [
+            10,
+            25,
+            50
+          ]
+        ],
+        "RoomBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          3,
+          5,
+          5,
+          5,
+          5,
+          5,
+          8,
+          8,
+          8
+        ],
+        "Stage": [
+          1,
+          2,
+          3,
+          5,
+          8,
+          13,
+          21,
+          34,
+          55,
+          89,
+          144
+        ],
+        "DoorBag": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          3,
+          3,
+          5,
+          5,
+          8
+        ],
+        "CoinCents": 100,
+        "FloorCap": 6,
+        "Seed": 20261106,
+        "Id": "d73b0aef359ed3a9992ace55d7770924c3a67e982767ea57ec6fec3b580d8026"
+      },
+      "seed": 20261106,
+      "complete": true,
+      "paidRounds": 100000000,
+      "summary": {
+        "updatedAt": "2026-11-01T17:39:31.133Z",
+        "paidRounds": 100000000,
+        "wageredCents": "10000000000",
+        "base": {
+          "cents": "5480861929",
+          "rtpPercent": 54.80861929,
+          "standardErrorPercentagePoints": 0.018430064923776347,
+          "approximate95PercentInterval": [
+            54.7724963627494,
+            54.844742217250605
+          ]
+        },
+        "bonus": {
+          "cents": "4200380200",
+          "rtpPercent": 42.003802,
+          "standardErrorPercentagePoints": 0.09827282386677878,
+          "approximate95PercentInterval": [
+            41.811187265221115,
+            42.196416734778886
+          ]
+        },
+        "total": {
+          "cents": "9681242129",
+          "rtpPercent": 96.81242129,
+          "standardErrorPercentagePoints": 0.10119006513653733,
+          "approximate95PercentInterval": [
+            96.61408876233239,
+            97.01075381766762
+          ]
+        },
+        "conditionalExpectedBonusRtpPercent": 42.20534006537932,
+        "hitRatePercent": 46.933565,
+        "freeStages": 17823680,
+        "bonuses": 3484495,
+        "bonusMoves": 21990283,
+        "extraClears": 15474387,
+        "evaluations": 231697631,
+        "maximumEvaluations": 52,
+        "maximumRespin": 10,
+        "tierGroups": [
+          109706496,
+          36218556,
+          19039709
+        ],
+        "tierCents": [
+          1575718579,
+          1859253290,
+          2045890060
+        ],
+        "prizeCounts": [
+          7696561,
+          5494393,
+          1099415,
+          7699914
+        ],
+        "stageCounts": [
+          0,
+          15126022,
+          2290493,
+          345734,
+          52149,
+          7859,
+          1219,
+          184,
+          15,
+          4,
+          1
+        ],
+        "bonusByMoves": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2629931,
+          668262,
+          150540,
+          29939,
+          5053,
+          687,
+          75,
+          7,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "randomCalls": 7382534057,
+        "truncatedChains": 0,
+        "workersReported": 4
+      },
+      "sourceSha256": {
+        "src/game.ts": "5eb33df511188203dcf0b3120099f7d3c1c3b3ab3d75bd78ff71d4dbabacc4e2",
+        "src/bonus.ts": "5a1d749bdbef85afdd6ecfaef65462cd2a568b1b9579fc2d692db8546fa60864",
+        "scripts/rtp/simulator.cpp": "798633b8f95f0783a3f6d0f12b59ee3916301a676313a547878a79a9b3e25144",
+        "scripts/rtp/config.mjs": "d1e92ca1f3464e38e5d61484c86b6974743457c3667aa79f0020d9f0feb55696",
+        "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
+        "scripts/rtp/verify.mjs": "5c6b291b4a856dac10b18a33e6f1694698116e0938039f00c3fcee506b69b620",
+        "scripts/rtp/run.mjs": "5741aef680a9f917c1b875a3a8f7c95fe01b3d41d5ff62872c45832d166c74ff",
+        "scripts/rtp/report.mjs": "6dd3378988aad08ebab9054bed38c9f1572777cee08fe01113e1257c941c8204"
+      }
+    }
+  ],
+  "selectedFinalConfiguration": {
+    "Low": 49.5,
+    "Mid": 27.0875,
+    "High": 16.2525,
+    "Scatter": 7.16,
+    "Coin": 35,
+    "Multiplier": 25,
+    "Stairs": 5,
+    "Ghost": 35,
+    "Pay": [
+      [
+        1,
+        5,
+        10
+      ],
+      [
+        5,
+        10,
+        25
+      ],
+      [
+        10,
+        25,
+        50
+      ]
+    ],
+    "RoomBag": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      5,
+      5,
+      5,
+      5,
+      5,
+      8,
+      8,
+      8
+    ],
+    "Stage": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      13,
+      21,
+      34,
+      55,
+      89,
+      144
+    ],
+    "DoorBag": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      3,
+      3,
+      5,
+      5,
+      8
+    ],
+    "CoinCents": 100,
+    "FloorCap": 6,
+    "Seed": 20261105,
+    "Id": "ffb1534991b77f669b7cdbc3cd916f3614e579c39c1e5e21ea7d0cebdc8b2df1"
+  },
+  "permutationChecks": {
+    "regularRoomLabelPermutations": 120,
+    "rooms": 5,
+    "symmetryCases": 600,
+    "exhaustiveBoardEnumeration": false
+  }
+}
