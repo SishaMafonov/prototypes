@@ -11,7 +11,7 @@ const keepScatters=!process.argv.includes('--legacy');
 const bonusAtChainEnd=keepScatters;
 const weights=keepScatters?SYMBOL_WEIGHTS:PRE_MYSTERY_WEIGHTS;
 const defaultEngine=process.platform==='win32'?'.rtp-runs/native.exe':'.rtp-runs/native';
-const cfg=config({keepScatters,weights});
+const cfg=config({keepScatters,weights,bonusFloorDoubling:keepScatters&&!process.argv.includes('--floor-prizes=legacy')});
 const doorWeights={coin:cfg.Coin,multiplier:cfg.Multiplier,stairs:cfg.Stairs,ghost:cfg.Ghost};
 const paytable=Object.fromEntries(['low','mid','high'].map((tier,i)=>[tier,Object.fromEntries([5,6,7].map((n,j)=>[n,cfg.Pay[i][j]]))]));
 fs.mkdirSync('.rtp-runs',{recursive:true});fs.writeFileSync('.rtp-runs/verify-config.json',JSON.stringify(cfg));
@@ -25,7 +25,7 @@ for(const worker of [0,1,7]) {
     room=other();let board=generateBoard(random,weights),collected=new Set(),respin=0,awarded=false,base=0,bonus=0n,evals=0;
     const awardScatterBonus=()=>{
       if(!awarded&&getScatterBonusMoves(board)){
-        awarded=true;let state=createBonusState(getScatterBonusMoves(board),cfg.BonusStartsWithRoundWin?BigInt(base):0n);while(state.completedSteps<state.totalSteps)state=applyBonusPrize(state,drawBonusPrize(random,doorWeights));bonus+=state.totalWinCents-state.startingWinCents;
+        awarded=true;let state=createBonusState(getScatterBonusMoves(board),cfg.BonusStartsWithRoundWin?BigInt(base):0n);while(state.completedSteps<state.totalSteps)state=applyBonusPrize(state,drawBonusPrize(random,doorWeights),!!cfg.BonusFloorDoubling);bonus+=state.totalWinCents-state.startingWinCents;
       }
     };
     while(true){
@@ -54,14 +54,17 @@ delete actual.Seconds;delete expected.Seconds;assert.deepEqual(actual,expected,'
 if(keepScatters)assert.ok(expected.Bonuses<=expected.Rounds,'At most one bonus per paid chain');
 if(expected.BonusByMoves){
   const weights=doorWeights,bag=cfg.DoorBag,coinCents=cfg.CoinCents;
-  const floors=[1,0,0,0,0,0],pot=[0];const growth=1+weights.multiplier/100*(bag.reduce((s,m)=>s+m,0)/bag.length-1);
+  const pot=[0],seedGrowth=[0],mean=bag.reduce((s,m)=>s+m,0)/bag.length,ps=weights.stairs/100,pm=weights.multiplier/100;
+  let a=Array(cfg.FloorCap).fill(1),b=Array(cfg.FloorCap).fill(0);
   for(let n=1;n<=25;n++){
-    pot[n]=pot[n-1]*growth+weights.coin/100*coinCents*floors.reduce((s,p,i)=>s+p*(i+1),0);
-    const old=[...floors];for(let i=0;i<6;i++)floors[i]=old[i]*(i===5?1:1-weights.stairs/100)+(i?old[i-1]*weights.stairs/100:0);
+    const oldA=a,oldB=b;
+    a=oldA.map((v,f)=>{const factor=cfg.BonusFloorDoubling?2**f:1;return (1-ps+pm*(mean*factor-1))*v+ps*oldA[Math.min(f+1,cfg.FloorCap-1)];});
+    b=oldB.map((v,f)=>(1-ps)*v+ps*oldB[Math.min(f+1,cfg.FloorCap-1)]+weights.coin/100*coinCents*(cfg.BonusFloorDoubling?2**f:f+1)*oldA[f]);
+    pot[n]=b[0];seedGrowth[n]=a[0]-1;
   }
   assert.ok(Math.abs(pot[1]-weights.coin/100*coinCents)<1e-12);
   if(!keepScatters){assert.ok(Math.abs(pot[1]-35)<1e-12);assert.ok(Math.abs(pot[2]-92.75)<1e-12);}
-  const reconstructed=expected.BonusByMoves.reduce((s,count,moves)=>s+count*pot[moves]+(expected.BonusSeedCentsByMoves?.[moves]??0)*(growth**moves-1),0);
+  const reconstructed=expected.BonusByMoves.reduce((s,count,moves)=>s+count*pot[moves]+(expected.BonusSeedCentsByMoves?.[moves]??0)*seedGrowth[moves],0);
   assert.ok(Math.abs(reconstructed-expected.ExpectedBonusCents)<1e-7*Math.max(1,reconstructed));
 }
 console.log(JSON.stringify({checkpointResumeMatchesUninterruptedRun:true,conditionalBonusHistogramVerified:!!expected.BonusByMoves}));

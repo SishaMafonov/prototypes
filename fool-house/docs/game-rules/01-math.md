@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: independent cell draws, global matching, group awards, in-place replacement
 read_when: probabilities, paytable, matching, refill semantics
 branch_ids: M01-M22
@@ -24,7 +24,7 @@ A regular symbol is `{tier: "low" | "mid" | "high", index: 0..4}`. Scatter is `{
 | Scatter | 3% | one mansion | 3% |
 | Mystery | 10% | one question mark | 10% before shared transformation |
 
-Low is the most common regular tier, Mid is next, and High is rarest. These are raw per-draw probabilities, not board/session quotas. Mystery retains10%; Scatter is3%; current regular weights are calibrated while keeping Low > Mid > High. See [15](15-current-balance.md) for current return evidence and [12](12-rtp-balance.md) for the historical v8 study.
+Low is the most common regular tier, Mid is next, and High is rarest. These are raw per-draw probabilities, not board/session quotas. Mystery retains10%; Scatter is3%; current regular weights are calibrated while keeping Low > Mid > High. See [16](16-bonus-floor-prizes.md) for current prizes and unmeasured RTP; [15](15-current-balance.md) contains historical v14 return evidence and [12](12-rtp-balance.md) for the historical v8 study.
 
 | ID | Condition | Exact result |
 | --- | --- | --- |

@@ -27,7 +27,7 @@ template<class T,size_t N> void writeArray(std::ostream&o,const std::array<T,N>&
 struct Config{
  std::string id;double low,mid,scatter,coin,mult,stairs;uint32_t seed;int coinCents,floorCap;
  uint64_t lowCut,midCut,scatterCut,coinCut,multCut,stairsCut,mysteryCut;
- bool keepScatters,bonusOncePerPaidChain,bonusAtChainEnd,staticPreview,bonusStartsWithRoundWin;
+ bool keepScatters,bonusOncePerPaidChain,bonusAtChainEnd,staticPreview,bonusStartsWithRoundWin,bonusFloorDoubling;
  std::array<uint64_t,9>pay;std::array<uint64_t,30>roomBag;std::array<uint64_t,11>stage;std::array<uint64_t,10>doorBag;
  explicit Config(const std::string&s):id(field(s,"Id")),seed(number(s,"Seed")),coinCents(number(s,"CoinCents")),floorCap(number(s,"FloorCap")),pay(array<9>(s,"Pay")),roomBag(array<30>(s,"RoomBag")),stage(array<11>(s,"Stage")),doorBag(array<10>(s,"DoorBag")){
  double mystery=s.find("\"Mystery\"")!=s.npos?number(s,"Mystery")/100:0;
@@ -38,6 +38,7 @@ struct Config{
  bonusAtChainEnd=s.find("\"BonusAtEndOfPaidChain\"")!=s.npos&&field(s,"BonusAtEndOfPaidChain")=="true";
  staticPreview=s.find("\"StaticPreview\"")!=s.npos&&field(s,"StaticPreview")=="true";
  bonusStartsWithRoundWin=s.find("\"BonusStartsWithRoundWin\"")!=s.npos&&field(s,"BonusStartsWithRoundWin")=="true";
+ bonusFloorDoubling=s.find("\"BonusFloorDoubling\"")!=s.npos&&field(s,"BonusFloorDoubling")=="true";
  coin=number(s,"Coin")/100;mult=(number(s,"Coin")+number(s,"Multiplier"))/100;stairs=(number(s,"Coin")+number(s,"Multiplier")+number(s,"Stairs"))/100;
  lowCut=uint64_t(std::ceil(low*4294967296.0));midCut=uint64_t(std::ceil(mid*4294967296.0));scatterCut=uint64_t(std::ceil(scatter*4294967296.0));coinCut=uint64_t(std::ceil(coin*4294967296.0));multCut=uint64_t(std::ceil(mult*4294967296.0));stairsCut=uint64_t(std::ceil(stairs*4294967296.0));
  }
@@ -60,8 +61,21 @@ struct Stats{
 struct Engine{
  const Config&c;Rng rng;Stats stats;int room;uint8_t board[25],counts[17];double expected[26]{},seedGrowth[26]{};
  Engine(const Config&config,int worker):c(config),rng(c.seed){for(int i=0;i<worker;i++)rng.jump();room=int(rng.next()*5);if(!c.staticPreview){fill(false);revealMysteries();}
-  double meanMult=0;for(auto m:c.doorBag)meanMult+=double(m)/10;double growth=1+(c.mult-c.coin)*(meanMult-1),step=c.stairs-c.mult;std::vector<double>floor(c.floorCap,0);floor[0]=1;
-  for(int n=1;n<=25;n++){seedGrowth[n]=std::pow(growth,n)-1;double meanFloor=0;for(int i=0;i<c.floorCap;i++)meanFloor+=floor[i]*(i+1);expected[n]=growth*expected[n-1]+c.coin*c.coinCents*meanFloor;for(int i=c.floorCap-1;i>=0;i--){if(i==c.floorCap-1)floor[i]+=i?floor[i-1]*step:0;else floor[i]=floor[i]*(1-step)+(i?floor[i-1]*step:0);}}
+  double meanMult=0;for(auto m:c.doorBag)meanMult+=double(m)/10;
+  const double pm=c.mult-c.coin,ps=c.stairs-c.mult;
+  // Expected final pot = a[moves][floor] * starting pot + b[moves][floor].
+  // Track floor and pot together: multiplier growth now depends on floor.
+  std::vector<double>a(c.floorCap,1),b(c.floorCap,0);
+  for(int n=1;n<=25;n++){
+   auto oldA=a,oldB=b;
+   for(int f=0;f<c.floorCap;f++){
+    int next=std::min(c.floorCap-1,f+1),factor=c.bonusFloorDoubling?(1<<f):1;
+    double growth=1-ps+pm*(meanMult*factor-1),coin=c.coinCents*(c.bonusFloorDoubling?factor:f+1);
+    a[f]=growth*oldA[f]+ps*oldA[next];
+    b[f]=(1-ps)*oldB[f]+ps*oldB[next]+c.coin*coin*oldA[f];
+   }
+   expected[n]=b[0];seedGrowth[n]=a[0]-1;
+  }
  }
  // Exact for the uint32/2^32 reference stream: no float conversion per cell.
  // floor((u/2^32)*N) == (uint64(u)*N)>>32 for these N <= 30.
@@ -72,7 +86,7 @@ struct Engine{
  void revealMysteries(){if(!counts[16])return;int id=uniform(3)*5+room;for(int i=0;i<25;i++)if(board[i]==16)board[i]=id;counts[id]+=counts[16];counts[16]=0;}
  void refill(int mask,bool target){for(int i=0;i<25;i++)if(mask&(1<<board[i])){counts[board[i]]--;int id=draw(target);board[i]=id;counts[id]++;}}
  void otherRoom(){int r=uniform(4);room=r>=room?r+1:r;}
- u128 doors(int moves,uint64_t roundWin){uint64_t seed=c.bonusStartsWithRoundWin?roundWin:0;stats.bonuses++;stats.bonusByMoves[moves]++;stats.bonusSeedCentsByMoves[moves]+=seed;stats.expectedBonusCents+=expected[moves]+seed*seedGrowth[moves];int floor=1;u128 pot=seed;for(int i=0;i<moves;i++){stats.bonusMoves++;uint32_t r=rng.nextUInt();if(r<c.coinCut){pot+=c.coinCents*floor;stats.prizeCounts[0]++;}else if(r<c.multCut){pot*=c.doorBag[uniform(10)];stats.prizeCounts[1]++;}else if(r<c.stairsCut){floor=std::min(c.floorCap,floor+1);stats.prizeCounts[2]++;}else stats.prizeCounts[3]++;}return pot-seed;}
+ u128 doors(int moves,uint64_t roundWin){uint64_t seed=c.bonusStartsWithRoundWin?roundWin:0;stats.bonuses++;stats.bonusByMoves[moves]++;stats.bonusSeedCentsByMoves[moves]+=seed;stats.expectedBonusCents+=expected[moves]+seed*seedGrowth[moves];int floor=1;u128 pot=seed;for(int i=0;i<moves;i++){stats.bonusMoves++;uint32_t r=rng.nextUInt();int factor=c.bonusFloorDoubling?(1<<(floor-1)):1;if(r<c.coinCut){uint64_t award=c.coinCents*(c.bonusFloorDoubling?factor:floor);if(pot>~u128(0)-award)throw std::runtime_error("Bonus pot overflow; no silent truncation");pot+=award;stats.prizeCounts[0]++;}else if(r<c.multCut){uint64_t boost=c.doorBag[uniform(10)]*factor;if(pot>~u128(0)/boost)throw std::runtime_error("Bonus pot overflow; no silent truncation");pot*=boost;stats.prizeCounts[1]++;}else if(r<c.stairsCut){floor=std::min(c.floorCap,floor+1);stats.prizeCounts[2]++;}else stats.prizeCounts[3]++;}return pot-seed;}
  void round(uint64_t&base,u128&bonus){base=0;bonus=0;int collected=0,respin=0;bool awarded=false;otherRoom();fill(false);uint64_t evals=0;
   for(;;){if(++evals>1000000)throw std::runtime_error("Unsettled paid chain; no silent truncation");
    revealMysteries();

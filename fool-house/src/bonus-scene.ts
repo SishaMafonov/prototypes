@@ -1,4 +1,4 @@
-import type { BonusPrize } from './bonus';
+import type { RevealedBonusPrize as BonusPrize } from './bonus';
 import { layoutCorridor } from './scene';
 import type { Rect, SceneNode } from './scene';
 

@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: fixed wager, cumulative wins, spin count, observed session RTP
 read_when: financial model, statistics, simulation denominators, reset behavior
 branch_ids: A01-A14

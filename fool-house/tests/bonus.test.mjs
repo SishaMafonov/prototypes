@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { applyBonusPrize, BONUS_MULTIPLIERS, BONUS_WEIGHTS, PRE_ROUND_POT_BONUS_WEIGHTS, createBonusState, drawBonusPrize, formatCents } from '../src/bonus.ts';
+import { applyBonusPrize, BONUS_MULTIPLIERS, BONUS_WEIGHTS, PRE_ROUND_POT_BONUS_WEIGHTS, createBonusState, drawBonusPrize, formatCents, getBonusFloorPrizes, revealBonusPrize } from '../src/bonus.ts';
 
 test('calibrated bonus odds keep 15% stairs and exact category boundaries', () => {
   assert.ok(Math.abs(Object.values(BONUS_WEIGHTS).reduce((a,b)=>a+b,0)-100)<1e-12);
@@ -18,9 +18,9 @@ test('base round win seeds the bonus without a second credit; all subsequent pri
   let state=createBonusState(6,200n),credited=200n;
   assert.equal(state.totalWinCents,200n);assert.equal(state.startingWinCents,200n);assert.equal(state.stepWinCents,0n);
   const prizes=[{kind:'multiplier',multiplier:3},{kind:'coin'},{kind:'stairs'},{kind:'coin'},{kind:'ghost'},{kind:'multiplier',multiplier:2}];
-  const totals=[600n,700n,700n,900n,900n,1800n],gains=[400n,100n,0n,200n,0n,900n];
+  const totals=[600n,700n,700n,900n,900n,3600n],gains=[400n,100n,0n,200n,0n,2700n];
   for(let i=0;i<prizes.length;i++){state=applyBonusPrize(state,prizes[i]);credited+=state.stepWinCents;assert.equal(state.totalWinCents,totals[i]);assert.equal(state.stepWinCents,gains[i]);assert.equal(credited,state.totalWinCents);assert.equal(state.startingWinCents,200n);}
-  assert.equal(credited-state.startingWinCents,1600n);
+  assert.equal(credited-state.startingWinCents,3400n);
   assert.throws(()=>createBonusState(6,-1n),/negative/);
   let ghostOnly=createBonusState(6,123n);for(let i=0;i<6;i++)ghostOnly=applyBonusPrize(ghostOnly,{kind:'ghost'});
   assert.equal(ghostOnly.totalWinCents,123n);assert.equal(ghostOnly.stepWinCents,0n);
@@ -38,12 +38,12 @@ test('all ten multiplier slots preserve five x2, two x3, two x5 and one x8', () 
   }
 });
 
-test('coin awards scale by floor; stairs advance one floor through x6 and still consume a move at the cap', () => {
+test('coins double on ascent through floor six; capped stairs still consume a move without changing the pot', () => {
   let state=createBonusState(20);
   for(let floor=1;floor<=6;floor++) {
     const previous=state;
     state=applyBonusPrize(state,{kind:'coin'});
-    assert.equal(state.stepWinCents,BigInt(floor*100));
+    assert.equal(state.stepWinCents,BigInt(100*2**(floor-1)));
     assert.equal(previous.completedSteps,state.completedSteps-1);
     const pot=state.totalWinCents;
     state=applyBonusPrize(state,{kind:'stairs'});
@@ -51,6 +51,31 @@ test('coin awards scale by floor; stairs advance one floor through x6 and still 
     assert.equal(state.stepWinCents,0n);
     assert.equal(state.totalWinCents,pot);
   }
+});
+
+test('all ten multiplier slots double with coins on every floor; reveal and exact credited gain agree',()=>{
+  for(let floor=1;floor<=6;floor++){
+    const factor=2**(floor-1),rewards=getBonusFloorPrizes(floor);
+    assert.equal(rewards.coinCents,100*factor);
+    assert.deepEqual(rewards.multipliers,BONUS_MULTIPLIERS.map(n=>n*factor));
+    for(const multiplier of BONUS_MULTIPLIERS){
+      const prize={kind:'multiplier',multiplier},state={...createBonusState(1,123n),floor};
+      const revealed=revealBonusPrize(prize,floor),next=applyBonusPrize(state,prize);
+      assert.equal(revealed.multiplier,multiplier*factor);
+      assert.equal(next.totalWinCents,123n*BigInt(revealed.multiplier));
+      assert.equal(next.stepWinCents,next.totalWinCents-state.totalWinCents);
+      assert.equal(state.totalWinCents,123n);
+    }
+  }
+  assert.equal(getBonusFloorPrizes(6).coinCents,3200);
+  assert.equal(getBonusFloorPrizes(6).multipliers.at(-1),256);
+  assert.deepEqual(getBonusFloorPrizes(99),getBonusFloorPrizes(6));
+});
+
+test('historical bonus mode keeps linear coins and the original unscaled multiplier bag',()=>{
+  let state={...createBonusState(2,200n),floor:6};
+  state=applyBonusPrize(state,{kind:'coin'},false);assert.equal(state.totalWinCents,800n);
+  state=applyBonusPrize(state,{kind:'multiplier',multiplier:2},false);assert.equal(state.totalWinCents,1600n);
 });
 
 test('multiplier applies to the accumulated bonus pot, with incremental credit and no future multiplier stored', () => {

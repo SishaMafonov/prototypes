@@ -11,8 +11,8 @@ import {
   REEL_COLUMNS, REEL_ROWS, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
 } from './game';
 import type { Board, RegularSymbol, SymbolKind, SymbolTier } from './game';
-import { applyBonusPrize, BONUS_COIN_CENTS, BONUS_WEIGHTS, createBonusState, drawBonusPrize, formatCents, MAX_BONUS_FLOOR } from './bonus';
-import type { BonusPrize } from './bonus';
+import { applyBonusPrize, BONUS_WEIGHTS, createBonusState, drawBonusPrize, formatCents, getBonusFloorPrizes, MAX_BONUS_FLOOR, revealBonusPrize } from './bonus';
+import type { RevealedBonusPrize } from './bonus';
 import { BonusCorridor } from './bonus-scene';
 import { baseSceneGraph, layoutBaseScene } from './scene';
 import type { BaseLayout } from './scene';
@@ -58,10 +58,10 @@ app.innerHTML = `
       </header>
       <div class="bonus-content">
         <section class="bonus-prizes" aria-label="Potential bonus prizes">
-          <div class="bonus-floor"><strong data-bonus-floor>Floor 1</strong><span data-bonus-floor-factor>Coin prizes ×1</span></div>
+          <div class="bonus-floor"><strong data-bonus-floor>Floor 1</strong><span data-bonus-floor-factor>Prize boost ×1</span></div>
           <div class="bonus-prize-grid">
             <div><span>Coin · ${BONUS_WEIGHTS.coin.toFixed(2)}%</span><strong data-bonus-coin>1.00</strong></div>
-            <div><span>Multiplier · ${BONUS_WEIGHTS.multiplier.toFixed(2)}%</span><strong>×2–×8</strong></div>
+            <div><span>Multiplier · ${BONUS_WEIGHTS.multiplier.toFixed(2)}%</span><strong data-bonus-multipliers>×2–×8</strong></div>
             <div><span>Stairs · ${BONUS_WEIGHTS.stairs}%</span><strong data-bonus-stairs>Floor 2 ↑</strong></div>
             <div><span>Ghost · ${BONUS_WEIGHTS.ghost.toFixed(2)}%</span><strong>0.00</strong></div>
           </div>
@@ -360,8 +360,10 @@ function renderBonusStats(currentStep: number): void {
   bonusStat('step-win').textContent = formatWin(bonusSession.stepWinCents);
   bonusStat('total-win').textContent = formatWin(bonusSession.totalWinCents);
   app.querySelector<HTMLElement>('[data-bonus-floor]')!.textContent = `Floor ${bonusSession.floor}`;
-  app.querySelector<HTMLElement>('[data-bonus-floor-factor]')!.textContent = `Coin prizes ×${bonusSession.floor}`;
-  app.querySelector<HTMLElement>('[data-bonus-coin]')!.textContent = formatWin(BONUS_COIN_CENTS * bonusSession.floor);
+  const prizes = getBonusFloorPrizes(bonusSession.floor);
+  app.querySelector<HTMLElement>('[data-bonus-floor-factor]')!.textContent = `Prize boost ×${prizes.factor}`;
+  app.querySelector<HTMLElement>('[data-bonus-coin]')!.textContent = formatWin(prizes.coinCents);
+  app.querySelector<HTMLElement>('[data-bonus-multipliers]')!.textContent = `×${prizes.multipliers[0]}–×${prizes.multipliers.at(-1)}`;
   app.querySelector<HTMLElement>('[data-bonus-stairs]')!.textContent = bonusSession.floor < MAX_BONUS_FLOOR
     ? `Floor ${bonusSession.floor + 1} ↑` : 'Top floor';
 }
@@ -412,10 +414,10 @@ async function startBonusStep(): Promise<void> {
   bonusAction.textContent = 'Choose a door: left, middle or right';
 }
 
-function bonusPrizeText(prize: BonusPrize, next: typeof bonusSession): string {
+function bonusPrizeText(prize: RevealedBonusPrize, next: typeof bonusSession): string {
   if (prize.kind === 'coin') return `Coin · +${formatWin(next.stepWinCents)}`;
   if (prize.kind === 'multiplier') return `×${prize.multiplier} · Round win ${formatWin(next.totalWinCents)}`;
-  if (prize.kind === 'stairs') return next.floor === bonusSession.floor ? 'Already on the top floor · ×6' : `Upstairs · Floor ${next.floor} · Coin prizes ×${next.floor}`;
+  if (prize.kind === 'stairs') return `${next.floor === bonusSession.floor ? 'Already on the top floor' : `Upstairs · Floor ${next.floor}`} · Prize boost ×${getBonusFloorPrizes(next.floor).factor}`;
   return 'Ghost · No win';
 }
 
@@ -428,8 +430,9 @@ async function chooseBonusDoor(index: number): Promise<void> {
   bonusAction.textContent = 'Opening the door…';
   const prize = drawBonusPrize();
   const next = applyBonusPrize(bonusSession, prize);
-  const text = bonusPrizeText(prize, next);
-  await bonusCorridor!.reveal(index, prize, text, () => {
+  const revealed = revealBonusPrize(prize, bonusSession.floor);
+  const text = bonusPrizeText(revealed, next);
+  await bonusCorridor!.reveal(index, revealed, text, () => {
     bonusSession = next;
     // The starting base win is already credited. Add only each increase to the combined round pot.
     session.totalWinCents += next.stepWinCents;

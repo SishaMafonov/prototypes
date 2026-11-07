@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: visible states, nominal animation timing, layout, input accessibility, failure paths
 read_when: UX comparison, runtime exceptions, rendering or timing changes
 branch_ids: U01-U18, E01-E09

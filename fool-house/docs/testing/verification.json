@@ -3,7 +3,7 @@
   "schema_version": 1,
   "project": "fool-house",
   "verified_on": "2026-11-07",
-  "context": "Local real-browser regression evidence; game math/RTP unchanged. No remote CI execution or real iOS/device claim.",
+  "context": "Current v15 regression evidence: bonus coins and multiplier values double on ascent; current RTP unmeasured. Local Chromium emulation, not remote CI or real iOS/device coverage.",
   "plan": "docs/TESTING.md",
   "run_command": "npm run test:regression",
   "environment": {
@@ -16,71 +16,74 @@
   },
   "checks": {
     "unit_tests": {
-      "passed": 46,
-      "rule_statistics": 43,
+      "passed": 48,
+      "rule_statistics": 45,
       "scene": 3
     },
     "production_build": true,
     "production_observer_absent": true,
     "e2e_types": true,
-    "baseline_recording": {
-      "passed": 72,
-      "minutes": 8
+    "targeted_bonus_checks": {
+      "passed": 12
+    },
+    "floor_six_visual_recording": {
+      "passed": 2
     },
     "comparison": {
-      "passed": 72,
+      "passed": 74,
       "skipped": 0,
       "unexpected": 0,
       "flaky": 0,
-      "duration_ms": 371742.456,
+      "duration_ms": 358110.822,
       "baseline_updates": false
-    }
+    },
+    "floor_six_snapshot_phase": "Wait for choosing before capturing the prize panel; sample the ×256 reveal after credit."
   },
   "baselines": {
     "root": "e2e/__screenshots__/win32",
-    "png": 68,
+    "png": 72,
     "scene_json": 7,
-    "sha256_manifest": "42edf351d788e39db886506b657dcbbf7c439b35c0eaa91c12a36540ddc9ef8c",
-    "review": "Representative desktop/mobile/compact/landscape images visually inspected; full second run compared every baseline."
+    "sha256_manifest": "044597e4cfb219ba40dd7b46d3974bce8f0b07fdac80859270c98d8206606514",
+    "review": "Updated only bonus-state goldens; added Floor6 prize panel and ×256 reveal on desktop/mobile. Reviewed mobile maximum-floor screenshots; full run compared every baseline."
   },
   "browser_coverage": {
-    "scope": "Browser V8 source-mapped application execution; excludes observer/tests/packages; separate from Node rule tests.",
+    "scope": "Browser V8 source-mapped application execution, excluding observer/tests/packages; separate from Node rules tests.",
     "summary": {
       "bytes": {
-        "total": 72671,
-        "covered": 71486,
-        "uncovered": 1185,
-        "pct": 98.37,
+        "total": 73930,
+        "covered": 72636,
+        "uncovered": 1294,
+        "pct": 98.25,
         "status": "high"
       },
       "statements": {
-        "total": 387,
-        "covered": 370,
+        "total": 394,
+        "covered": 377,
         "uncovered": 17,
-        "pct": 95.61,
+        "pct": 95.69,
         "status": "high"
       },
       "branches": {
-        "total": 400,
-        "covered": 370,
-        "uncovered": 30,
-        "pct": 92.5,
+        "total": 407,
+        "covered": 375,
+        "uncovered": 32,
+        "pct": 92.14,
         "status": "high"
       },
       "functions": {
-        "total": 148,
-        "covered": 143,
+        "total": 151,
+        "covered": 146,
         "uncovered": 5,
-        "pct": 96.62,
+        "pct": 96.69,
         "status": "high"
       },
       "lines": {
-        "total": 1344,
-        "covered": 1296,
+        "total": 1358,
+        "covered": 1308,
         "blank": 96,
-        "comment": 34,
-        "uncovered": 48,
-        "pct": 96.43,
+        "comment": 35,
+        "uncovered": 50,
+        "pct": 96.32,
         "status": "high"
       }
     },
@@ -91,7 +94,7 @@
       },
       {
         "path": "src/bonus.ts",
-        "lines_percent": 89.36
+        "lines_percent": 87.93
       },
       {
         "path": "src/game.ts",
@@ -99,7 +102,7 @@
       },
       {
         "path": "src/main.ts",
-        "lines_percent": 96.31
+        "lines_percent": 96.33
       },
       {
         "path": "src/scene.ts",
@@ -118,24 +121,25 @@
     "e2e/check-production.mjs": "0a2873f7b9014d851dc6ba0abf46c432e432b0ca80a6cdd9a918daf239aae1ff",
     "e2e/coverage-reporter.ts": "a0e7efc3fb071f5886315d2642e03b5300cdac6f9a4a693cfe9ea4f6680462a6",
     "e2e/fixtures.ts": "bc5ce4930a6ff77088eb589c507fbed45f62515f5e045c9f8f66711cbddce487",
-    "e2e/functional.spec.ts": "8dfd027f25385a30d0f0c3482946c1c18503c5a0e824316b590d4808170a99a9",
+    "e2e/functional.spec.ts": "1f143f8109c424795594dfe2293dd73860bb37424c427970ccc9a7705eba6f3c",
     "e2e/layout.graph.spec.ts": "43b2e5f3738f78e3c9fea4a841060a3f187c2ac2773ca045c295d789c4324fa7",
     "e2e/layout.visual.spec.ts": "0f8b263c202d67d8e39bb491bf70b387947417a2f3ccacb9b85ff57ffaa0d210",
     "e2e/production.spec.ts": "ad529dd286b29ec6c081c592559082105e107438b5233cb6d868631dec9412b9",
     "e2e/run.mjs": "2efd2ae5a56390be287c517cf58959e58d57862bd437d674fe228329eab90b04",
-    "e2e/scenarios.ts": "bdbc378381e3f1d8662f298251e1beee9b144b72682286aa2b82c7ab0b64afb2",
+    "e2e/scenarios.ts": "853c8cb2cf171989e47d3322a845da14b844424f382e717c0fd879e16d3f603c",
     "package-lock.json": "e9b97d81fe62f028eec675834bb4cbb436931d06d968b572730e4cf0e8d91767",
     "package.json": "d86888b7c55e001f723a3c8eef6dbb6e34061712550402df731fabcf8a3eb83a",
     "playwright.config.ts": "8feeb62f2bb3ac1bd06f2e36507f455ee64cecd7823a69fbe76e894a35667d91",
-    "src/bonus-scene.ts": "8b1835e4290baa864b724adc87114d0f7a1c69fb66a0ce70fa795e62f4419ac1",
-    "src/bonus.ts": "f93c3d86fd50ba9791e8c6133ff7e395f6ae9933013d4ea6a4991891562a59c9",
+    "src/bonus-scene.ts": "7db15d056141992c3a3bc2521918118fb9d82aa46adf53055ff1570af52af07c",
+    "src/bonus.ts": "c38fd97f2c7b250af3ef638005f38eb7aff8ffe041194acc8ac54b668c47afda",
     "src/e2e/bridge.ts": "068f16053e6eeb8a049ef1991d5e9f78525e907e8fcb532ac52c4487a99e3d37",
     "src/game.ts": "ff0699aa224216817d363e14ffd09039f833adf37b8a644f26a4769048dbf500",
-    "src/main.ts": "b18b183d1130c614282ec803da35a9df9596c11dee65cd66c1f97e947e186b9b",
+    "src/main.ts": "ecbcde7240ea0d7406799ead0b0e566411e1166bf265cc778f88a4469bc77357",
     "src/scene.ts": "38a5e429adcff96fe064b7e937cac29de71123892028d95e2592b2b513575fd2",
     "src/style.css": "de2214e938b2f84a32d319edf003d2bc599f78c96ea3178b720481e1086653e9",
     "tests/scene.test.mjs": "ecabc6ad04b005086c2505ce06ee3e61085dc9c274ca1ebcf86b85a62d5044ee",
     "tsconfig.e2e.json": "3e99517a5ae9dd3ac20f80888eb3fc45e77a53a2fefd49452deb19184b6569ec",
     "tsconfig.json": "88e3dacaeaa6d8c444ac51df7114e291a2abf49ebfdbc613b808ffbde6e378f7"
-  }
+  },
+  "ruleset_id": "fool-house-2026-11-07-v15"
 }

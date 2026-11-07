@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: Scatter trigger, allocated moves, modal confirmation, playable door adventure and preserved base return
 read_when: Scatter qualification, Continue behavior, duplicate awards, bonus implementation next steps
 branch_ids: B01-B15

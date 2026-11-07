@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { SYMBOL_WEIGHTS, PAYTABLE_CENTS, PRE_BALANCE_PAYTABLE_CENTS, ROOM_MULTIPLIERS, getMultiplier, REEL_COLUMNS, REEL_ROWS, SYMBOLS_PER_SPRITE, BET_CENTS, MIN_WIN_COUNT, MIN_BONUS_SCATTERS, KEEP_SCATTERS_ON_FLOOR_CHANGE } from '../../src/game.ts';
 import { BONUS_WEIGHTS, PRE_ROUND_POT_BONUS_WEIGHTS, BONUS_MULTIPLIERS, BONUS_COIN_CENTS, MAX_BONUS_FLOOR } from '../../src/bonus.ts';
-export function config({ weights=SYMBOL_WEIGHTS, bonus, paytable, seed=20261101, keepScatters=KEEP_SCATTERS_ON_FLOOR_CHANGE, bonusAtChainEnd=keepScatters, staticPreview=keepScatters, bonusStartsWithRoundWin=keepScatters }={}) {
+export function config({ weights=SYMBOL_WEIGHTS, bonus, paytable, seed=20261101, keepScatters=KEEP_SCATTERS_ON_FLOOR_CHANGE, bonusAtChainEnd=keepScatters, staticPreview=keepScatters, bonusStartsWithRoundWin=keepScatters, bonusFloorDoubling=keepScatters }={}) {
   bonus ??= keepScatters ? BONUS_WEIGHTS : PRE_ROUND_POT_BONUS_WEIGHTS;
   paytable ??= keepScatters ? PAYTABLE_CENTS : PRE_BALANCE_PAYTABLE_CENTS;
   if(bonusStartsWithRoundWin&&!bonusAtChainEnd)throw Error('Round-pot bonus requires end-of-chain entry');
@@ -21,5 +21,6 @@ export function config({ weights=SYMBOL_WEIGHTS, bonus, paytable, seed=20261101,
   if(weights.mystery)c.Mystery=weights.mystery;
   if(staticPreview)c.StaticPreview=true;
   if(bonusStartsWithRoundWin)c.BonusStartsWithRoundWin=true;
+  if(bonusFloorDoubling)c.BonusFloorDoubling=true;
   c.Id=createHash('sha256').update(JSON.stringify(c)).digest('hex');return c;
 }

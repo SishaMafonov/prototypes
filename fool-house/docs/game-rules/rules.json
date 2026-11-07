@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "ruleset_id": "fool-house-2026-11-07-v14",
+  "ruleset_id": "fool-house-2026-11-07-v15",
   "status": "implemented_working_tree_snapshot",
   "audited_on": "2026-11-07",
   "project_root": "fool-house",
@@ -9,24 +9,24 @@
   "agent_entrypoint": "AGENT_RULES.md",
   "source_of_truth": "Runtime code overrides stale documentation. Historical changelog entries are not current rules.",
   "provenance": {
-    "git_commit": "15723537ad9c2312d1e52684172adfd044b29ab5",
-    "source_tree_before_documentation": "Calibrated v14 raw weights/paytable/door odds; whole-round seeded bonus, persistent Scatters and shared Mysteries. Frozen one-billion paid-chain held-out validation with exploratory profiles excluded. Added shared renderer geometry and deterministic Playwright/Monocart regression infrastructure; math unchanged.",
+    "git_commit": "f44cd395be364f492ff0966e6ce19a0e486a9b79",
+    "source_tree_before_documentation": "v15 doubles bonus coins and multiplier values on ascent; Floor1 and all outcome weights unchanged. Historical v14 billion-round evidence/source bytes preserved; current RTP unmeasured.",
     "hash_algorithm": "SHA-256 of raw file bytes; line-ending conversion changes hashes",
     "source_hashes": {
       "src/game.ts": "ff0699aa224216817d363e14ffd09039f833adf37b8a644f26a4769048dbf500",
-      "src/main.ts": "b18b183d1130c614282ec803da35a9df9596c11dee65cd66c1f97e947e186b9b",
+      "src/main.ts": "ecbcde7240ea0d7406799ead0b0e566411e1166bf265cc778f88a4469bc77357",
       "src/style.css": "de2214e938b2f84a32d319edf003d2bc599f78c96ea3178b720481e1086653e9",
       "tests/game.test.mjs": "fccec57fc174cca66f2739b57957a02c86015ba43c977421154ba8661297676a",
-      "scripts/simulate.mjs": "2995f66e18794114dd1747b6c1ded7bfebb23dc7dbc0ab9fe027850a6f522d29",
-      "src/bonus.ts": "f93c3d86fd50ba9791e8c6133ff7e395f6ae9933013d4ea6a4991891562a59c9",
-      "src/bonus-scene.ts": "8b1835e4290baa864b724adc87114d0f7a1c69fb66a0ce70fa795e62f4419ac1",
-      "tests/bonus.test.mjs": "76f05a1d11eb86e035eb7d2bb50ab4e8f4a700f276080b7617f54a633e240701",
+      "scripts/simulate.mjs": "ab86441f4126957606a89dd6ee50cc7ceaf7c7a0e1e00691e6033500d2382c14",
+      "src/bonus.ts": "c38fd97f2c7b250af3ef638005f38eb7aff8ffe041194acc8ac54b668c47afda",
+      "src/bonus-scene.ts": "7db15d056141992c3a3bc2521918118fb9d82aa46adf53055ff1570af52af07c",
+      "tests/bonus.test.mjs": "21f870a64f61ba4d2b18dca68eec5f1c72be7945f94eb674200c646f5b61264d",
       "tests/permutations.test.mjs": "ecde68482d7f4d6068f1e89aeb6c84483c385b3c151813317fe66b04a6c28032",
-      "scripts/rtp/simulator.cpp": "b7a38050239bfca8c78da1ca2e27e5591a5a0fc0837045c9cfe8a948123ddfcf",
-      "scripts/rtp/Simulator.cs": "8d43bddf91d7e937618922c50a79e1e0bd109317bae785dfedbb882c0d4e7bae",
-      "scripts/rtp/verify.mjs": "30846f5a605ae7d75235eb9d97d0bb702936485012f8eb0310b2c0d10133d2cc",
+      "scripts/rtp/simulator.cpp": "2d3b410e320316cc112be01f66268c45d45b9f6c4c894fb6f6920f32cbb8ce24",
+      "scripts/rtp/Simulator.cs": "a5f12bd9439ed91cafa8922a60ebcf555339f6baf731e953f92a89b0e906721b",
+      "scripts/rtp/verify.mjs": "9e616919573c6a2f32ba149f30ddca838b65fb67898a85887db3e0e9fa28245e",
       "scripts/rtp/run.mjs": "1468cdb0c2c6445f6f8f53766dce6d8c13532eddce95dc7e85487bc5f7cbab8e",
-      "scripts/rtp/config.mjs": "1c636d5f29bf60d3b176b5fd11b99cad93e2b93909464e79370e23749c6f4e27",
+      "scripts/rtp/config.mjs": "91de39667f55845cce6ddbac44717d0a25987d4454dbf42bc7998f57b798bdf5",
       "scripts/rtp/random.mjs": "77db758e6b4404688c40d3522eaaee808aa4923324f15b857423114dfddc9bc1",
       "scripts/rtp/report.mjs": "92746ba1645f87a85a0cd109c069fad0f08ef6c6244ee743337cd6c49dc2666e",
       "tests/rtp.test.mjs": "b970ff3865a7bbb1770ff3fa06f2dcca9137d944d577e4fea26fe8b79cb4040f",
@@ -36,17 +36,17 @@
       "tests/calibration.test.mjs": "0ebbb630533c51f549b263b2faed33c9e3a571c3e37ab5bb71d8bd7c147c95c8",
       "tests/mystery.test.mjs": "41239a016aacd204161ea07612b66e9d888a966f2806f9eec705cf2ad544080a",
       "scripts/rtp/calibrate.mjs": "a65a46b42661dc52fbc4fc0acba3703d192ebeaad670a3a5ba16926289cabb4a",
-      "tests/current-calibration.test.mjs": "2abfd263eeea08c1a2e8a7b8c7555c2d6f7bb81340fb6f878f462951669fee34",
+      "tests/current-calibration.test.mjs": "e223ba9dfc80cc27093217aab8269d08eb1aefac455b86b5bdaa68a64fc532e2",
       "e2e/animation.visual.spec.ts": "848a8de7fae4d40b1e1ee2c27b569300c649d2f68248e59ded736eae13afa854",
       "e2e/check-production.mjs": "0a2873f7b9014d851dc6ba0abf46c432e432b0ca80a6cdd9a918daf239aae1ff",
       "e2e/coverage-reporter.ts": "a0e7efc3fb071f5886315d2642e03b5300cdac6f9a4a693cfe9ea4f6680462a6",
       "e2e/fixtures.ts": "bc5ce4930a6ff77088eb589c507fbed45f62515f5e045c9f8f66711cbddce487",
-      "e2e/functional.spec.ts": "8dfd027f25385a30d0f0c3482946c1c18503c5a0e824316b590d4808170a99a9",
+      "e2e/functional.spec.ts": "1f143f8109c424795594dfe2293dd73860bb37424c427970ccc9a7705eba6f3c",
       "e2e/layout.graph.spec.ts": "43b2e5f3738f78e3c9fea4a841060a3f187c2ac2773ca045c295d789c4324fa7",
       "e2e/layout.visual.spec.ts": "0f8b263c202d67d8e39bb491bf70b387947417a2f3ccacb9b85ff57ffaa0d210",
       "e2e/production.spec.ts": "ad529dd286b29ec6c081c592559082105e107438b5233cb6d868631dec9412b9",
       "e2e/run.mjs": "2efd2ae5a56390be287c517cf58959e58d57862bd437d674fe228329eab90b04",
-      "e2e/scenarios.ts": "bdbc378381e3f1d8662f298251e1beee9b144b72682286aa2b82c7ab0b64afb2",
+      "e2e/scenarios.ts": "853c8cb2cf171989e47d3322a845da14b844424f382e717c0fd879e16d3f603c",
       "package-lock.json": "e9b97d81fe62f028eec675834bb4cbb436931d06d968b572730e4cf0e8d91767",
       "package.json": "d86888b7c55e001f723a3c8eef6dbb6e34061712550402df731fabcf8a3eb83a",
       "playwright.config.ts": "8feeb62f2bb3ac1bd06f2e36507f455ee64cecd7823a69fbe76e894a35667d91",
@@ -61,6 +61,13 @@
       "docs/game-rules/studies/rtp-v14-1b-summary.json": "2e61a74f05e29078296c786ceb5bf887ae18e48c195fe364cd547f180765c23b",
       "docs/game-rules/studies/rtp-v14-1b-convergence.csv": "eca9d51bce8d3aa9d50ab498bf365c8576bb3a5a24ae20217fd2efa9946741fb",
       "docs/game-rules/studies/rtp-v14-search.json": "2f8c0fce144b779ace83257a542dd8bfb4df7ebd22107f7ac568d5bf19bedf0f"
+    },
+    "historical_v14_source_archive": "docs/game-rules/studies/v14-source/",
+    "historical_v14_source_hashes": {
+      "docs/game-rules/studies/v14-source/src/bonus.ts": "f93c3d86fd50ba9791e8c6133ff7e395f6ae9933013d4ea6a4991891562a59c9",
+      "docs/game-rules/studies/v14-source/scripts/rtp/simulator.cpp": "b7a38050239bfca8c78da1ca2e27e5591a5a0fc0837045c9cfe8a948123ddfcf",
+      "docs/game-rules/studies/v14-source/scripts/rtp/config.mjs": "1c636d5f29bf60d3b176b5fd11b99cad93e2b93909464e79370e23749c6f4e27",
+      "docs/game-rules/studies/v14-source/scripts/rtp/verify.mjs": "30846f5a605ae7d75235eb9d97d0bb702936485012f8eb0310b2c0d10133d2cc"
     }
   },
   "module_catalog": [
@@ -448,7 +455,7 @@
     },
     {
       "path": "docs/game-rules/15-current-balance.md",
-      "context": "Active ~96% whole-paid-chain calibration, fixed weights/paytable/door chances, independent one-billion validation, component accounting, confidence limits and replay.",
+      "context": "Historical v14 ~96% calibration; predates v15 doubled bonus floor prizes. Current RTP is unmeasured.",
       "branch_ids": [
         "V01",
         "V02",
@@ -467,6 +474,24 @@
         "drawBonusPrize",
         "aggregate",
         "Engine::round"
+      ]
+    },
+    {
+      "path": "docs/game-rules/16-bonus-floor-prizes.md",
+      "context": "Current six-floor doubling of both coin and multiplier rewards; floor1 unchanged, floor6 cap; RTP unmeasured.",
+      "branch_ids": [
+        "D20",
+        "D21",
+        "D22",
+        "D23"
+      ],
+      "source_functions": [
+        "getBonusFloorPrizes",
+        "revealBonusPrize",
+        "applyBonusPrize",
+        "renderBonusStats",
+        "bonusPrizeText",
+        "chooseBonusDoor"
       ]
     }
   ],
@@ -790,14 +815,14 @@
         "coin_floor_factors": [
           1,
           2,
-          3,
           4,
-          5,
-          6
+          8,
+          16,
+          32
         ],
         "stairs_floor_increment": 1,
         "maximum_floor": 6,
-        "stairs_at_cap": "no cash or reroll, consume move",
+        "stairs_at_cap": "floor6 and factor32 unchanged; no cash, reroll or extra move; consume move",
         "ghost": "zero win, approaches and fades; consumes move",
         "walk_ms": 3000,
         "door_open_ms": 700,
@@ -816,10 +841,10 @@
         "outcome_drawn_on_selection": true,
         "renders_consume_game_rng": false,
         "spends_move_on_every_outcome": true,
-        "floor_affects_multiplier_bag": false,
+        "floor_affects_multiplier_bag": true,
         "money_storage": "BigInt cents",
         "scatter_draws_during_doors": false,
-        "remaining_weight_allocation": "v14 calibrated Coin30/Multiplier4.73/Stairs15/Ghost50.27; original multiplier bag, floor coins and full-round seed preserved",
+        "remaining_weight_allocation": "Unchanged v14 category odds; v15 scales both coins and all ten base multiplier slots by the floor factor. Floor1 unchanged.",
         "starting_win": "entire settled current base-round chain win, already credited; never earlier session wins",
         "starting_win_storage": "startingWinCents BigInt, nonnegative; negative seed rejected",
         "bonus_only_contribution": "final combined round pot minus startingWinCents",
@@ -828,7 +853,78 @@
         "zero_seed_allowed": true,
         "ui_total_label": "Round win",
         "config_flag": "BonusStartsWithRoundWin",
-        "legacy_replay": "absent flag gives zero seed; original odds explicit via PRE_ROUND_POT_BONUS_WEIGHTS or legacy config"
+        "legacy_replay": "absent flag gives zero seed; original odds explicit via PRE_ROUND_POT_BONUS_WEIGHTS or legacy config",
+        "multiplier_floor_factors": [
+          1,
+          2,
+          4,
+          8,
+          16,
+          32
+        ],
+        "prize_factor_formula": "2^(min(max(floor,1),6)-1)",
+        "floor_prizes": [
+          {
+            "floor": 1,
+            "coin_cents": 100,
+            "multipliers": [
+              2,
+              3,
+              5,
+              8
+            ]
+          },
+          {
+            "floor": 2,
+            "coin_cents": 200,
+            "multipliers": [
+              4,
+              6,
+              10,
+              16
+            ]
+          },
+          {
+            "floor": 3,
+            "coin_cents": 400,
+            "multipliers": [
+              8,
+              12,
+              20,
+              32
+            ]
+          },
+          {
+            "floor": 4,
+            "coin_cents": 800,
+            "multipliers": [
+              16,
+              24,
+              40,
+              64
+            ]
+          },
+          {
+            "floor": 5,
+            "coin_cents": 1600,
+            "multipliers": [
+              32,
+              48,
+              80,
+              128
+            ]
+          },
+          {
+            "floor": 6,
+            "coin_cents": 3200,
+            "multipliers": [
+              64,
+              96,
+              160,
+              256
+            ]
+          }
+        ]
       },
       "scene": {
         "background": "src/assets/background/bonus.png",
@@ -1078,21 +1174,25 @@
     }
   },
   "evidence": {
-    "math_tests_passed": 43,
+    "math_tests_passed": 45,
     "math_tests_run_on": "2026-11-07",
     "production_build_passed": true,
-    "unit_tests_passed": 46,
+    "unit_tests_passed": 48,
     "regression_evidence": "docs/testing/verification.json",
-    "browser_tests_passed": 72,
-    "visual_baselines": 68,
+    "browser_tests_passed": 74,
+    "visual_baselines": 72,
     "scene_baselines": 7,
-    "browser_coverage_percent": { "lines": 96.43, "functions": 96.62, "branches": 92.5 },
-    "validation_scope": "43 tests/build; one billion independently seeded complete paid chains; current source/config/raw report audits; native/helper replay30000, C# and historical replay3000 each; exact credits/room/RNG and checkpoint continuity; final isolated mobile calibrated bonus sequence/Return passed.",
+    "browser_coverage_percent": {
+      "lines": 96.32,
+      "functions": 96.69,
+      "branches": 92.14
+    },
+    "validation_scope": "48 Node tests, production build/observer guard/types,74 Playwright comparisons against72 PNG+7 scene baselines; native/helper30000, independent C#3000, historical v8/v14 replay3000 each with exact credits/room/RNG and checkpoint continuity. No new RTP calibration.",
     "production_helper_verified_paid_rounds": 30000,
     "historical_replay_verified_paid_rounds": 3000,
-    "current_rtp_study_run": true,
-    "monte_carlo_paid_rounds": 1000000000,
-    "monte_carlo_complete": true,
+    "current_rtp_study_run": false,
+    "monte_carlo_paid_rounds": 0,
+    "monte_carlo_complete": false,
     "historical_v8": {
       "study": "docs/game-rules/12-rtp-balance.md",
       "raw": "docs/game-rules/studies/rtp-10b.json",
@@ -1101,42 +1201,26 @@
       "status": "historical; does not describe v9 rules"
     },
     "ui_validation": {
-      "method": "isolated headless Chrome",
-      "viewport": [
-        390,
-        844
+      "method": "Deterministic Playwright desktop/mobile",
+      "floor_coin_credits": [
+        1,
+        2,
+        4,
+        8,
+        16,
+        32
       ],
-      "reduced_motion": true,
-      "base_seed_cents": 1,
-      "prizes": [
-        "x3",
-        "coin",
-        "stairs",
-        "coin",
-        "ghost",
-        "x2"
+      "floor_multiplier_max": [
+        8,
+        16,
+        32,
+        64,
+        128,
+        256
       ],
-      "combined_round_totals_cents": [
-        3,
-        103,
-        103,
-        303,
-        303,
-        606
-      ],
-      "final_round_win_cents": 606,
-      "return_win_cents": 606,
-      "new_odds_labels_verified": {
-        "coin": 30,
-        "multiplier": 4.73,
-        "stairs": 15,
-        "ghost": 50.27
-      },
-      "session_matches_round": true,
-      "entry_duplicate_credit": false,
-      "return_duplicate_credit": false,
-      "page_errors": 0,
-      "initial_load_timeout_resolved_with_longer_wait": true
+      "six_floor_cap": true,
+      "starting_pot_credited_once": true,
+      "entry_and_return_no_duplicate_credit": true
     },
     "ui_validation_prior_mystery": {
       "method": "isolated headless Chrome",
@@ -1235,7 +1319,7 @@
       "busy_clicks_ignored": true,
       "page_errors": 0
     },
-    "current_study": {
+    "historical_v14_study": {
       "ruleset": "fool-house-2026-11-07-v14",
       "raw": "docs/game-rules/studies/rtp-v14-1b.json",
       "summary": "docs/game-rules/studies/rtp-v14-1b-summary.json",
@@ -1250,30 +1334,120 @@
       "tuning_paid_rounds_excluded": 303000000,
       "baseline_paid_rounds_excluded": 1000000,
       "truncated_chains": 0
+    },
+    "historical_v14_ui_validation": {
+      "method": "isolated headless Chrome",
+      "viewport": [
+        390,
+        844
+      ],
+      "reduced_motion": true,
+      "base_seed_cents": 1,
+      "prizes": [
+        "x3",
+        "coin",
+        "stairs",
+        "coin",
+        "ghost",
+        "x2"
+      ],
+      "combined_round_totals_cents": [
+        3,
+        103,
+        103,
+        303,
+        303,
+        606
+      ],
+      "final_round_win_cents": 606,
+      "return_win_cents": 606,
+      "new_odds_labels_verified": {
+        "coin": 30,
+        "multiplier": 4.73,
+        "stairs": 15,
+        "ghost": 50.27
+      },
+      "session_matches_round": true,
+      "entry_duplicate_credit": false,
+      "return_duplicate_credit": false,
+      "page_errors": 0,
+      "initial_load_timeout_resolved_with_longer_wait": true
     }
   },
   "analysis_status": {
     "target_rtp_percent": 96,
-    "target_status": "Completed fixed v14 calibration; one-billion-chain held-out Monte Carlo return is consistent with the ~96% target.",
+    "target_status": "Current v15 RTP unmeasured after doubling bonus floor prizes. No balancing requested or performed for this feature.",
     "required_regular_frequency_order": [
       "low",
       "mid",
       "high"
     ],
     "long_run_rtp": null,
-    "estimated_rtp_percent": 96.053617713,
-    "approximate_95_percent_interval": [
-      95.99780463609828,
-      96.10943078990171
-    ],
-    "component_rtp_percent": {
-      "base": 54.888925116,
-      "bonus": 41.164692597
+    "estimated_rtp_percent": null,
+    "approximate_95_percent_interval": null,
+    "component_rtp_percent": null,
+    "observed_hit_percent": null,
+    "runtime_bonus_scope": "Entire paid chain with v15 floor-dependent coin and multiplier prizes; count bonus pot increases only.",
+    "study": "docs/game-rules/16-bonus-floor-prizes.md",
+    "current_rtp_measured": false,
+    "historical_v14_calibration": {
+      "target_rtp_percent": 96,
+      "target_status": "Completed fixed v14 calibration; one-billion-chain held-out Monte Carlo return is consistent with the ~96% target.",
+      "required_regular_frequency_order": [
+        "low",
+        "mid",
+        "high"
+      ],
+      "long_run_rtp": null,
+      "estimated_rtp_percent": 96.053617713,
+      "approximate_95_percent_interval": [
+        95.99780463609828,
+        96.10943078990171
+      ],
+      "component_rtp_percent": {
+        "base": 54.888925116,
+        "bonus": 41.164692597
+      },
+      "observed_hit_percent": 53.1629135,
+      "runtime_bonus_scope": "Entire paid chain: cascades, room refills/extra clears, all Fibonacci floors, final persistent Scatters and complete base-seeded doors; count bonus increments only.",
+      "study": "docs/game-rules/15-current-balance.md",
+      "current_rtp_measured": true,
+      "external_market_research_performed": false,
+      "component_approximate_95_percent_interval": {
+        "base": [
+          54.881378239332875,
+          54.89647199266713
+        ],
+        "bonus": [
+          41.11055134746383,
+          41.218833846536164
+        ]
+      },
+      "combined_raw_result": "docs/game-rules/studies/rtp-v14-1b.json",
+      "compact_summary": "docs/game-rules/studies/rtp-v14-1b-summary.json",
+      "convergence": "docs/game-rules/studies/rtp-v14-1b-convergence.csv",
+      "conditional_diagnostic_total_rtp_percent": 96.02609299712562,
+      "conditional_standard_error_percentage_points": 0.009702003491638982,
+      "target_base_contribution_percentage_points": [
+        50,
+        60
+      ],
+      "target_bonus_contribution_percentage_points": [
+        36,
+        46
+      ],
+      "winning_groups_by_tier": {
+        "low": 1290826859,
+        "mid": 1189343029,
+        "high": 718961872
+      },
+      "paid_rounds": 1000000000,
+      "bonus_trigger_percent": 5.3547972999999995,
+      "free_stages_per_paid_round": 0.625409208,
+      "truncated_chains": 0,
+      "volatility": "Empirical per-paid-chain variance; approximate95% combined interval uses covariance. Finite Monte Carlo does not prove exact theoretical RTP or guarantee short-session return.",
+      "rare_free_stage_limit": "Observed 313 free stages at x144, maximum 12 free floors and 108 evaluations in one paid chain; these observations do not establish absolute caps."
     },
-    "observed_hit_percent": 53.1629135,
-    "runtime_bonus_scope": "Entire paid chain: cascades, room refills/extra clears, all Fibonacci floors, final persistent Scatters and complete base-seeded doors; count bonus increments only.",
-    "study": "docs/game-rules/15-current-balance.md",
-    "current_rtp_measured": true,
     "historical_v8_calibration": {
       "target_rtp_percent": 96,
       "target_status": "Completed fixed-weight calibration; ten-billion-round held-out Monte Carlo result is consistent with the ~96% target.",
@@ -1327,41 +1501,6 @@
       "convergence": "docs/game-rules/studies/rtp-10b-convergence.csv",
       "truncated_chains": 0,
       "status": "historical; excludes current retention and paid-chain guard"
-    },
-    "external_market_research_performed": false,
-    "component_approximate_95_percent_interval": {
-      "base": [
-        54.881378239332875,
-        54.89647199266713
-      ],
-      "bonus": [
-        41.11055134746383,
-        41.218833846536164
-      ]
-    },
-    "combined_raw_result": "docs/game-rules/studies/rtp-v14-1b.json",
-    "compact_summary": "docs/game-rules/studies/rtp-v14-1b-summary.json",
-    "convergence": "docs/game-rules/studies/rtp-v14-1b-convergence.csv",
-    "conditional_diagnostic_total_rtp_percent": 96.02609299712562,
-    "conditional_standard_error_percentage_points": 0.009702003491638982,
-    "target_base_contribution_percentage_points": [
-      50,
-      60
-    ],
-    "target_bonus_contribution_percentage_points": [
-      36,
-      46
-    ],
-    "winning_groups_by_tier": {
-      "low": 1290826859,
-      "mid": 1189343029,
-      "high": 718961872
-    },
-    "paid_rounds": 1000000000,
-    "bonus_trigger_percent": 5.3547972999999995,
-    "free_stages_per_paid_round": 0.625409208,
-    "truncated_chains": 0,
-    "volatility": "Empirical per-paid-chain variance; approximate95% combined interval uses covariance. Finite Monte Carlo does not prove exact theoretical RTP or guarantee short-session return.",
-    "rare_free_stage_limit": "Observed 313 free stages at x144, maximum 12 free floors and 108 evaluations in one paid chain; these observations do not establish absolute caps."
+    }
   }
 }

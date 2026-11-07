@@ -20,6 +20,7 @@ public sealed class Config {
     public bool BonusAtEndOfPaidChain { get; set; }
     public bool StaticPreview { get; set; }
     public bool BonusStartsWithRoundWin { get; set; }
+    public bool BonusFloorDoubling { get; set; }
     public double Mystery { get; set; }
 }
 public struct Rng {
@@ -78,8 +79,9 @@ public sealed class Engine {
         Bonuses++;int floor=1;BigInteger pot=seed;
         for(int i=0;i<moves;i++) {
             BonusMoves++;double r=rng.Next();
-            if(r<coin){pot+=cfg.CoinCents*floor;PrizeCounts[0]++;}
-            else if(r<mult){pot*=cfg.DoorBag[(int)(rng.Next()*cfg.DoorBag.Length)];PrizeCounts[1]++;}
+            int factor=cfg.BonusFloorDoubling?1<<(floor-1):1;
+            if(r<coin){pot+=cfg.CoinCents*(cfg.BonusFloorDoubling?factor:floor);PrizeCounts[0]++;}
+            else if(r<mult){pot*=cfg.DoorBag[(int)(rng.Next()*cfg.DoorBag.Length)]*factor;PrizeCounts[1]++;}
             else if(r<stairs){floor=Math.Min(cfg.FloorCap,floor+1);PrizeCounts[2]++;}
             else PrizeCounts[3]++;
         }

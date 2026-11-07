@@ -1,6 +1,6 @@
 ---
 document_type: agent_rules_index
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 status: implemented_prototype_snapshot
 verified_on: 2026-11-07
 ---
@@ -13,7 +13,7 @@ Player-facing rules are in [GAME_RULES.md](GAME_RULES.md). This is the detailed 
 
 - **Format:** client-only, single-player, 5 columns × 5 rows; independent weighted cell draws, not reel strips or paylines.
 - **Pool:** 15 regular symbols (`low`, `mid`, `high`, each with indexes 0–4), one mansion Scatter and a code-drawn Mystery question mark.
-- **Raw weights:** Mystery 10%, Scatter 3%, Low 35%, Mid 32.5%, High 19.5%. Raw regular odds preserve Low > Mid > High. Global draws use uniform regular indexes; collected-room refills force the room index. Mystery groups transform before evaluation. Current calibration targets ~96% combined return; see [15](docs/game-rules/15-current-balance.md) for the held-out evidence.
+- **Raw weights:** Mystery 10%, Scatter 3%, Low 35%, Mid 32.5%, High 19.5%. Raw regular odds preserve Low > Mid > High. Global draws use uniform regular indexes; collected-room refills force the room index. Mystery groups transform before evaluation. Current bonus floor rewards are in [16](docs/game-rules/16-bonus-floor-prizes.md); current RTP is unmeasured. [15](docs/game-rules/15-current-balance.md) is historical v14 evidence.
 - **Mystery:** pink pulsing question marks transform into one shared current-floor Low/Mid/High icon, each 1/3 per wave. After results land, wait 500 ms, then run the 1600 ms selector plus 450 ms reveal before regular wins. Keep the full results pause under reduced motion. Preview contains no Mystery; no Wild behavior or direct payment.
 - **Match:** at least 5 identical regular symbols anywhere. Identity includes both tier and index. Adjacency and reel position do not matter.
 - **Group awards at x1:** Low 5/6/7+ = 0.01/0.02/0.03; Mid = 0.02/0.03/0.05; High = 0.03/0.05/0.10. One award per group, multiplied by the stage multiplier. All matching members are removed, including counts above 7.
@@ -23,7 +23,7 @@ Player-facing rules are in [GAME_RULES.md](GAME_RULES.md). This is the detailed 
 - **Free stages:** full collection displays “Switching to the next stage”, clears regular cells, preserves Scatters in place, changes background, and refills the other cells for free. Multipliers: x2, x3, x5, x8, x13, x21, x34, x55, x89, x144, then x144 for further free stages.
 - **Paid round:** one 1.00 wager covers its original deal, all refills, and all resulting free stages. A new paid round changes background, clears collection, and resets multiplier to x1.
 - **Session:** Spins counts paid deals plus free deals; refills do not count. Round win includes the entire paid-round chain. RTP displayed = cumulative awards / paid wagers × 100. Values are in unspecified prototype credit units.
-- **Scatter entry:** at the end of the entire paid-round chain, after cascades/features/free floors finish, 6+ final accumulated Scatters award exact-count moves once. Continue opens a 3-second corridor approach to three doors. Each choice consumes one move: Coin30% (1.00 × floor), Multiplier4.73% (bag `[2×5,3×2,5×2,8×1]`, multiplying the combined base+bonus round pot), Stairs 15% (+1 floor, cap x6), Ghost50.27% (zero win, approaches/fades). Start the pot with the final already-credited base round win. Credit only later increases; never re-credit the seed on entry/Return. HUD/completion show combined Round win. Prize list reflects current floor; Return after the last reveal restores the settled base board; no base wins remain pending. No Scatter draws occur inside this door feature.
+- **Scatter entry:** at the end of the entire paid-round chain, after cascades/features/free floors finish, 6+ final accumulated Scatters award exact-count moves once. Continue opens a 3-second corridor approach to three doors. Each choice consumes one move: Coin30% (1.00 × 2^(floor−1)), Multiplier4.73% (bag `[2×5,3×2,5×2,8×1]`, multiply bag values by2^(floor−1) before applying to the combined base+bonus round pot), Stairs 15% (+1 floor, cap floor6), Ghost50.27% (zero win, approaches/fades). Start the pot with the final already-credited base round win. Credit only later increases; never re-credit the seed on entry/Return. HUD/completion show combined Round win. Prize list reflects current floor; Return after the last reveal restores the settled base board; no base wins remain pending. No Scatter draws occur inside this door feature.
 - **Important exceptions:** the initial board is a static, regular-only nonwinning preview; no automatic sequence, growth, picker or awards. First input starts the paid result. Scatter never pays, substitutes, or collects. Input during a chain is discarded except the modal Continue action. Refresh resets everything including saved moves. A multiplier cap is implemented; a total-win, refill-count, or free-stage-count cap is not.
 
 ## Load only the relevant context
@@ -34,13 +34,14 @@ Each module begins with a local context packet, source-function names, and stabl
 
 | Question | Read | Branch IDs |
 | --- | --- | --- |
+| Current doubled bonus floor rewards, cap and unmeasured RTP | [16 — Bonus floor prizes](docs/game-rules/16-bonus-floor-prizes.md) | D20–D23 |
 | Symbol probabilities, matching, paytable, room bonuses, refill | [01 — Math](docs/game-rules/01-math.md) | M01–M22 |
 | Startup, input, paid-round sequence, resolution and exit paths | [02 — Round flow](docs/game-rules/02-round-flow.md) | F01–F19 |
 | Rooms, collection, automatic free stages, multiplier/reset cases | [03 — Stages](docs/game-rules/03-stages.md) | C01–C14 |
 | Wagers, spins, awards, RTP, rounding, persistence | [04 — Accounting](docs/game-rules/04-accounting.md) | A01–A14 |
 | Animation, visual cues, accessibility, resizing, loading/errors | [05 — Runtime and UI](docs/game-rules/05-runtime-ui.md) | U01–U18, E01–E09 |
 | Market-analysis scope, simulation contract, examples, validation | [06 — Analysis handoff](docs/game-rules/06-analysis.md) | X01–X10 |
-| Current ~96% calibration, component split, frozen profile and held-out validation | [15 — Current RTP balance](docs/game-rules/15-current-balance.md) | V01–V10 |
+| Historical v14 ~96% calibration, component split and held-out validation | [15 — Current RTP balance](docs/game-rules/15-current-balance.md) | V01–V10 |
 | Structured facts and source fingerprints | [rules.json](docs/game-rules/rules.json) | No source scan needed for constants |
 | Historical High-heavy RTP study (superseded weights) | [07 — Calibration study](docs/game-rules/07-calibration.md) | R01–R08 |
 | Scatter moves, modal Continue, bonus scene, base handoff | [08 — Scatter bonus entry](docs/game-rules/08-scatter-bonus.md) | B01–B15 |
@@ -53,10 +54,10 @@ Each module begins with a local context packet, source-function names, and stabl
 
 ## Snapshot and maintenance
 
-- Ruleset `fool-house-2026-11-07-v14` rebalances symbol odds, regular paytable and door frequency for ~96% combined RTP. The bonus still starts with all base winnings; Mystery10% and stairs15% remain. Scatter entry still waits for all base wins/features/free floors. Shared 10% Mysteries and Scatter retention remain active. The active study is [15](docs/game-rules/15-current-balance.md); earlier reports retain their original configuration. Runtime source fingerprints identify audited files; historical studies retain original snapshots.
+- Ruleset fool-house-2026-11-07-v15 doubles both bonus coins and pot-multiplier values on each ascent, capped atfloor6. Floor1 and outcome odds remain unchanged. Current RTP is unmeasured. Read [16](docs/game-rules/16-bonus-floor-prizes.md); the v14 one-billion-chain result in [15](docs/game-rules/15-current-balance.md) is historical.
 - Authority: `src/game.ts` for math, `src/main.ts` for sequencing/accounting/rendering, `src/scene.ts` for shared renderer geometry, `src/style.css` for CSS behavior. Source links and function names are provided in each module.
 - Presentation updated 2026-10-31: larger reel icons and tighter mobile layout; short portrait screens may shift the centered board upward to fit. Current source fingerprints reflect this UI update; calibration study hashes retain their original simulated snapshot.
-- All 46 Node tests (43 rule/statistics + 3 scene tests), the production build and 72 Playwright cases passed. Browser comparisons protect 68 PNG and 7 scene snapshots. Read [testing plan/runbook](docs/TESTING.md) for coverage, deterministic scenarios and baseline review. The current one-billion-chain held-out study is documented in [15](docs/game-rules/15-current-balance.md). The v8 ten-billion-chain result (95.979499%) is historical and excludes Scatter persistence/paid-chain bonus deduplication and Mystery. See [14](docs/game-rules/14-mystery.md) and [13](docs/game-rules/13-scatter-persistence.md) for current behavior and [12](docs/game-rules/12-rtp-balance.md) for archived evidence.
+- Verification:48 Node tests (45 rule/statistics +3 scene tests), production build and74 Playwright cases passed. Browser comparisons protect 72 PNG and 7 scene snapshots. Read [testing plan/runbook](docs/TESTING.md) for coverage, deterministic scenarios and baseline review. The historical v14 one-billion-chain held-out study is documented in [15](docs/game-rules/15-current-balance.md). The v8 ten-billion-chain result (95.979499%) is historical and excludes Scatter persistence/paid-chain bonus deduplication and Mystery. See [14](docs/game-rules/14-mystery.md) and [13](docs/game-rules/13-scatter-persistence.md) for current behavior and [12](docs/game-rules/12-rtp-balance.md) for archived evidence.
 - Keep historical changelog entries as history. In particular, old 5×4 boards, 3/4/5+ awards, per-symbol payouts, and 60/25/15 total-pool weights are superseded.
 - After a behavior change, update the affected module, compact packet/JSON facts, source fingerprints, and changelog. Preserve stable branch IDs; append new IDs for new branches.
 - Runtime branches below assume valid internal symbols, a 5×5 board, and random numbers in `[0,1)`. Unsupported helper inputs are identified separately; they are not player options.

@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-07-v14
+ruleset_id: fool-house-2026-11-07-v15
 context: 10% raw Mystery draws; pink question mark; one shared equiprobable current-room reveal per wave; 500ms results hold then under-three-second picker/reveal
 read_when: Mystery identity, probability allocation, shared outcome, sequencing, animation, room index, simulation compatibility
 branch_ids: T01-T11
@@ -8,7 +8,7 @@ branch_ids: T01-T11
 
 # 14 — Shared floor Mystery
 
-**Context packet:** every newly drawn cell has **10% Mystery probability**. A Mystery lands as a glowing, pulsing pink question mark. All unresolved Mysteries on that board form one reveal wave and become **one shared regular symbol**, chosen uniformly from the current base room's Low/Mid/High icons (1/3 each). This is a transformation, with no Wild substitution or direct payout. Choose/reveal before regular wins. Check Scatter only at final paid-chain settlement after all wins/features/free floors finish. After each gameplay deal/refill lands, hold raw results for 500 ms before starting selection. Selection is 1600 ms; reveal is 450 ms: 2050 ms of picker/reveal animation, 2550 ms including the new hold. Keep the full hold even with reduced motion. Startup is a static nonwinning regular-only preview, with no feature sequence. Scatter is3%; regular probabilities are Low35/Mid32.5/High19.5 while Mystery stays10. Current regular payouts are in [01](01-math.md); current bonus odds/combined pot are in [10](10-door-adventure.md). Current RTP calibration is in [15](15-current-balance.md).
+**Context packet:** every newly drawn cell has **10% Mystery probability**. A Mystery lands as a glowing, pulsing pink question mark. All unresolved Mysteries on that board form one reveal wave and become **one shared regular symbol**, chosen uniformly from the current base room's Low/Mid/High icons (1/3 each). This is a transformation, with no Wild substitution or direct payout. Choose/reveal before regular wins. Check Scatter only at final paid-chain settlement after all wins/features/free floors finish. After each gameplay deal/refill lands, hold raw results for 500 ms before starting selection. Selection is 1600 ms; reveal is 450 ms: 2050 ms of picker/reveal animation, 2550 ms including the new hold. Keep the full hold even with reduced motion. Startup is a static nonwinning regular-only preview, with no feature sequence. Scatter is3%; regular probabilities are Low35/Mid32.5/High19.5 while Mystery stays10. Current regular payouts are in [01](01-math.md); current bonus odds/combined pot are in [10](10-door-adventure.md). Current v15 bonus floor prizes are in [16](16-bonus-floor-prizes.md); current RTP is unmeasured. [15](15-current-balance.md) is historical v14 calibration.
 
 **Authority:** [game.ts](../../src/game.ts): `drawSymbol`, `revealMysteries`, `findWins`; [main.ts](../../src/main.ts): `revealMysterySymbols`, `drawMysterySymbol`, `drawMysteryPicker`, `resolveRound`, `start`.
 
