@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-01-v12
+ruleset_id: fool-house-2026-11-07-v14
 context: visible states, nominal animation timing, layout, input accessibility, failure paths
 read_when: UX comparison, runtime exceptions, rendering or timing changes
 branch_ids: U01-U18, E01-E09
@@ -10,7 +10,7 @@ branch_ids: U01-U18, E01-E09
 
 **Context packet:** global states remain `loading`, `ready`, `drawing`, `winning`, `room-bonus`, `bonus-trigger`, `bonus`, `removing`, `cleared`, `refilling`, `switching`, `mystery-waiting`, `mystery-picking`, `mystery-reveal`, `error`. Inside bonus, subphases are walking/choosing/revealing/complete. Base stays locked until return/resolution completes. Rendering never consumes outcome RNG. See [10](10-door-adventure.md).
 
-**Authority:** [src/main.ts](../../src/main.ts), particularly `playPhase`, drawing helpers, `resize`, image loaders and `start`; [src/style.css](../../src/style.css) for media-query behavior, badge pulse, and HUD styling.
+**Authority:** [src/main.ts](../../src/main.ts), particularly `playPhase`, drawing helpers, `resize`, image loaders and `start`; [src/scene.ts](../../src/scene.ts) for shared renderer/aperture/corridor geometry; [src/style.css](../../src/style.css) for media-query behavior, badge pulse, and HUD styling. See [testing plan](../TESTING.md) for structural, functional and visual regressions.
 
 ## State messages and nominal durations
 
@@ -20,11 +20,11 @@ branch_ids: U01-U18, E01-E09
 | `ready`, first preview | `Tap or click to start · Bet 1.00` | Until accepted input. |
 | `drawing`, paid preparation | `Preparing the next round…` | Synchronous setup; not a separate timed phase. |
 | `drawing`, paid board | `Drawing symbols…` | 740 ms. |
-| `mystery-waiting` | `Reel results · Mystery reveal coming…` | 2000 ms after deal/refill has landed; full-size symbols, no picker/win evaluation, input locked. Also 2000 ms under reduced motion. No wait on Mystery-free boards. |
+| `mystery-waiting` | `Reel results · Mystery reveal coming…` | 500 ms after deal/refill has landed; full-size symbols, no picker/win evaluation, input locked. Also 500 ms under reduced motion. No wait on Mystery-free boards. |
 | `winning` | `Win {base_batch_award} · x{stage_multiplier}` | 550 ms. Includes stage multiplication, before room bonus. |
 | `room-bonus` | `Room bonus ×{rolls} · Win {final_batch_award}` | 1100 ms, only when at least one group matches the room. |
 | `bonus-trigger` | `Bonus triggered · {N} free moves · Press Continue` | Indefinite native modal; Continue opens the bonus scene. |
-| `bonus` | Base status hidden; Walking / Choose a door / Opening / prize result / All moves complete | Walk 3000 ms, wait for door choice, open 700 ms, reveal 1600 ms (Ghost 1900), repeat or wait for Return. Prize/floor and step/win panels update as specified in D01–D18. |
+| `bonus` | Base status hidden; Walking / Choose a door / Opening / prize result / All moves complete | Walk 3000 ms, wait for door choice, open 700 ms, reveal 1600 ms (Ghost 1900), repeat or wait for Return. Prize/floor and step/win panels update as specified in D01–D19. Round win includes the carried base win; odds labels derive from the shared constants. |
 | `removing` | `Collecting {final_batch_award}…` | 240 ms, then removal/credit/collection commit. |
 | `cleared` | `Refilling empty cells…` | 120 ms. |
 | `cleared`, stalled partial room | `Finding the remaining {Room} symbols…` | 120 ms with regular cells empty and Scatters visible; no credit for discarded regular survivors. |
@@ -99,4 +99,4 @@ If reduced motion is active, or the cell is not currently growing, `p = 1`. A wi
 
 All room images are decoded up front, so successful gameplay does not fetch a new room image during a free-stage transition. There are no deliberate round-time network/API/database branches. Internal helpers that require assets (`applyTheme`, collection description, drawing, and the resolution loop guard) return/do nothing if assets are absent; normal accepted play cannot enter that condition.
 
-Mystery phases: `mystery-waiting` holds full reel results for 2000 ms after landing, then `mystery-picking` (1600 ms) keeps pink question marks pulsing while cycling the three actual room icons. `mystery-reveal` (450 ms) replaces the whole group with one shared choice and pink light/growth. Inputs stay locked and Scatter/wins wait until reveal finishes. Reduced motion keeps the full 2000 ms waiting phase and caps only selection/reveal at 180 ms with a static choice/glow. Startup uses a static nonwinning regular-only preview and runs no phases. No new image assets. See [14](14-mystery.md).
+Mystery phases: `mystery-waiting` holds full reel results for 500 ms after landing, then `mystery-picking` (1600 ms) keeps pink question marks pulsing while cycling the three actual room icons. `mystery-reveal` (450 ms) replaces the whole group with one shared choice and pink light/growth. Inputs stay locked and Scatter/wins wait until reveal finishes. Reduced motion keeps the full 500 ms waiting phase and caps only selection/reveal at 180 ms with a static choice/glow. Startup uses a static nonwinning regular-only preview and runs no phases. No new image assets. See [14](14-mystery.md).

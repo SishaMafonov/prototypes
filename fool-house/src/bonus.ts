@@ -1,4 +1,8 @@
-export const BONUS_WEIGHTS = { coin: 35, multiplier: 25, stairs: 5, ghost: 35 } as const;
+export const PRE_ROUND_POT_BONUS_WEIGHTS = { coin: 35, multiplier: 25, stairs: 5, ghost: 35 } as const;
+export const PRE_BALANCE_BONUS_WEIGHTS = { coin: 35 * 85 / 95, multiplier: 25 * 85 / 95, stairs: 15, ghost: 35 * 85 / 95 } as const;
+// Keep the full-round pot and x2–x8 bag, with less frequent multiplier compounding.
+export const BONUS_WEIGHTS = { coin: 30, multiplier: 4.73, stairs: 15, ghost: 50.27 } as const;
+export type BonusWeights = { coin: number; multiplier: number; stairs: number; ghost: number };
 export const BONUS_MULTIPLIERS = [2, 2, 2, 2, 2, 3, 3, 5, 5, 8] as const;
 export const BONUS_COIN_CENTS = 100;
 export const MAX_BONUS_FLOOR = 6;
@@ -9,19 +13,21 @@ export interface BonusState {
   completedSteps: number;
   floor: number;
   stepWinCents: bigint;
+  startingWinCents: bigint;
   totalWinCents: bigint;
 }
 
-export function createBonusState(steps: number): BonusState {
+export function createBonusState(steps: number, startingWinCents = 0n): BonusState {
   if (!Number.isSafeInteger(steps) || steps < 1) throw new Error('Bonus requires a positive move count');
-  return { totalSteps: steps, completedSteps: 0, floor: 1, stepWinCents: 0n, totalWinCents: 0n };
+  if (startingWinCents < 0n) throw new Error('Starting round win cannot be negative');
+  return { totalSteps: steps, completedSteps: 0, floor: 1, stepWinCents: 0n, startingWinCents, totalWinCents: startingWinCents };
 }
 
-export function drawBonusPrize(random: () => number = Math.random): BonusPrize {
+export function drawBonusPrize(random: () => number = Math.random, weights: BonusWeights = BONUS_WEIGHTS): BonusPrize {
   const roll = random();
-  if (roll < 0.35) return { kind: 'coin' };
-  if (roll < 0.60) return { kind: 'multiplier', multiplier: BONUS_MULTIPLIERS[Math.floor(random() * BONUS_MULTIPLIERS.length)] };
-  if (roll < 0.65) return { kind: 'stairs' };
+  if (roll < weights.coin / 100) return { kind: 'coin' };
+  if (roll < (weights.coin + weights.multiplier) / 100) return { kind: 'multiplier', multiplier: BONUS_MULTIPLIERS[Math.floor(random() * BONUS_MULTIPLIERS.length)] };
+  if (roll < (weights.coin + weights.multiplier + weights.stairs) / 100) return { kind: 'stairs' };
   return { kind: 'ghost' };
 }
 

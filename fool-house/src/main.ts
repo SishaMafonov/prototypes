@@ -11,9 +11,11 @@ import {
   REEL_COLUMNS, REEL_ROWS, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOLS_PER_SPRITE, SYMBOL_TIERS,
 } from './game';
 import type { Board, RegularSymbol, SymbolKind, SymbolTier } from './game';
-import { applyBonusPrize, BONUS_COIN_CENTS, createBonusState, drawBonusPrize, formatCents, MAX_BONUS_FLOOR } from './bonus';
+import { applyBonusPrize, BONUS_COIN_CENTS, BONUS_WEIGHTS, createBonusState, drawBonusPrize, formatCents, MAX_BONUS_FLOOR } from './bonus';
 import type { BonusPrize } from './bonus';
 import { BonusCorridor } from './bonus-scene';
+import { baseSceneGraph, layoutBaseScene } from './scene';
+import type { BaseLayout } from './scene';
 
 const root = document.querySelector<HTMLDivElement>('#app');
 
@@ -58,10 +60,10 @@ app.innerHTML = `
         <section class="bonus-prizes" aria-label="Potential bonus prizes">
           <div class="bonus-floor"><strong data-bonus-floor>Floor 1</strong><span data-bonus-floor-factor>Coin prizes ×1</span></div>
           <div class="bonus-prize-grid">
-            <div><span>Coin · 35%</span><strong data-bonus-coin>1.00</strong></div>
-            <div><span>Multiplier · 25%</span><strong>×2–×8</strong></div>
-            <div><span>Stairs · 5%</span><strong data-bonus-stairs>Floor 2 ↑</strong></div>
-            <div><span>Ghost · 35%</span><strong>0.00</strong></div>
+            <div><span>Coin · ${BONUS_WEIGHTS.coin.toFixed(2)}%</span><strong data-bonus-coin>1.00</strong></div>
+            <div><span>Multiplier · ${BONUS_WEIGHTS.multiplier.toFixed(2)}%</span><strong>×2–×8</strong></div>
+            <div><span>Stairs · ${BONUS_WEIGHTS.stairs}%</span><strong data-bonus-stairs>Floor 2 ↑</strong></div>
+            <div><span>Ghost · ${BONUS_WEIGHTS.ghost.toFixed(2)}%</span><strong>0.00</strong></div>
           </div>
         </section>
         <div class="bonus-corridor">
@@ -72,7 +74,7 @@ app.innerHTML = `
             <button type="button" class="bonus-door" aria-label="Choose right door" disabled>Right</button>
           </div>
           <div class="bonus-complete" hidden>
-            <h2>Bonus complete</h2><p data-bonus-final-win>0.00</p>
+            <h2>Bonus complete</h2><span>Round win</span><p data-bonus-final-win>0.00</p>
             <button type="button" class="bonus-collect">Return to mansion</button>
           </div>
         </div>
@@ -86,7 +88,7 @@ app.innerHTML = `
             <small><span data-bonus-stat="remaining-steps">0</span> remaining</small>
           </div>
           <div><dt>Step win</dt><dd data-bonus-stat="step-win">0.00</dd></div>
-          <div><dt>Total bonus win</dt><dd data-bonus-stat="total-win">0.00</dd></div>
+          <div><dt>Round win</dt><dd data-bonus-stat="total-win">0.00</dd></div>
         </dl>
       </section>
     </section>
@@ -261,6 +263,7 @@ const MYSTERY_REVEAL_DURATION = 450;
 const roomBonusCells = new Map<number, number>();
 let phaseStartedAt = 0;
 let phaseDuration = 1;
+let renderedLayout: BaseLayout | undefined;
 let respinNumber = 0;
 let multiplier = 1;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -270,10 +273,6 @@ const ROW_DELAY = 35;
 const DEAL_DURATION = GROW_DURATION + (REEL_COLUMNS - 1) * COLUMN_DELAY + (REEL_ROWS - 1) * ROW_DELAY;
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 const backgrounds = new Map<Theme['id'], HTMLImageElement>();
-
-// Transparent opening bounds in main-5x5.png (1164 × 1351 source pixels).
-const REEL_COLUMN_OPENINGS = [[143, 147], [321, 153], [505, 154], [690, 153], [875, 146]] as const;
-const REEL_ROW_OPENINGS = [[202, 143], [377, 161], [572, 164], [769, 160], [963, 162]] as const;
 
 function loadImage(url: string): Promise<HTMLImageElement> {
   const cached = imageCache.get(url);
@@ -387,7 +386,7 @@ function layoutBonusScene(): void {
 }
 
 function enterBonusScene(): void {
-  bonusSession = createBonusState(bonusMoves);
+  bonusSession = createBonusState(bonusMoves, session.roundWinCents);
   bonusComplete.hidden = true;
   bonusCollect.disabled = false;
   bonusCorridor ??= new BonusCorridor(corridorCanvas, bonusDoors);
@@ -415,7 +414,7 @@ async function startBonusStep(): Promise<void> {
 
 function bonusPrizeText(prize: BonusPrize, next: typeof bonusSession): string {
   if (prize.kind === 'coin') return `Coin · +${formatWin(next.stepWinCents)}`;
-  if (prize.kind === 'multiplier') return `×${prize.multiplier} · Bonus total ${formatWin(next.totalWinCents)}`;
+  if (prize.kind === 'multiplier') return `×${prize.multiplier} · Round win ${formatWin(next.totalWinCents)}`;
   if (prize.kind === 'stairs') return next.floor === bonusSession.floor ? 'Already on the top floor · ×6' : `Upstairs · Floor ${next.floor} · Coin prizes ×${next.floor}`;
   return 'Ghost · No win';
 }
@@ -432,7 +431,7 @@ async function chooseBonusDoor(index: number): Promise<void> {
   const text = bonusPrizeText(prize, next);
   await bonusCorridor!.reveal(index, prize, text, () => {
     bonusSession = next;
-    // Credit only the increase to the bonus pot; never pay the multiplied total a second time.
+    // The starting base win is already credited. Add only each increase to the combined round pot.
     session.totalWinCents += next.stepWinCents;
     session.roundWinCents += next.stepWinCents;
     renderStats();
@@ -718,20 +717,16 @@ function drawMysteryPicker(left: number, top: number, width: number, height: num
   ctx.restore();
 }
 
-function drawReelSymbols(left: number, top: number, scale: number): void {
+function drawReelSymbols(layout: BaseLayout): void {
   if (!assets) return;
+  const scale = layout.scale;
   const sprites = assets.sprites;
   const elapsed = performance.now() - phaseStartedAt;
   const phaseProgress = Math.min(1, elapsed / phaseDuration);
   // Map each cell into its measured aperture beneath the frame artwork.
   board.forEach((row, rowIndex) => row.forEach((symbol, columnIndex) => {
     const cellId = rowIndex * REEL_COLUMNS + columnIndex;
-    const [sourceX, sourceWidth] = REEL_COLUMN_OPENINGS[columnIndex];
-    const [sourceY, sourceHeight] = REEL_ROW_OPENINGS[rowIndex];
-    const x = left + sourceX * scale;
-    const y = top + sourceY * scale;
-    const cellWidth = sourceWidth * scale;
-    const cellHeight = sourceHeight * scale;
+    const { x, y, width: cellWidth, height: cellHeight } = layout.cells[rowIndex][columnIndex];
     const isGrowing = (gameState === 'drawing' || gameState === 'refilling') && growingCells.has(cellId);
     const progress = reducedMotion.matches || !isGrowing ? 1 : Math.max(0, Math.min(1,
       (elapsed - columnIndex * COLUMN_DELAY - rowIndex * ROW_DELAY) / GROW_DURATION));
@@ -794,59 +789,24 @@ function draw(): void {
   if (!assets) return;
 
   const { background, reels, title } = assets;
-  const backgroundScale = Math.max(width / background.width, height / background.height);
-  const backgroundWidth = background.width * backgroundScale;
-  const backgroundHeight = background.height * backgroundScale;
-  ctx.drawImage(background, (width - backgroundWidth) / 2, (height - backgroundHeight) / 2,
-    backgroundWidth, backgroundHeight);
-
-  const padding = Math.min(24, Math.min(width, height) * 0.03);
-  const mobilePortrait = width <= 600 && height > width;
-  const gap = Math.min(mobilePortrait ? 10 : 16, height * 0.02);
-  const titleScale = Math.min(
-    (width - padding * 2) / title.width,
-    Math.min(150, height * 0.14) / title.height,
-  );
-  const titleWidth = title.width * titleScale;
-  const titleHeight = title.height * titleScale;
-
-  const compact = height < 500;
-  const symbolHeight = Math.min(mobilePortrait ? 64 : 80, height * (compact || mobilePortrait ? 0.08 : 0.09));
-  const labelHeight = compact ? 13 : 15;
+  const layout = renderedLayout = layoutBaseScene(width, height, hud.getBoundingClientRect().height, background, reels, title);
+  const { x: reelsLeft, y: reelsTop, width: reelsWidth, height: reelsHeight } = layout.reels;
+  const { symbolHeight, labelHeight } = layout;
   const collectionHeight = symbolHeight + labelHeight;
-
-  // Short portrait screens can use the full play area instead of symmetric empty margins.
-  const topReserve = padding + titleHeight + gap;
-  const hudTop = height - hud.getBoundingClientRect().height;
-  const bottomReserve = height - hudTop + collectionHeight + gap * 2;
-  const reelPadding = mobilePortrait ? 4 : padding;
-  const availableReelHeight = mobilePortrait
-    ? height - topReserve - bottomReserve
-    : height - 2 * Math.max(topReserve, bottomReserve);
-  const reelsScale = Math.min(
-    (width - reelPadding * 2) / reels.width,
-    Math.max(1, availableReelHeight) / reels.height,
-  );
-  const reelsWidth = reels.width * reelsScale;
-  const reelsHeight = reels.height * reelsScale;
-  const reelsLeft = (width - reelsWidth) / 2;
-  const centeredReelsTop = (height - reelsHeight) / 2;
-  const reelsTop = mobilePortrait
-    ? Math.max(topReserve, Math.min(centeredReelsTop, height - bottomReserve - reelsHeight))
-    : centeredReelsTop;
+  ctx.drawImage(background, layout.background.x, layout.background.y, layout.background.width, layout.background.height);
   reelOverlay.style.left = `${reelsLeft}px`;
   reelOverlay.style.top = `${reelsTop}px`;
   reelOverlay.style.width = `${reelsWidth}px`;
   reelOverlay.style.height = `${reelsHeight}px`;
   reelOverlay.style.fontSize = `${Math.max(10, Math.min(18, reelsWidth * 0.06))}px`;
   multiplierBadge.style.fontSize = `${Math.max(16, Math.min(36, reelsWidth * 0.11))}px`;
-  drawReelSymbols(reelsLeft, reelsTop, reelsScale);
+  drawReelSymbols(layout);
   ctx.drawImage(reels, reelsLeft, reelsTop, reelsWidth, reelsHeight);
   if (gameState === 'mystery-picking') drawMysteryPicker(reelsLeft, reelsTop, reelsWidth, reelsHeight);
 
-  const collectionTop = (reelsTop + reelsHeight + hudTop - collectionHeight) / 2;
-  const slotWidth = Math.min(compact ? 64 : 100, (width - padding * 2) / 3);
-  const collectionLeft = (width - slotWidth * 3) / 2;
+  const collectionTop = layout.slots[0].y;
+  const slotWidth = layout.slots[0].width;
+  const collectionLeft = layout.collection.x;
   ctx.fillStyle = '#100d0bd9';
   ctx.strokeStyle = '#92724399';
   ctx.beginPath();
@@ -884,7 +844,7 @@ function draw(): void {
     ctx.fillText(`${symbol.tier.toUpperCase()}${hasCollected ? ' ✓' : ''}`, centerX, collectionTop + symbolHeight + 2);
     ctx.restore();
   });
-  ctx.drawImage(title, (width - titleWidth) / 2, padding, titleWidth, titleHeight);
+  ctx.drawImage(title, layout.title.x, layout.title.y, layout.title.width, layout.title.height);
 }
 
 function resize(): void {
@@ -927,4 +887,23 @@ async function start(): Promise<void> {
   }
 }
 
+// Read-only observations are available only in the dedicated development test mode.
+// Vite removes this import and the test bridge from production builds.
+if (import.meta.env.MODE === 'e2e') {
+  void import('./e2e/bridge').then(({ installBridge, observeElements }) => installBridge(() => ({
+    state: gameState, phase: { startedAt: phaseStartedAt, duration: phaseDuration, now: performance.now() },
+    theme: assets?.theme.id, board, collected: [...collected], multiplier,
+    session: { spins: session.spins, wager: String(session.totalWagerCents), win: String(session.totalWinCents), roundWin: String(session.roundWinCents) },
+    bonus: { ...bonusSession, startingWinCents: String(bonusSession.startingWinCents), totalWinCents: String(bonusSession.totalWinCents), stepWinCents: String(bonusSession.stepWinCents), phase: bonusPhase },
+    scene: renderedLayout ? baseSceneGraph(renderedLayout, board, collected, gameState) : null,
+    corridor: bonusCorridor?.getScene() ?? null,
+    ui: observeElements([
+      { id: 'base-layer', element: baseScene, z: 0 }, { id: 'status', element: hud, z: 60 },
+      { id: 'multiplier', element: multiplierBadge, z: 60 }, { id: 'room-award', element: roomBonusPopup, z: 70 },
+      { id: 'stage-transition', element: stagePopup, z: 70 }, { id: 'bonus-layer', element: bonusScene, z: 80 },
+      { id: 'bonus-prizes', element: bonusPrizes, z: 81 }, { id: 'bonus-complete', element: bonusComplete, z: 82 },
+      { id: 'scatter-intro', element: scatterBonusDialog, z: 100 },
+    ]),
+  })));
+}
 void start();

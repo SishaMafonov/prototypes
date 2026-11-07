@@ -1,14 +1,14 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-01-v12
-context: Scatters persist across base-floor transitions/features; one bonus per paid chain; weights unchanged; balancing deferred
+ruleset_id: fool-house-2026-11-07-v14
+context: Scatters persist across base-floor transitions/features; one bonus per paid chain; current weights and RTP in module15
 read_when: Scatter retention, reset scope, bonus deduplication, feature clears, current RTP status
 branch_ids: S01-S10
 ---
 
 # 13 — Persistent base-game Scatters
 
-**Context packet:** keep Scatters in their exact reel cells throughout one paid round and its free-floor chain, including room-feature extra clears. Only regular cells clear and refill. User confirmed **at most one bonus per paid-round chain**, with entry deferred until all base wins, room features and free floors finish. Count all final retained Scatters together. A new paid round replaces the whole board and resets bonus eligibility. Scatter stays 7.16%; [14](14-mystery.md) funds Mystery 10% proportionally from regular tiers. Payouts/door odds stay unchanged. **Balancing is deferred; current RTP is unmeasured.** The v8 ten-billion-round study remains historical.
+**Context packet:** keep Scatters in their exact reel cells throughout one paid round and its free-floor chain, including room-feature extra clears. Only regular cells clear and refill. User confirmed **at most one bonus per paid-round chain**, with entry deferred until all base wins, room features and free floors finish. Count all final retained Scatters together. A new paid round replaces the whole board and resets bonus eligibility. Scatter is3%; [14](14-mystery.md) keeps Mystery10%. Current paytable and raw weights are in [01](01-math.md); current combined round-pot/15% stairs rules are in [10](10-door-adventure.md). **Current calibration is in [15](15-current-balance.md).** The v8 ten-billion-round study remains historical.
 
 **Authority:** [game.ts](../../src/game.ts): `clearForFloor`, `refillBoard`, `refillForRoom`, `shouldContinueRoom`, `getScatterBonusMoves`; [main.ts](../../src/main.ts): `requestRound`, `refillCurrentRoom`, `resolveRound`, `checkScatterBonus`.
 
@@ -27,7 +27,7 @@ branch_ids: S01-S10
 
 ## Verification and historical replay
 
-The original retention tests, now part of 40 tests, cover carried positions over multiple floors/features, source immutability, exact skipped RNG draws, five Scatters accumulating into six, bonus suppression after award through later floors, fresh eligibility and the 20/21/25-Scatter space boundary. Existing payout, weighted draw and permutation tests remain intact. Production build passed. Updated native/production helpers matched 30,000 complete paid chains in streams 0/1/7, including exact credits, ending room and RNG state; legacy replay matched 3,000 chains. These are functional checks, with no new balance estimate.
+The original retention tests, now part of 43 tests, cover carried positions over multiple floors/features, source immutability, exact skipped RNG draws, five Scatters accumulating into six, bonus suppression after award through later floors, fresh eligibility and the 20/21/25-Scatter space boundary. Existing payout, weighted draw and permutation tests remain intact. Production build passed. Updated native/production helpers matched 30,000 complete paid chains in streams 0/1/7, including exact credits, ending room and RNG state; legacy replay matched 3,000 chains. These are functional checks, with no new balance estimate.
 
 During the original v9 change, computer-use stopped visual QA because it could not verify the browser URL. No further browser input was issued; temporary fixture/server were removed/stopped. That limitation applies to the original v9 run only. Current isolated headless v11 QA verified two free-floor transitions before Scatter entry, final seven-move allocation, completed bonus Return and the next paid reset.
 

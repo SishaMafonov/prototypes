@@ -1,4 +1,6 @@
 import type { BonusPrize } from './bonus';
+import { layoutCorridor } from './scene';
+import type { Rect, SceneNode } from './scene';
 
 export const CORRIDOR_WALK_MS = 3000;
 export const DOOR_OPEN_MS = 700;
@@ -19,6 +21,13 @@ export class BonusCorridor {
   private onReveal = () => {};
   private done: (() => void) | null = null;
   private reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  private doorBounds: Rect[] = [];
+
+  getScene(): SceneNode {
+    return { id: 'corridor', kind: 'scene', bounds: { x: 0, y: 0, width: this.width, height: this.height }, z: 0, visible: true,
+      data: { phase: this.phase, selected: this.selected, revealed: this.revealed, prize: this.revealed ? this.prize.kind : null, elapsed: performance.now() - this.started },
+      children: this.doorBounds.map((bounds,i) => ({ id: `door-${i}`, kind: 'door', bounds, z: 10, visible: true, data: { selected: i === this.selected, enabled: !this.doors[i].disabled } })) };
+  }
 
   constructor(private canvas: HTMLCanvasElement, private doors: HTMLButtonElement[]) {
     const ctx = canvas.getContext('2d');
@@ -102,13 +111,9 @@ export class BonusCorridor {
     c.clearRect(0,0,w,h);
     const elapsed = now - this.started;
     const walking = this.phase === 'walking';
-    const p = walking && !this.reduced.matches ? Math.min(1,elapsed / CORRIDOR_WALK_MS) : 1;
-    const distance = 17 - 11.2 * (p * p * (3 - 2 * p));
-    const camera = 17 - distance;
-    const focal = Math.min(w * .92, h * .85);
-    const sway = walking && !this.reduced.matches ? Math.sin(elapsed / 135) * w * .006 : 0;
-    const project = (x: number, y: number, z = distance): Point =>
-      [w / 2 + x * focal / z + sway, h * .45 + (2.4 - y) * focal / z];
+    const geometry = layoutCorridor(w, h, elapsed, !walking || this.reduced.matches);
+    const { distance, camera, focal, project } = geometry;
+    this.doorBounds = geometry.doors;
     const topLeft = project(-4.7,5.8), topRight = project(4.7,5.8);
     const bottomLeft = project(-4.7,0), bottomRight = project(4.7,0);
     const room = c.createLinearGradient(0,0,0,h);
@@ -167,10 +172,8 @@ export class BonusCorridor {
     }
     const openP = opening ? (this.phase==='rest' ? 1 : Math.min(1,elapsed/DOOR_OPEN_MS)) : 0;
     for (let i=0;i<3;i++) {
-      const center=(-2.1+i*2.1);
-      const [x,y]=project(center-.72,4.25);
-      const [right,bottom]=project(center+.72,0);
-      const dw=right-x, dh=bottom-y;
+      const {x,y,width:dw,height:dh} = geometry.doors[i];
+      const bottom=y+dh;
       const button=this.doors[i];
       Object.assign(button.style,{left:`${x}px`,top:`${y}px`,width:`${dw}px`,height:`${dh}px`,fontSize:`${Math.max(6,Math.min(14,dw*.23))}px`});
       c.save();

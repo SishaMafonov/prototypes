@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   applyRoomMultipliers, BET_CENTS, clearForFloor, collectWins, findWins, generateBoard,
-  getMultiplier, getScatterBonusMoves, isCollectionComplete, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOL_WEIGHTS, PRE_MYSTERY_WEIGHTS,
+  getMultiplier, getScatterBonusMoves, isCollectionComplete, refillBoard, refillForRoom, removeWins, revealMysteries, shouldContinueRoom, SYMBOL_WEIGHTS, PRE_MYSTERY_WEIGHTS, PAYTABLE_CENTS, PRE_BALANCE_PAYTABLE_CENTS,
 } from '../src/game.ts';
-import { applyBonusPrize, createBonusState, drawBonusPrize } from '../src/bonus.ts';
+import { applyBonusPrize, BONUS_WEIGHTS, PRE_BALANCE_BONUS_WEIGHTS, PRE_ROUND_POT_BONUS_WEIGHTS, createBonusState, drawBonusPrize } from '../src/bonus.ts';
 
 const argumentsByName = Object.fromEntries(process.argv.slice(2).map((argument) => {
   const [name, value] = argument.replace(/^--/, '').split('=');
@@ -39,6 +39,9 @@ const roomRefillsEnabled = argumentsByName['room-refills'] !== 'off';
 const keepScatters = argumentsByName['keep-scatters'] !== 'off';
 // Legacy studies used early entry; current play waits for the whole chain to settle.
 const bonusAtChainEnd = argumentsByName['scatter-timing'] === 'early' ? false : keepScatters;
+const bonusStartsWithRoundWin = bonusAtChainEnd && argumentsByName['bonus-pot'] !== 'zero';
+const bonusWeights = argumentsByName['door-odds'] === 'v13' ? PRE_BALANCE_BONUS_WEIGHTS : argumentsByName['door-odds'] === 'legacy' || !keepScatters ? PRE_ROUND_POT_BONUS_WEIGHTS : BONUS_WEIGHTS;
+const paytable = argumentsByName.paytable === 'legacy' || !keepScatters ? PRE_BALANCE_PAYTABLE_CENTS : PAYTABLE_CENTS;
 let room = Math.floor(random() * 5);
 const staticPreview = keepScatters && argumentsByName.preview !== 'random';
 // Current decorative preview consumes no game RNG. Preserve historical replay explicitly.
@@ -78,15 +81,16 @@ for (let round = 1; round <= rounds; round++) {
       if (moves) {
         scatterAwarded = true;
         doorBonuses++;
-        let bonus = createBonusState(moves);
+        let bonus = createBonusState(moves, bonusStartsWithRoundWin ? roundWin : 0n);
         while (bonus.completedSteps < bonus.totalSteps) {
-          const prize = drawBonusPrize(random);
+          const prize = drawBonusPrize(random, bonusWeights);
           bonus = applyBonusPrize(bonus, prize);
           doorPrizeCounts[prize.kind]++;
           doorBonusSteps++;
         }
-        roundWin += bonus.totalWinCents;
-        doorBonusAwardsCents += bonus.totalWinCents;
+        const gain = bonus.totalWinCents - bonus.startingWinCents;
+        roundWin += gain;
+        doorBonusAwardsCents += gain;
       }
     }
   };
@@ -96,7 +100,7 @@ for (let round = 1; round <= rounds; round++) {
     if (evaluations > 1000000) throw new Error(`Unsettled chain at paid round ${round}`);
     board = revealMysteries(board, room, random).board;
     if (!bonusAtChainEnd) awardScatterBonus();
-    const baseWins = findWins(board, getMultiplier(respin));
+    const baseWins = findWins(board, getMultiplier(respin),paytable);
     if (baseWins.length === 0) {
       if (!roomRefillsEnabled || !shouldContinueRoom(collected, keepScatters ? board : undefined)) {
         if (bonusAtChainEnd) awardScatterBonus();
@@ -147,7 +151,7 @@ const rtp = Number(totalCents) / (rounds * BET_CENTS) * 100;
 const jsonCents = (value) => value <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(value) : value.toString();
 const result = {
   study: 'completed-paid-round Monte Carlo; not certified RTP',
-  rounds, seed, weights, roomBonusEnabled, doorBonusEnabled, roomRefillsEnabled, keepScatters, bonusAtChainEnd, staticPreview,
+  rounds, seed, weights, roomBonusEnabled, doorBonusEnabled, roomRefillsEnabled, keepScatters, bonusAtChainEnd, staticPreview, bonusStartsWithRoundWin, bonusWeights, paytable,
   totalWagerCents: rounds * BET_CENTS, totalWinCents: jsonCents(totalCents),
   rtpPercent: rtp, standardErrorRtpPercentagePoints: standardErrorRtp,
   sampleVarianceWinCents: m2 / (rounds - 1),

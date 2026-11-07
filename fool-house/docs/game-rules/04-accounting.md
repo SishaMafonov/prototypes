@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-01-v12
+ruleset_id: fool-house-2026-11-07-v14
 context: fixed wager, cumulative wins, spin count, observed session RTP
 read_when: financial model, statistics, simulation denominators, reset behavior
 branch_ids: A01-A14
@@ -35,8 +35,8 @@ branch_ids: A01-A14
 | A10 | A startup/round error occurs | No rollback/refund transaction exists. In a caught round failure, any wager/spins/awards already mutated remain in memory until reload; the error state disables new requests. Do not model interrupted rounds as automatically refunded. |
 | A11 | Player-facing balance/net profit would be needed | No such field is implemented. Wins are gross awards, not `awards - wager`. The game does not track deposits, cash-out, remaining credits, or insufficient funds. |
 | A12 | Room bonus is revealed | It announces a recalculated group award, not a separately credited payment. Credit only the final group amount at A04: table × stage × room. Do not add both the unboosted and boosted amounts. Other simultaneous groups remain included once. |
-| A13 | Scatter entry awards N moves / Continue | Allocate the final accumulated Scatter count in moves once per paid chain, only after all base resolution ends. Entry itself adds no Spins, wager or wins. Start bonus at floor 1, zero pot/step win and all moves remaining; preserve the settled base board; all base awards have already been credited. See D01–D18 for playable moves/return. |
-| A14 | Door prize is revealed / bonus returns | Add only the bonus-pot increase to Round/Session win once at 700 ms door opening. Coin adds floor ×100 cents; multiplier credits new minus old pot; stairs/ghost add zero. Door choices increment completed steps, not Spins/wagers. Return adds no further bonus award; the settled base board returns to ready without further base awards. Money fields use exact BigInt cents, formatted with two cent digits. |
+| A13 | Scatter entry awards N moves / Continue | Allocate the final accumulated Scatter count in moves once per paid chain, only after all base resolution ends. Entry itself adds no Spins, wager or wins. Start bonus at floor 1, pot equal to the final already-credited base round win, step win zero and all moves remaining; preserve the settled base board; all base awards have already been credited. See D01–D19 for playable moves/return. |
+| A14 | Door prize is revealed / bonus returns | Add only the combined round-pot increase to Round/Session win once at 700 ms door opening. Coin adds floor ×100 cents; multiplier credits new minus old pot; stairs/ghost add zero. Door choices increment completed steps, not Spins/wagers. Return adds no further bonus award; the settled base board returns to ready without further base awards. Money fields use exact BigInt cents, formatted with two cent digits. |
 
 ## Formulas and measurement units
 
@@ -58,9 +58,9 @@ Both multiplier types affect awards only. They do not increase bets, charge for 
 This illustrates bookkeeping only; it is not an estimated RTP:
 
 1. Pay 1.00. Spins = 1; wager = 1.00.
-2. At stage x1, five each of the current room's target identities win; suppose all three room rolls are x2. Award = `(0.01 + 0.05 + 0.10) * 1 * 2 = 0.32`. Set complete.
-3. Free stage at x2. Spins = 2; wager stays 1.00. Six each of its target identities win, again all room rolls x2: `(0.05 + 0.10 + 0.25) * 2 * 2 = 1.60`. Set complete again.
+2. At stage x1, five each of the current room's target identities win; suppose all three room rolls are x2. Award = `(0.01 + 0.02 + 0.03) * 1 * 2 = 0.12`. Set complete.
+3. Free stage at x2. Spins = 2; wager stays 1.00. Six each of its target identities win, again all room rolls x2: `(0.02 + 0.03 + 0.05) * 2 * 2 = 0.40`. Set complete again.
 4. Free stage at x3. Spins = 3; wager stays 1.00. Its board has no qualifying regular group, so the chain ends.
-5. Round win = Session win = 1.92; observed session RTP = 192.00%; analysis net = +0.92.
+5. Round win = Session win = 0.52; observed session RTP =52.00%; analysis net =−0.48.
 
 There is no extra award for the two completed sets, no payment for clearing their surviving cells, and no wager for either free stage.

@@ -18,6 +18,7 @@ test('historical v8 calibration accounts for ten billion full paid chains with p
   assert.equal(current.BonusOncePerPaidChain,true);
   assert.equal(current.BonusAtEndOfPaidChain,true);
   assert.equal(current.StaticPreview,true);
+  assert.equal(current.BonusStartsWithRoundWin,true);
   assert.notEqual(study.configuration.Id,current.Id);
   assert.deepEqual(study.shards.map(r=>r.Worker).sort((a,b)=>a-b),[0,1,2,3,4,5,6,7]);
   for(const r of study.shards){

@@ -1,0 +1,747 @@
+{
+  "id": "base",
+  "kind": "scene",
+  "bounds": {
+    "x": 0,
+    "y": 0,
+    "width": 390,
+    "height": 844
+  },
+  "z": 0,
+  "visible": true,
+  "children": [
+    {
+      "id": "background",
+      "kind": "image",
+      "bounds": {
+        "x": -121.5,
+        "y": 0,
+        "width": 633,
+        "height": 844
+      },
+      "z": 0,
+      "visible": true
+    },
+    {
+      "id": "reels",
+      "kind": "group",
+      "bounds": {
+        "x": 4,
+        "y": 200.3153,
+        "width": 382,
+        "height": 443.3694
+      },
+      "z": 20,
+      "visible": true,
+      "children": [
+        {
+          "id": "cell-0-0",
+          "kind": "cell",
+          "bounds": {
+            "x": 50.9296,
+            "y": 266.6074,
+            "width": 48.2423,
+            "height": 46.9296
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 50.9296,
+            "y": 266.6074,
+            "width": 48.2423,
+            "height": 46.9296
+          },
+          "data": {
+            "row": 0,
+            "column": 0,
+            "tier": "low",
+            "index": 0
+          }
+        },
+        {
+          "id": "cell-0-1",
+          "kind": "cell",
+          "bounds": {
+            "x": 109.3454,
+            "y": 266.6074,
+            "width": 50.2113,
+            "height": 46.9296
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 109.3454,
+            "y": 266.6074,
+            "width": 50.2113,
+            "height": 46.9296
+          },
+          "data": {
+            "row": 0,
+            "column": 1,
+            "tier": "mid",
+            "index": 2
+          }
+        },
+        {
+          "id": "cell-0-2",
+          "kind": "cell",
+          "bounds": {
+            "x": 169.7302,
+            "y": 266.6074,
+            "width": 50.5395,
+            "height": 46.9296
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 169.7302,
+            "y": 266.6074,
+            "width": 50.5395,
+            "height": 46.9296
+          },
+          "data": {
+            "row": 0,
+            "column": 2,
+            "tier": "high",
+            "index": 4
+          }
+        },
+        {
+          "id": "cell-0-3",
+          "kind": "cell",
+          "bounds": {
+            "x": 230.4433,
+            "y": 266.6074,
+            "width": 50.2113,
+            "height": 46.9296
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 230.4433,
+            "y": 266.6074,
+            "width": 50.2113,
+            "height": 46.9296
+          },
+          "data": {
+            "row": 0,
+            "column": 3,
+            "tier": "mid",
+            "index": 1
+          }
+        },
+        {
+          "id": "cell-0-4",
+          "kind": "cell",
+          "bounds": {
+            "x": 291.1564,
+            "y": 266.6074,
+            "width": 47.9141,
+            "height": 46.9296
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 291.1564,
+            "y": 266.6074,
+            "width": 47.9141,
+            "height": 46.9296
+          },
+          "data": {
+            "row": 0,
+            "column": 4,
+            "tier": "high",
+            "index": 3
+          }
+        },
+        {
+          "id": "cell-1-0",
+          "kind": "cell",
+          "bounds": {
+            "x": 50.9296,
+            "y": 324.0387,
+            "width": 48.2423,
+            "height": 52.8368
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 50.9296,
+            "y": 324.0387,
+            "width": 48.2423,
+            "height": 52.8368
+          },
+          "data": {
+            "row": 1,
+            "column": 0,
+            "tier": "mid",
+            "index": 0
+          }
+        },
+        {
+          "id": "cell-1-1",
+          "kind": "cell",
+          "bounds": {
+            "x": 109.3454,
+            "y": 324.0387,
+            "width": 50.2113,
+            "height": 52.8368
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 109.3454,
+            "y": 324.0387,
+            "width": 50.2113,
+            "height": 52.8368
+          },
+          "data": {
+            "row": 1,
+            "column": 1,
+            "tier": "high",
+            "index": 2
+          }
+        },
+        {
+          "id": "cell-1-2",
+          "kind": "cell",
+          "bounds": {
+            "x": 169.7302,
+            "y": 324.0387,
+            "width": 50.5395,
+            "height": 52.8368
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 169.7302,
+            "y": 324.0387,
+            "width": 50.5395,
+            "height": 52.8368
+          },
+          "data": {
+            "row": 1,
+            "column": 2,
+            "tier": "low",
+            "index": 4
+          }
+        },
+        {
+          "id": "cell-1-3",
+          "kind": "cell",
+          "bounds": {
+            "x": 230.4433,
+            "y": 324.0387,
+            "width": 50.2113,
+            "height": 52.8368
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 230.4433,
+            "y": 324.0387,
+            "width": 50.2113,
+            "height": 52.8368
+          },
+          "data": {
+            "row": 1,
+            "column": 3,
+            "tier": "high",
+            "index": 1
+          }
+        },
+        {
+          "id": "cell-1-4",
+          "kind": "cell",
+          "bounds": {
+            "x": 291.1564,
+            "y": 324.0387,
+            "width": 47.9141,
+            "height": 52.8368
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 291.1564,
+            "y": 324.0387,
+            "width": 47.9141,
+            "height": 52.8368
+          },
+          "data": {
+            "row": 1,
+            "column": 4,
+            "tier": "low",
+            "index": 3
+          }
+        },
+        {
+          "id": "cell-2-0",
+          "kind": "cell",
+          "bounds": {
+            "x": 50.9296,
+            "y": 388.0335,
+            "width": 48.2423,
+            "height": 53.8213
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 50.9296,
+            "y": 388.0335,
+            "width": 48.2423,
+            "height": 53.8213
+          },
+          "data": {
+            "row": 2,
+            "column": 0,
+            "tier": "high",
+            "index": 0
+          }
+        },
+        {
+          "id": "cell-2-1",
+          "kind": "cell",
+          "bounds": {
+            "x": 109.3454,
+            "y": 388.0335,
+            "width": 50.2113,
+            "height": 53.8213
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 109.3454,
+            "y": 388.0335,
+            "width": 50.2113,
+            "height": 53.8213
+          },
+          "data": {
+            "row": 2,
+            "column": 1,
+            "tier": "low",
+            "index": 2
+          }
+        },
+        {
+          "id": "cell-2-2",
+          "kind": "cell",
+          "bounds": {
+            "x": 169.7302,
+            "y": 388.0335,
+            "width": 50.5395,
+            "height": 53.8213
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 169.7302,
+            "y": 388.0335,
+            "width": 50.5395,
+            "height": 53.8213
+          },
+          "data": {
+            "row": 2,
+            "column": 2,
+            "tier": "mid",
+            "index": 4
+          }
+        },
+        {
+          "id": "cell-2-3",
+          "kind": "cell",
+          "bounds": {
+            "x": 230.4433,
+            "y": 388.0335,
+            "width": 50.2113,
+            "height": 53.8213
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 230.4433,
+            "y": 388.0335,
+            "width": 50.2113,
+            "height": 53.8213
+          },
+          "data": {
+            "row": 2,
+            "column": 3,
+            "tier": "low",
+            "index": 1
+          }
+        },
+        {
+          "id": "cell-2-4",
+          "kind": "cell",
+          "bounds": {
+            "x": 291.1564,
+            "y": 388.0335,
+            "width": 47.9141,
+            "height": 53.8213
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 291.1564,
+            "y": 388.0335,
+            "width": 47.9141,
+            "height": 53.8213
+          },
+          "data": {
+            "row": 2,
+            "column": 4,
+            "tier": "mid",
+            "index": 3
+          }
+        },
+        {
+          "id": "cell-3-0",
+          "kind": "cell",
+          "bounds": {
+            "x": 50.9296,
+            "y": 452.6847,
+            "width": 48.2423,
+            "height": 52.5086
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 50.9296,
+            "y": 452.6847,
+            "width": 48.2423,
+            "height": 52.5086
+          },
+          "data": {
+            "row": 3,
+            "column": 0,
+            "tier": "low",
+            "index": 0
+          }
+        },
+        {
+          "id": "cell-3-1",
+          "kind": "cell",
+          "bounds": {
+            "x": 109.3454,
+            "y": 452.6847,
+            "width": 50.2113,
+            "height": 52.5086
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 109.3454,
+            "y": 452.6847,
+            "width": 50.2113,
+            "height": 52.5086
+          },
+          "data": {
+            "row": 3,
+            "column": 1,
+            "tier": "mid",
+            "index": 2
+          }
+        },
+        {
+          "id": "cell-3-2",
+          "kind": "cell",
+          "bounds": {
+            "x": 169.7302,
+            "y": 452.6847,
+            "width": 50.5395,
+            "height": 52.5086
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 169.7302,
+            "y": 452.6847,
+            "width": 50.5395,
+            "height": 52.5086
+          },
+          "data": {
+            "row": 3,
+            "column": 2,
+            "tier": "high",
+            "index": 4
+          }
+        },
+        {
+          "id": "cell-3-3",
+          "kind": "cell",
+          "bounds": {
+            "x": 230.4433,
+            "y": 452.6847,
+            "width": 50.2113,
+            "height": 52.5086
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 230.4433,
+            "y": 452.6847,
+            "width": 50.2113,
+            "height": 52.5086
+          },
+          "data": {
+            "row": 3,
+            "column": 3,
+            "tier": "mid",
+            "index": 1
+          }
+        },
+        {
+          "id": "cell-3-4",
+          "kind": "cell",
+          "bounds": {
+            "x": 291.1564,
+            "y": 452.6847,
+            "width": 47.9141,
+            "height": 52.5086
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 291.1564,
+            "y": 452.6847,
+            "width": 47.9141,
+            "height": 52.5086
+          },
+          "data": {
+            "row": 3,
+            "column": 4,
+            "tier": "high",
+            "index": 3
+          }
+        },
+        {
+          "id": "cell-4-0",
+          "kind": "cell",
+          "bounds": {
+            "x": 50.9296,
+            "y": 516.3514,
+            "width": 48.2423,
+            "height": 53.1649
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 50.9296,
+            "y": 516.3514,
+            "width": 48.2423,
+            "height": 53.1649
+          },
+          "data": {
+            "row": 4,
+            "column": 0,
+            "tier": "mid",
+            "index": 0
+          }
+        },
+        {
+          "id": "cell-4-1",
+          "kind": "cell",
+          "bounds": {
+            "x": 109.3454,
+            "y": 516.3514,
+            "width": 50.2113,
+            "height": 53.1649
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 109.3454,
+            "y": 516.3514,
+            "width": 50.2113,
+            "height": 53.1649
+          },
+          "data": {
+            "row": 4,
+            "column": 1,
+            "tier": "high",
+            "index": 2
+          }
+        },
+        {
+          "id": "cell-4-2",
+          "kind": "cell",
+          "bounds": {
+            "x": 169.7302,
+            "y": 516.3514,
+            "width": 50.5395,
+            "height": 53.1649
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 169.7302,
+            "y": 516.3514,
+            "width": 50.5395,
+            "height": 53.1649
+          },
+          "data": {
+            "row": 4,
+            "column": 2,
+            "tier": "low",
+            "index": 4
+          }
+        },
+        {
+          "id": "cell-4-3",
+          "kind": "cell",
+          "bounds": {
+            "x": 230.4433,
+            "y": 516.3514,
+            "width": 50.2113,
+            "height": 53.1649
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 230.4433,
+            "y": 516.3514,
+            "width": 50.2113,
+            "height": 53.1649
+          },
+          "data": {
+            "row": 4,
+            "column": 3,
+            "tier": "high",
+            "index": 1
+          }
+        },
+        {
+          "id": "cell-4-4",
+          "kind": "cell",
+          "bounds": {
+            "x": 291.1564,
+            "y": 516.3514,
+            "width": 47.9141,
+            "height": 53.1649
+          },
+          "z": 20,
+          "visible": true,
+          "clip": {
+            "x": 291.1564,
+            "y": 516.3514,
+            "width": 47.9141,
+            "height": 53.1649
+          },
+          "data": {
+            "row": 4,
+            "column": 4,
+            "tier": "low",
+            "index": 3
+          }
+        },
+        {
+          "id": "reel-frame",
+          "kind": "image",
+          "bounds": {
+            "x": 4,
+            "y": 200.3153,
+            "width": 382,
+            "height": 443.3694
+          },
+          "z": 30,
+          "visible": true
+        },
+        {
+          "id": "mystery-picker",
+          "kind": "overlay",
+          "bounds": {
+            "x": 4,
+            "y": 200.3153,
+            "width": 382,
+            "height": 443.3694
+          },
+          "z": 40,
+          "visible": false
+        }
+      ]
+    },
+    {
+      "id": "collection",
+      "kind": "panel",
+      "bounds": {
+        "x": 45,
+        "y": 652.8424,
+        "width": 300,
+        "height": 87
+      },
+      "z": 40,
+      "visible": true,
+      "children": [
+        {
+          "id": "collection-low",
+          "kind": "collectible",
+          "bounds": {
+            "x": 45,
+            "y": 656.8424,
+            "width": 100,
+            "height": 79
+          },
+          "z": 41,
+          "visible": true,
+          "data": {
+            "collected": false
+          }
+        },
+        {
+          "id": "collection-mid",
+          "kind": "collectible",
+          "bounds": {
+            "x": 145,
+            "y": 656.8424,
+            "width": 100,
+            "height": 79
+          },
+          "z": 41,
+          "visible": true,
+          "data": {
+            "collected": false
+          }
+        },
+        {
+          "id": "collection-high",
+          "kind": "collectible",
+          "bounds": {
+            "x": 245,
+            "y": 656.8424,
+            "width": 100,
+            "height": 79
+          },
+          "z": 41,
+          "visible": true,
+          "data": {
+            "collected": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "title",
+      "kind": "image",
+      "bounds": {
+        "x": 47.2627,
+        "y": 11.7,
+        "width": 295.4745,
+        "height": 118.16
+      },
+      "z": 50,
+      "visible": true
+    },
+    {
+      "id": "hud",
+      "kind": "panel",
+      "bounds": {
+        "x": 0,
+        "y": 749,
+        "width": 390,
+        "height": 95
+      },
+      "z": 60,
+      "visible": true
+    }
+  ]
+}

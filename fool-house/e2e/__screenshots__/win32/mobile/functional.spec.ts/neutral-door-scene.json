@@ -1,0 +1,68 @@
+{
+  "id": "corridor",
+  "kind": "scene",
+  "bounds": {
+    "x": 0,
+    "y": 0,
+    "width": 374,
+    "height": 434.7188
+  },
+  "z": 0,
+  "visible": true,
+  "data": {
+    "phase": "choosing",
+    "selected": null,
+    "revealed": false,
+    "prize": null
+  },
+  "children": [
+    {
+      "id": "door-0",
+      "kind": "door",
+      "bounds": {
+        "x": 19.7059,
+        "y": 85.8738,
+        "width": 85.4268,
+        "height": 252.1276
+      },
+      "z": 10,
+      "visible": true,
+      "data": {
+        "selected": false,
+        "enabled": true
+      }
+    },
+    {
+      "id": "door-1",
+      "kind": "door",
+      "bounds": {
+        "x": 144.2866,
+        "y": 85.8738,
+        "width": 85.4268,
+        "height": 252.1276
+      },
+      "z": 10,
+      "visible": true,
+      "data": {
+        "selected": false,
+        "enabled": true
+      }
+    },
+    {
+      "id": "door-2",
+      "kind": "door",
+      "bounds": {
+        "x": 268.8673,
+        "y": 85.8738,
+        "width": 85.4268,
+        "height": 252.1276
+      },
+      "z": 10,
+      "visible": true,
+      "data": {
+        "selected": false,
+        "enabled": true
+      }
+    }
+  ]
+}

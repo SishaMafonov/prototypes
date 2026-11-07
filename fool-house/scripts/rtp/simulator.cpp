@@ -27,7 +27,7 @@ template<class T,size_t N> void writeArray(std::ostream&o,const std::array<T,N>&
 struct Config{
  std::string id;double low,mid,scatter,coin,mult,stairs;uint32_t seed;int coinCents,floorCap;
  uint64_t lowCut,midCut,scatterCut,coinCut,multCut,stairsCut,mysteryCut;
- bool keepScatters,bonusOncePerPaidChain,bonusAtChainEnd,staticPreview;
+ bool keepScatters,bonusOncePerPaidChain,bonusAtChainEnd,staticPreview,bonusStartsWithRoundWin;
  std::array<uint64_t,9>pay;std::array<uint64_t,30>roomBag;std::array<uint64_t,11>stage;std::array<uint64_t,10>doorBag;
  explicit Config(const std::string&s):id(field(s,"Id")),seed(number(s,"Seed")),coinCents(number(s,"CoinCents")),floorCap(number(s,"FloorCap")),pay(array<9>(s,"Pay")),roomBag(array<30>(s,"RoomBag")),stage(array<11>(s,"Stage")),doorBag(array<10>(s,"DoorBag")){
  double mystery=s.find("\"Mystery\"")!=s.npos?number(s,"Mystery")/100:0;
@@ -37,6 +37,7 @@ struct Config{
  bonusOncePerPaidChain=s.find("\"BonusOncePerPaidChain\"")!=s.npos&&field(s,"BonusOncePerPaidChain")=="true";
  bonusAtChainEnd=s.find("\"BonusAtEndOfPaidChain\"")!=s.npos&&field(s,"BonusAtEndOfPaidChain")=="true";
  staticPreview=s.find("\"StaticPreview\"")!=s.npos&&field(s,"StaticPreview")=="true";
+ bonusStartsWithRoundWin=s.find("\"BonusStartsWithRoundWin\"")!=s.npos&&field(s,"BonusStartsWithRoundWin")=="true";
  coin=number(s,"Coin")/100;mult=(number(s,"Coin")+number(s,"Multiplier"))/100;stairs=(number(s,"Coin")+number(s,"Multiplier")+number(s,"Stairs"))/100;
  lowCut=uint64_t(std::ceil(low*4294967296.0));midCut=uint64_t(std::ceil(mid*4294967296.0));scatterCut=uint64_t(std::ceil(scatter*4294967296.0));coinCut=uint64_t(std::ceil(coin*4294967296.0));multCut=uint64_t(std::ceil(mult*4294967296.0));stairsCut=uint64_t(std::ceil(stairs*4294967296.0));
  }
@@ -53,14 +54,14 @@ struct Rng{
 struct Stats{
  uint64_t rounds=0,target=0,hits=0,freeStages=0,bonuses=0,bonusMoves=0,extraClears=0,evaluations=0,maxEvaluations=0,maxRespin=0;
  u128 baseCents=0,bonusCents=0;double baseSquares=0,bonusSquares=0,totalSquares=0,seconds=0;
- std::array<uint64_t,3>tierGroups{},tierCents{};std::array<uint64_t,4>prizeCounts{};std::array<uint64_t,11>stageCounts{};std::array<uint64_t,26>bonusByMoves{};
+ std::array<uint64_t,3>tierGroups{},tierCents{};std::array<uint64_t,4>prizeCounts{};std::array<uint64_t,11>stageCounts{};std::array<uint64_t,26>bonusByMoves{},bonusSeedCentsByMoves{};
  double expectedBonusCents=0,conditionalSquares=0;
 };
 struct Engine{
- const Config&c;Rng rng;Stats stats;int room;uint8_t board[25],counts[17];double expected[26]{};
+ const Config&c;Rng rng;Stats stats;int room;uint8_t board[25],counts[17];double expected[26]{},seedGrowth[26]{};
  Engine(const Config&config,int worker):c(config),rng(c.seed){for(int i=0;i<worker;i++)rng.jump();room=int(rng.next()*5);if(!c.staticPreview){fill(false);revealMysteries();}
   double meanMult=0;for(auto m:c.doorBag)meanMult+=double(m)/10;double growth=1+(c.mult-c.coin)*(meanMult-1),step=c.stairs-c.mult;std::vector<double>floor(c.floorCap,0);floor[0]=1;
-  for(int n=1;n<=25;n++){double meanFloor=0;for(int i=0;i<c.floorCap;i++)meanFloor+=floor[i]*(i+1);expected[n]=growth*expected[n-1]+c.coin*c.coinCents*meanFloor;for(int i=c.floorCap-1;i>=0;i--){if(i==c.floorCap-1)floor[i]+=i?floor[i-1]*step:0;else floor[i]=floor[i]*(1-step)+(i?floor[i-1]*step:0);}}
+  for(int n=1;n<=25;n++){seedGrowth[n]=std::pow(growth,n)-1;double meanFloor=0;for(int i=0;i<c.floorCap;i++)meanFloor+=floor[i]*(i+1);expected[n]=growth*expected[n-1]+c.coin*c.coinCents*meanFloor;for(int i=c.floorCap-1;i>=0;i--){if(i==c.floorCap-1)floor[i]+=i?floor[i-1]*step:0;else floor[i]=floor[i]*(1-step)+(i?floor[i-1]*step:0);}}
  }
  // Exact for the uint32/2^32 reference stream: no float conversion per cell.
  // floor((u/2^32)*N) == (uint64(u)*N)>>32 for these N <= 30.
@@ -71,13 +72,13 @@ struct Engine{
  void revealMysteries(){if(!counts[16])return;int id=uniform(3)*5+room;for(int i=0;i<25;i++)if(board[i]==16)board[i]=id;counts[id]+=counts[16];counts[16]=0;}
  void refill(int mask,bool target){for(int i=0;i<25;i++)if(mask&(1<<board[i])){counts[board[i]]--;int id=draw(target);board[i]=id;counts[id]++;}}
  void otherRoom(){int r=uniform(4);room=r>=room?r+1:r;}
- u128 doors(int moves){stats.bonuses++;stats.bonusByMoves[moves]++;stats.expectedBonusCents+=expected[moves];int floor=1;u128 pot=0;for(int i=0;i<moves;i++){stats.bonusMoves++;uint32_t r=rng.nextUInt();if(r<c.coinCut){pot+=c.coinCents*floor;stats.prizeCounts[0]++;}else if(r<c.multCut){pot*=c.doorBag[uniform(10)];stats.prizeCounts[1]++;}else if(r<c.stairsCut){floor=std::min(c.floorCap,floor+1);stats.prizeCounts[2]++;}else stats.prizeCounts[3]++;}return pot;}
+ u128 doors(int moves,uint64_t roundWin){uint64_t seed=c.bonusStartsWithRoundWin?roundWin:0;stats.bonuses++;stats.bonusByMoves[moves]++;stats.bonusSeedCentsByMoves[moves]+=seed;stats.expectedBonusCents+=expected[moves]+seed*seedGrowth[moves];int floor=1;u128 pot=seed;for(int i=0;i<moves;i++){stats.bonusMoves++;uint32_t r=rng.nextUInt();if(r<c.coinCut){pot+=c.coinCents*floor;stats.prizeCounts[0]++;}else if(r<c.multCut){pot*=c.doorBag[uniform(10)];stats.prizeCounts[1]++;}else if(r<c.stairsCut){floor=std::min(c.floorCap,floor+1);stats.prizeCounts[2]++;}else stats.prizeCounts[3]++;}return pot-seed;}
  void round(uint64_t&base,u128&bonus){base=0;bonus=0;int collected=0,respin=0;bool awarded=false;otherRoom();fill(false);uint64_t evals=0;
   for(;;){if(++evals>1000000)throw std::runtime_error("Unsettled paid chain; no silent truncation");
    revealMysteries();
-   if(!c.bonusAtChainEnd&&!awarded&&counts[15]>=6){awarded=true;bonus+=doors(counts[15]);}
+   if(!c.bonusAtChainEnd&&!awarded&&counts[15]>=6){awarded=true;bonus+=doors(counts[15],base);}
    int mask=0;for(int id=0;id<15;id++)if(counts[id]>=5)mask|=1<<id;
-   if(!mask){if(!collected||(c.keepScatters&&counts[15]>20)){if(c.bonusAtChainEnd&&!awarded&&counts[15]>=6){awarded=true;bonus+=doors(counts[15]);}break;}stats.extraClears++;fillFloor(true);continue;}
+   if(!mask){if(!collected||(c.keepScatters&&counts[15]>20)){if(c.bonusAtChainEnd&&!awarded&&counts[15]>=6){awarded=true;bonus+=doors(counts[15],base);}break;}stats.extraClears++;fillFloor(true);continue;}
    int pending=mask;for(int pos=0;pos<25&&pending;pos++){int id=board[pos];if(!(pending&(1<<id)))continue;pending&=~(1<<id);int tier=id/5;uint64_t pay=c.pay[tier*3+(counts[id]>=7?2:counts[id]-5)]*c.stage[std::min(respin,10)];if(id%5==room){pay*=c.roomBag[uniform(30)];collected|=1<<tier;}base+=pay;stats.tierGroups[tier]++;stats.tierCents[tier]+=pay;}
    if(collected==7){otherRoom();collected=0;if(!c.bonusOncePerPaidChain)awarded=false;respin++;stats.freeStages++;stats.stageCounts[std::min(respin,10)]++;fillFloor(false);}else refill(mask,collected!=0);
   }
@@ -85,13 +86,14 @@ struct Engine{
  }
  std::string record(int worker){auto&s=stats;std::ostringstream o;o<<std::setprecision(17)<<"{\"ConfigId\":\""<<c.id<<"\",\"Worker\":"<<worker<<",\"Rounds\":"<<s.rounds<<",\"Target\":"<<s.target<<",\"A\":"<<rng.a<<",\"B\":"<<rng.b<<",\"C\":"<<rng.c<<",\"D\":"<<rng.d<<",\"RandomCalls\":"<<rng.calls<<",\"Room\":"<<room<<",\"BaseCents\":\""<<decimal(s.baseCents)<<"\",\"BonusCents\":\""<<decimal(s.bonusCents)<<"\"";
   o<<",\"BaseSquares\":"<<s.baseSquares<<",\"BonusSquares\":"<<s.bonusSquares<<",\"TotalSquares\":"<<s.totalSquares<<",\"Hits\":"<<s.hits<<",\"FreeStages\":"<<s.freeStages<<",\"Bonuses\":"<<s.bonuses<<",\"BonusMoves\":"<<s.bonusMoves<<",\"ExtraClears\":"<<s.extraClears<<",\"Evaluations\":"<<s.evaluations<<",\"MaxEvaluations\":"<<s.maxEvaluations<<",\"MaxRespin\":"<<s.maxRespin<<",\"Seconds\":"<<s.seconds;
-  o<<",\"TierGroups\":";writeArray(o,s.tierGroups);o<<",\"TierCents\":";writeArray(o,s.tierCents);o<<",\"PrizeCounts\":";writeArray(o,s.prizeCounts);o<<",\"StageCounts\":";writeArray(o,s.stageCounts);o<<",\"BonusByMoves\":";writeArray(o,s.bonusByMoves);o<<",\"ExpectedBonusCents\":"<<s.expectedBonusCents<<",\"ConditionalSquares\":"<<s.conditionalSquares<<'}';return o.str();
+  o<<",\"TierGroups\":";writeArray(o,s.tierGroups);o<<",\"TierCents\":";writeArray(o,s.tierCents);o<<",\"PrizeCounts\":";writeArray(o,s.prizeCounts);o<<",\"StageCounts\":";writeArray(o,s.stageCounts);o<<",\"BonusByMoves\":";writeArray(o,s.bonusByMoves);o<<",\"BonusSeedCentsByMoves\":";writeArray(o,s.bonusSeedCentsByMoves);o<<",\"ExpectedBonusCents\":"<<s.expectedBonusCents<<",\"ConditionalSquares\":"<<s.conditionalSquares<<'}';return o.str();
  }
  void restore(const std::string&text,int worker,uint64_t target){if(field(text,"ConfigId")!=c.id||number(text,"Worker")!=worker||number(text,"Target")!=target)throw std::runtime_error("Checkpoint configuration mismatch");auto&s=stats;
   s.rounds=number(text,"Rounds");s.target=target;rng.a=number(text,"A");rng.b=number(text,"B");rng.c=number(text,"C");rng.d=number(text,"D");rng.calls=number(text,"RandomCalls");room=number(text,"Room");s.baseCents=integer(field(text,"BaseCents"));s.bonusCents=integer(field(text,"BonusCents"));
   s.baseSquares=number(text,"BaseSquares");s.bonusSquares=number(text,"BonusSquares");s.totalSquares=number(text,"TotalSquares");s.seconds=number(text,"Seconds");s.hits=number(text,"Hits");s.freeStages=number(text,"FreeStages");s.bonuses=number(text,"Bonuses");s.bonusMoves=number(text,"BonusMoves");s.extraClears=number(text,"ExtraClears");s.evaluations=number(text,"Evaluations");s.maxEvaluations=number(text,"MaxEvaluations");s.maxRespin=number(text,"MaxRespin");
   s.tierGroups=array<3>(text,"TierGroups");s.tierCents=array<3>(text,"TierCents");s.prizeCounts=array<4>(text,"PrizeCounts");s.stageCounts=array<11>(text,"StageCounts");
   s.bonusByMoves=array<26>(text,"BonusByMoves");s.expectedBonusCents=number(text,"ExpectedBonusCents");s.conditionalSquares=number(text,"ConditionalSquares");
+  if(text.find("\"BonusSeedCentsByMoves\"")!=text.npos)s.bonusSeedCentsByMoves=array<26>(text,"BonusSeedCentsByMoves");
  }
 };
 int main(int argc,char**argv){try{std::map<std::string,std::string>args;for(int i=1;i<argc;i++){std::string s=argv[i];auto p=s.find('=');args[s.substr(2,p==s.npos?s.npos:p-2)]=p==s.npos?"true":s.substr(p+1);}Config c(read(args.at("config")));int worker=args.count("worker")?std::stoi(args["worker"]):0;uint64_t target=std::stoull(args.at("rounds")),batch=args.count("batch")?std::stoull(args["batch"]):1000000;Engine e(c,worker);auto&s=e.stats;s.target=target;std::string out=args.count("out")?args["out"]:"";if(args.count("resume")&&!out.empty()&&std::ifstream(out))e.restore(read(out),worker,target);auto clock=std::chrono::steady_clock::now();double prior=s.seconds;

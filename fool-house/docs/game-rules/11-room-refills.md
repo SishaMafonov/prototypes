@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-01-v12
+ruleset_id: fool-house-2026-11-07-v14
 context: first collection unlocks current-room refills; extra clears prevent partial-room settlement
 read_when: room/floor symbol pool, guaranteed collection progression, refill RNG, extra clears, historical progression effect
 branch_ids: P01-P12
@@ -8,7 +8,7 @@ branch_ids: P01-P12
 
 # 11 — Room-specific refills and guaranteed stage progression
 
-**Context packet:** this feature concerns the five base backgrounds/room indexes, not the six-floor door-bonus ladder. Once any current-room Low/Mid/High tier is collected from a removed winning group, subsequent replacement regular symbols use that room's index. Current raw weights (balancing deferred): Mystery 10%, Scatter 7.16%, Low≈44.168246%, Mid≈24.169846%, High≈14.501908%. User confirmed that a stalled partially collected room must receive a free extra clear/refill while at least five regular slots remain, then the normal free-stage transition runs on completion. Protected Scatters persist; see [13](13-scatter-persistence.md). Paid/new-stage gameplay deals remain global. Startup preview is decorative, fixed and regular-only.
+**Context packet:** this feature concerns the five base backgrounds/room indexes, not the six-floor door-bonus ladder. Once any current-room Low/Mid/High tier is collected from a removed winning group, subsequent replacement regular symbols use that room's index. Current calibrated raw weights: Mystery 10%, Scatter 3%, Low 35%, Mid 32.5%, High 19.5%. User confirmed that a stalled partially collected room must receive a free extra clear/refill while at least five regular slots remain, then the normal free-stage transition runs on completion. Protected Scatters persist; see [13](13-scatter-persistence.md). Paid/new-stage gameplay deals remain global. Startup preview is decorative, fixed and regular-only.
 
 **Authority:** [game.ts](../../src/game.ts): `drawSymbol`, `refillBoard`, `refillForRoom`, `shouldContinueRoom`, `collectWins`; [main.ts](../../src/main.ts): `refillCurrentRoom`, `resolveRound`, `applyTheme`; [simulator](../../scripts/simulate.mjs). [Historical study](studies/room-refills-validation.json).
 
@@ -17,7 +17,7 @@ branch_ids: P01-P12
 | P01 | Room collection is empty | Refills use the original all-room pool: regular tier roll then uniform index 0–4. Non-room wins do not unlock the feature. Preview/full paid/free deals also use this pool. |
 | P02 | Any winning current-room group is removed and collected | Activate room refills immediately for every hole from that batch, including holes made by simultaneous other-room winners. It is independent of which tier was first or whether room bonus rolled x2/x3/x5/x8. |
 | P03 | Active replacement draw is regular | Choose Low/Mid/High using the existing thresholds, but force its icon index to the current room: basement 0, hall 1, museum 2, guests 3, attic 4. Both collected and uncollected tiers stay eligible. Do not draw a second index RNG value. |
-| P04 | Active replacement draw is Scatter | Keep its exact 7.16% probability and standalone index 0; it is not converted into a room icon. All active replacement cells consume exactly one RNG draw each. |
+| P04 | Active replacement draw is Scatter | Keep its exact3% probability and standalone index 0; it is not converted into a room icon. All active replacement cells consume exactly one RNG draw each. |
 | P05 | Ordinary refill visits surviving cells | Preserve their exact identities/positions, including foreign-room symbols and Scatter. Replace only null holes, no gravity. Room refills do not immediately repaint the whole board. |
 | P06 | Board has no regular win and collection is empty | Settle normally; no extra clear, wager, spin or room change. Visible but uncollected target icons do not activate progression. |
 | P07 | No regular win, partial collection and at least five regular slots | Clear regular cells only; keep Scatters at their exact positions. Animate cleared 120 ms, then refill holes through the current-room pool and grow only new cells. Keep collection, multiplier and paid-chain Scatter guard; no added wager/spin or credit for cleared survivors. |
@@ -29,7 +29,7 @@ branch_ids: P01-P12
 
 ## Constructed browser sequence
 
-Hall removes five Low[1], rolls room x2 and earns 0.02. Five holes become Low[1]×2, Mid[1]×2, High[1]×1 while foreign survivors stay fixed. This stalls, so the board clears for free. Its 25 replacements are High[1]×5, Mid[1]×5, Low[1]×15; all three room rolls are x2. Award = 0.20 + 0.10 + 0.20 = 0.50, complete set. A new Basement stage at x2 deals all-room symbols and settles. Spins 2, paid wager 1.00, total/round win 0.52; no credit for the extra clear itself.
+Hall removes five Low[1], rolls room x2 and earns 0.02. Five holes become Low[1]×2, Mid[1]×2, High[1]×1 while foreign survivors stay fixed. This stalls, so the board clears for free. Its 25 replacements are High[1]×5, Mid[1]×5, Low[1]×15; all three room rolls are x2. Award =0.06+0.04+0.06=0.16, complete set. A new Basement stage at x2 deals all-room symbols and settles. Spins 2, paid wager 1.00, total/round win0.18; no credit for the extra clear itself.
 
 ## Historical study at room-refill introduction (57/23.75/14.25/5)
 

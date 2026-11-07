@@ -1,6 +1,6 @@
 ---
 document_type: analysis_handoff
-ruleset_id: fool-house-2026-11-01-v12
+ruleset_id: fool-house-2026-11-07-v14
 context: implemented scope, correct simulation model, non-claims, evidence and maintenance
 read_when: market-analysis brief, RTP study, comparison checklist, rules validation
 branch_ids: X01-X10
@@ -21,7 +21,7 @@ branch_ids: X01-X10
 | Progression | Background-specific Low/Mid/High collection and free stages | Persistent progression between paid rounds or saved room collections |
 | Escalation | Stage multipliers x1 → x2 → … → x144; cap then repeat x144 | Increasing multiplier on each ordinary refill, total round-win cap |
 | Room award | Independent x2/x3/x5/x8 draw for every winning current-room identity; stacks with stage multiplier | Per-symbol multiplier rolls, bonus draws for sub-threshold or other-room symbols |
-| Scatter | 7.16% nonpaying mansion, retained on ordinary refills; 6+ at final paid-chain settlement awards exact-count playable door moves and modal Continue | Direct Scatter cash award, Wild substitution, collection, Scatter draws inside doors (future retriggers reserved) |
+| Scatter | 3% nonpaying mansion, retained on ordinary refills; 6+ at final paid-chain settlement awards exact-count playable door moves and modal Continue | Direct Scatter cash award, Wild substitution, collection, Scatter draws inside doors (future retriggers reserved) |
 | Economy | Fixed 1.00 paid wager; gross wins and observed session RTP | Variable bet, bankroll, deposits/withdrawals, insufficient-funds or cash-out controls |
 | Controls | Click/tap, focused Enter/Space; busy inputs discarded | Autoplay, quick-stop, buy feature, user skip/cancel of a live chain |
 | Delivery | Local browser prototype, responsive canvas, in-memory session | Accounts, persistence, server outcome generation, recovery/replay of interrupted rounds |
@@ -34,17 +34,17 @@ For a **freshly drawn 25-cell board**, the linear expectations derived from the 
 
 | Category | Expected number of cells |
 | --- | --- |
-| All Low / one particular Low identity | 11.04206161 / 2.20841232 |
-| All Mid / one particular Mid identity | 6.04246149 / 1.20849230 |
-| All High / one particular High identity | 3.62547690 / 0.72509538 |
-| Scatter | 1.79 |
+| All Low / one particular Low identity | 8.75 / 1.75 |
+| All Mid / one particular Mid identity | 8.125 / 1.625 |
+| All High / one particular High identity | 4.875 / 0.975 |
+| Scatter | 0.75 |
 | Mystery before reveal | 2.5 |
 
-These are global-deal expectations, not settled-board counts. After collection starts, replacement regular icons are restricted to the active room's index: Low≈44.168246%, Mid≈24.169846%, High≈14.501908%, Scatter 7.16%, Mystery 10%. Rooms remain symmetric under index relabeling. Partial collection prevents settlement and adds free extra clears when stalled; see [11](11-room-refills.md).
+These are global-deal expectations, not settled-board counts. After collection starts, replacement regular icons are restricted to the active room's index: Low35%, Mid32.5%, High19.5%, Scatter3%, Mystery 10%. Rooms remain symmetric under index relabeling. Partial collection prevents settlement and adds free extra clears when stalled; see [11](11-room-refills.md).
 
 ## X03 — RTP status and analysis unit
 
-- Current v12 rules preserve Scatters through room-feature clears and floor transitions, with at most one bonus per paid-round chain, triggered only after all base wins/features/free floors finish, and 10% shared floor Mysteries. Mystery is funded by regular tiers; Scatter/payout/door odds stay unchanged and balancing is explicitly deferred. **Current RTP is unmeasured.** Raw draws are independent, while Mysteries share their wave's outcome. The v8 ten-billion-chain result is historical; see [13](13-scatter-persistence.md) for current behavior and [12](12-rtp-balance.md) for the archived study.
+- Current v14 rules preserve Scatters through room-feature clears and floor transitions, with at most one bonus per paid-round chain, triggered only after all base wins/features/free floors finish, and 10% shared floor Mysteries. Current calibrated weights/paytable are in [01](01-math.md); doors still seed from the whole base round win, with stairs15%, Coin30%, Multiplier4.73%, Ghost50.27%. The current held-out calibration evidence is in [15](15-current-balance.md). Raw draws are independent, while Mysteries share their wave's outcome. The v8 ten-billion-chain result is historical; see [13](13-scatter-persistence.md) for current behavior and [12](12-rtp-balance.md) for the archived study.
 - Final evidence records observed rare stages and bonus tails. Finite samples do not prove a maximum win/duration; no fixed completion/refill-time bound is implemented.
 - The UI's session RTP is a sample ratio of committed awards to paid wagers. A screenshot value, a constructed example, an old playtest, or a test assertion is not the mathematical expected RTP.
 - Historical results from the old 5×4 board, 3/4/5+ threshold, per-symbol paytable, or pre-Scatter weights are not valid measurements of this snapshot.
@@ -64,7 +64,7 @@ for each accepted paid round:
     collection = empty; paid_chain_scatter_awarded = false; wager += 100; spins += 1
     board = full_independent_draw()
     loop:
-        if board_has_mysteries: show_raw_results_for_2000_ms_after_landing()
+        if board_has_mysteries: show_raw_results_for_500_ms_after_landing()
         board = reveal_all_mysteries_as_one_uniform_room_symbol(board, rng)
         groups = global_regular_groups_with_count_at_least_5(board)
         if groups is empty:
@@ -72,11 +72,12 @@ for each accepted paid round:
                 board = clear_regular_cells_preserve_scatter_then_room_only_refill()
                 continue     # same room, collection, multiplier, Scatter guard; no wager/spin
             if this_paid_chain_has_not_awarded_scatter AND scatter_count(board) >= 6:
-                mark_paid_chain_awarded; bonus = fresh_state(scatter_count(board), floor=1)
+                mark_paid_chain_awarded; bonus = fresh_state(scatter_count(board), floor=1, starting_win=round_win)
                 await explicit Continue
                 while bonus_has_moves: bonus = apply_bonus_prize(bonus, draw_bonus_prize(rng))
-                round_win += bonus.total; session_win += bonus.total
-                # Runtime credits each pot increase; Return restores this already-settled board.
+                gain = bonus.total - bonus.starting_win
+                round_win += gain; session_win += gain
+                # Runtime credits each pot increase only; never re-credit carried base win. Return adds nothing.
             finish this paid round
         wins = apply_independent_room_rolls(groups, room, rng)
         award = sum(paytable[tier][min(count,7)] * multiplier * room_roll)
@@ -101,7 +102,7 @@ Preview symbols are never evaluated/credited. The first paid room excludes the p
 | --- | --- |
 | Four High plus any number of unrelated symbols | No award from those High symbols. |
 | Five non-room Low, split across distant cells | One 0.01 award at stage x1, all five removed. |
-| Seven or twenty-five non-room High of one identity | One 0.50 award at stage x1; remove every member. |
+| Seven or twenty-five non-room High of one identity | One0.10 award at stage x1; remove every member. |
 | A matching-room identity wins | Apply one independent room roll to its entire group award, including later wins of already-collected tiers. |
 | Several different identities win together | Sum all group awards before checking collection completion. |
 | Visible target symbol is below the win threshold | No collection. |
@@ -124,20 +125,20 @@ There is no explicit refill-count, free-stage-count, or total paid-round award c
 At stage x3, five Low, six Mid, and seven High, all with non-room indexes, pay:
 
 ```text
-(0.01 + 0.10 + 0.50) * 3 = 1.83
+(0.01 + 0.03 + 0.10) * 3 = 0.42
 ```
 
-If only that High group instead matches the room and draws x8, the same table counts pay `(0.01 + 0.10 + 0.50*8)*3 = 12.33`. All 18 cells are removed; survivors stay unless stage completion clears them. See [04](04-accounting.md) for a multi-stage accounting example; neither constructed example estimates RTP.
+If only that High group instead matches the room and draws x8, the same table counts pay `(0.01 + 0.03 + 0.10*8)*3 = 2.52`. All 18 cells are removed; survivors stay unless stage completion clears them. See [04](04-accounting.md) for a multi-stage accounting example; neither constructed example estimates RTP.
 
 ## X08 — Measurements to collect in a separate analysis
 
 Record ruleset ID, RNG/seed policy, number of completed paid rounds, paid wagers, total awards, and truncated/error chains. Useful outputs are RTP with uncertainty, paid-round hit frequency, win-amount distribution, awards by tier/multiplier, refills per stage, free stages per paid round, set-completion frequency, chain duration under the specified timings, and cap reach frequency. Keep paid spins, free deals, and refills as separate counters.
 
-The latest request defers balancing after Scatter retention and paid-chain bonus deduplication. Current context is in [13](13-scatter-persistence.md); the last calibration is archived in [12](12-rtp-balance.md); modules 07, 09, 10 and 11 preserve prior studies with explicit historical weights/flags. External market research remains outside this task.
+The latest request authorizes a new ~96% calibration after all feature changes. Current evidence is in [15](15-current-balance.md); v8 remains archived in [12](12-rtp-balance.md); modules 07, 09, 10 and 11 preserve prior studies with explicit historical weights/flags. External market research remains outside this task.
 
 ## X09 — Evidence and coverage
 
-All **40 tests passed** on 2026-11-01, including calibrated boundaries/distribution and all 120 room-label permutations in each of five rooms. Existing room-refill, payout, bonus-pot and progression tests remain covered. Native validation additionally matches exact production-helper per-round credits, ending room and RNG state, and verifies resumable checkpoints. Published-study tests audit the historical v8 configuration/accounting independently from current policy. New tests cover retained positions, RNG skipping, accumulation, paid-chain eligibility and the space limit. Current v11 isolated headless QA additionally exercised a paid Hall win, a stalled-room clear, a free Basement win with six Scatters, then a free Hall settlement with seven. The first bonus popup appeared only after two free floors and all 1.16 base credits. It allocated seven moves; seven Ghost moves and Return preserved the settled board, with no duplicate bonus, and the next paid round reset correctly. No page errors. C++ replay matched 30,000 full chains; C# and legacy replay matched 3,000 each, including checkpoint continuity. These are functional checks, with no RTP claim.
+All **43 tests passed** on 2026-11-07, including calibrated boundaries/distribution and all 120 room-label permutations in each of five rooms. Existing room-refill, payout, bonus-pot and progression tests remain covered. Native validation additionally matches exact production-helper per-round credits, ending room and RNG state, and verifies resumable checkpoints. Published-study tests audit the historical v8 configuration/accounting independently from current policy. New tests cover retained positions, RNG skipping, accumulation, paid-chain eligibility and the space limit. Current v11 isolated headless QA additionally exercised a paid Hall win, a stalled-room clear, a free Basement win with six Scatters, then a free Hall settlement with seven. The first bonus popup appeared only after two free floors and all 1.16 base credits. It allocated seven moves; seven Ghost moves and Return preserved the settled board, with no duplicate bonus, and the next paid round reset correctly. No page errors. C++ replay matched 30,000 full chains; C# and legacy replay matched 3,000 each, including checkpoint continuity. These are functional checks, with no RTP claim.
 
 The original v9 desktop check was blocked; isolated headless v10 Mystery checks passed for three outcomes, timing, input lock and mobile/desktop layouts. See [12](12-rtp-balance.md).
 
@@ -160,11 +161,11 @@ The original v9 desktop check was blocked; isolated headless v10 Mystery checks 
 | Room/stage stacking through x144 and repeat-group eligibility | M21, C14 |
 | Scatter threshold/count 0–25, holes, no mutation or regular payout | B02–B03 |
 
-Runtime/error branches are source-audited, not claimed as full automated coverage. The build passed. New desktop/mobile browser checks verified separate room reveals, three simultaneous rolls, exact crediting, locked input, and the subsequent free stage. The temporary fixture was removed; details are in `CHANGELOG.md` and [07](07-calibration.md).
+Current regression coverage adds 46 Node tests and 72 Playwright cases with 68 PNG and 7 scene snapshots. Browser JavaScript coverage is 96.43% lines, 96.62% functions and 92.50% branches across main/game/bonus/bonus-scene/scene. This is measured execution coverage, not proof of every possible board. Deterministic clock/RNG scenarios, loading/error checks, baseline review and CI scope are documented in [the testing plan](../TESTING.md). Prior temporary checks remain historical evidence in `CHANGELOG.md` and [07](07-calibration.md).
 
 ## X10 — Agent loading and staleness protocol
 
-1. Read [GAME_RULES.md](../../GAME_RULES.md) for the compact packet and module catalogue.
+1. Read [AGENT_RULES.md](../../AGENT_RULES.md) for the compact packet and module catalogue. The separate [GAME_RULES.md](../../GAME_RULES.md) explains play in simple language.
 2. Load only the module needed for the question. Stable IDs can be located with `rg -n 'M10|F13|C09' docs/game-rules`.
 3. For constants, use `rules.json`. Its paths are relative to the project root, and its raw-byte SHA-256 hashes identify the audited sources.
 4. If code/hash differs, inspect only the changed source/functions. Do not merge historical rules into current behavior or assume this snapshot overrides code.

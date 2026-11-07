@@ -19,6 +19,7 @@ public sealed class Config {
     public bool BonusOncePerPaidChain { get; set; }
     public bool BonusAtEndOfPaidChain { get; set; }
     public bool StaticPreview { get; set; }
+    public bool BonusStartsWithRoundWin { get; set; }
     public double Mystery { get; set; }
 }
 public struct Rng {
@@ -72,8 +73,9 @@ public sealed class Engine {
     void Refill(bool targeted,int currentRoom){for(int i=0;i<25;i++)if(board[i]<0)board[i]=Draw(targeted,currentRoom);}
     void RevealMysteries(){if(Array.IndexOf(board,16)<0)return;int id=(int)(rng.Next()*3)*5+room;for(int i=0;i<25;i++)if(board[i]==16)board[i]=id;}
     int OtherRoom(){int r=(int)(rng.Next()*4);return r>=room?r+1:r;}
-    BigInteger DoorBonus(int moves) {
-        Bonuses++;int floor=1;BigInteger pot=BigInteger.Zero;
+    BigInteger DoorBonus(int moves,long roundWin) {
+        BigInteger seed=cfg.BonusStartsWithRoundWin?new BigInteger(roundWin):BigInteger.Zero;
+        Bonuses++;int floor=1;BigInteger pot=seed;
         for(int i=0;i<moves;i++) {
             BonusMoves++;double r=rng.Next();
             if(r<coin){pot+=cfg.CoinCents*floor;PrizeCounts[0]++;}
@@ -81,7 +83,7 @@ public sealed class Engine {
             else if(r<stairs){floor=Math.Min(cfg.FloorCap,floor+1);PrizeCounts[2]++;}
             else PrizeCounts[3]++;
         }
-        return pot;
+        return pot-seed;
     }
     public void Round(out long baseCents,out BigInteger bonusCents) {
         baseCents=0;bonusCents=BigInteger.Zero;int collected=0,respin=0;bool scatterAwarded=false;
@@ -91,7 +93,7 @@ public sealed class Engine {
             RevealMysteries();
             Array.Clear(counts,0,16);int n=0;
             for(int i=0;i<25;i++){int id=board[i];if(counts[id]++==0&&id<15)order[n++]=id;}
-            if(!cfg.BonusAtEndOfPaidChain&&!scatterAwarded&&counts[15]>=6){scatterAwarded=true;bonusCents+=DoorBonus(counts[15]);}
+            if(!cfg.BonusAtEndOfPaidChain&&!scatterAwarded&&counts[15]>=6){scatterAwarded=true;bonusCents+=DoorBonus(counts[15],baseCents);}
             int winMask=0;
             for(int j=0;j<n;j++) {
                 int id=order[j], quantity=counts[id];if(quantity<5)continue;
@@ -101,7 +103,7 @@ public sealed class Engine {
             }
             if(winMask==0) {
                 if(collected==0||(cfg.KeepScatters&&counts[15]>20)) {
-                    if(cfg.BonusAtEndOfPaidChain&&!scatterAwarded&&counts[15]>=6){scatterAwarded=true;bonusCents+=DoorBonus(counts[15]);}
+                    if(cfg.BonusAtEndOfPaidChain&&!scatterAwarded&&counts[15]>=6){scatterAwarded=true;bonusCents+=DoorBonus(counts[15],baseCents);}
                     break;
                 }
                 ExtraClears++;FillFloor(true,room);continue;

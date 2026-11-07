@@ -1,6 +1,6 @@
 ---
 document_type: rules_module
-ruleset_id: fool-house-2026-11-01-v12
+ruleset_id: fool-house-2026-11-07-v14
 context: startup preview, accepted input, paid deal, repeated evaluation, settlement
 read_when: lifecycle, input guards, branch ordering, round termination
 branch_ids: F01-F19
@@ -43,20 +43,20 @@ branch_ids: F01-F19
 4. Increment Spins by 1 and cumulative wager by 100 cents.
 5. Reset Round win to 0; retain Session win and earlier paid wagers/spins.
 6. Refresh visible statistics; mark all cells as growing.
-7. Animate `drawing` / “Drawing symbols…”; then enter resolution, starting with a 2000 ms raw-results pause if Mysteries landed, then the shared Mystery picker/reveal.
+7. Animate `drawing` / “Drawing symbols…”; then enter resolution, starting with a 500 ms raw-results pause if Mysteries landed, then the shared Mystery picker/reveal.
 
 There is no balance check or affordability branch; this prototype has no bankroll.
 
 ## Resolution branches and priority
 
-First hold results for 2000 ms when Mysteries exist (T11), then reveal pending Mysteries through T03–T07 before every regular evaluation; Scatter entry is checked only at final chain settlement. This includes paid/free deals and refills. Preview has no Mysteries and runs no sequence.
+First hold results for 500 ms when Mysteries exist (T11), then reveal pending Mysteries through T03–T07 before every regular evaluation; Scatter entry is checked only at final chain settlement. This includes paid/free deals and refills. Preview has no Mysteries and runs no sequence.
 
 | ID | Condition at this point | Outcome |
 | --- | --- | --- |
 | F08 | Evaluation finds zero winning groups and collection is empty | Check final Scatter eligibility through F17, then exit normally or hand off to the bonus. No extra wager/clear. Partial collection follows F19 instead. |
 | F09 | Evaluation finds at least one group | Mark all winning positions and show the stage-adjusted base sum in `winning`. Then apply room multipliers once to this batch. If eligible, take F16 before `removing`; otherwise remove directly. Input remains locked. |
 | F10 | Removal animation finishes | Remove all winning positions, update collection from those groups, clear winning highlights, add the computed award once to both Session win and Round win, and refresh stats/collection text. This is the award commit point. |
-| F11 | Collection is still incomplete after F10 | Refill only holes, preserving survivors. Any collected tier activates current-room regular indexes; otherwise global pool. Scatter retains 7.16%. Animate replacements and re-evaluate; no wager/spin increment. |
+| F11 | Collection is still incomplete after F10 | Refill only holes, preserving survivors. Any collected tier activates current-room regular indexes; otherwise global pool. Scatter is3%. Animate replacements and re-evaluate; no wager/spin increment. |
 | F12 | Refilled board has a further win / no further win | Further win repeats F09–F11/F13. No further win follows F08 (empty collection) or F19 (partial). Survivors can join later wins. There is no configured maximum refill count. |
 | F13 | Collection is complete after F10 | Take the free-stage path in [03](03-stages.md). Retain Scatters in place, clear regular cells, change rooms, refill non-Scatter slots globally and evaluate at the new multiplier. Keep the paid-chain bonus guard. |
 | F14 | Internal `while (assets)` guard has no assets | Resolution exits. Normal initialized gameplay never clears `assets`; this is an internal guard, not a player-facing exit or cash-out. Other asset-dependent helpers also no-op without assets. |

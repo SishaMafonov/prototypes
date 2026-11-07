@@ -1,9 +1,9 @@
-<!-- Current feature: v10 Mystery; prior published RTP studies are historical. -->
+<!-- Current feature: v13 combined round-pot bonus and 15% stairs; published studies are historical. -->
 # Full-game RTP laboratory
 
-Current v9 implements Scatter retention and one bonus per paid chain, with balancing deferred. The published v8 ten-billion study is historical. Current configs set KeepScatters/BonusOncePerPaidChain; legacy configs omit them. Use `node scripts/rtp/verify.mjs 10000 --legacy` and the archived configuration JSON for historical replay. Use `npm run simulate -- --keep-scatters=off` with the original weights/feature flags for older small studies. Never cite the v8 RTP as current.
+Current v14 uses raw Low35/Mid32.5/High19.5/Scatter3/Mystery10 and Coin30/Multiplier4.73/Stairs15/Ghost50.27. It keeps the final-chain bonus seeded by the whole base round win. Scatter retention, Mystery, static preview and one bonus at chain end remain active; current calibration is [module15](../../docs/game-rules/15-current-balance.md). The published v8 ten-billion study is historical. Current configs set KeepScatters/BonusOncePerPaidChain/BonusAtEndOfPaidChain/Mystery/StaticPreview/BonusStartsWithRoundWin; legacy configs omit new flags and use historical door odds. Use `node scripts/rtp/verify.mjs 10000 --legacy` and the archived configuration JSON for historical replay. Use `npm run simulate -- --keep-scatters=off` with the original weights/feature flags for older small studies. Never cite the v8 RTP as current.
 
-Context: independent 5×5 Fool House model, 1.00 paid bet; all cascades, guaranteed room completion, Fibonacci free stages, Scatter entry and complete door bonuses. A sample is one **entire paid chain**, not a board, refill, door choice or animation frame. Base contribution includes regular-group awards at every free stage. Bonus contribution includes only the door-pot credits. Both percentages use paid wagers as denominator.
+Context: independent 5×5 Fool House model, 1.00 paid bet; all cascades, guaranteed room completion, Fibonacci free stages, Scatter entry and complete door bonuses. A sample is one **entire paid chain**, not a board, refill, door choice or animation frame. Base contribution includes regular-group awards at every free stage. Bonus contribution includes only final combined round pot minus its carried base seed; the base seed is counted once under base. Conditional bonus expectation adds seed×(g^moves−1), with g=1+pMultiplier×(meanMultiplier−1), to the zero-seed expectation. Checkpoint `BonusSeedCentsByMoves` supports reconstruction. Both percentages use paid wagers as denominator.
 
 Runtime rules remain in `src/game.ts` and `src/bonus.ts`. `config.mjs` imports their weights, paytable, multiplier bags and stage values. It rejects changes to the native model's fixed geometry/threshold contract. `simulator.cpp` is the allocation-free validation engine. `Simulator.cs` is an independent, slower reference port. The production-helper replay in `verify.mjs` compares **each round's exact base cents, BigInt bonus cents, ending room and full RNG state/call count**, across jumped streams 0, 1 and 7.
 
@@ -25,12 +25,12 @@ Build uses `-O3 -march=native -ffp-contract=off`, without fast-math. Rebuild on 
 ```powershell
 node scripts/rtp/screen.mjs 100000
 node scripts/rtp/screen.mjs 1000000 --fine
-node scripts/rtp/run.mjs --rounds=10000000000 --workers=8 --seed=20261105 --dir=.rtp-runs/validation
+node scripts/rtp/run.mjs --rounds=1000000000 --workers=8 --seed=20261111 --batch=10000000 --dir=.rtp-runs/validation-v14
 # Resume exactly the same interrupted run:
-node scripts/rtp/run.mjs --rounds=10000000000 --workers=8 --seed=20261105 --dir=.rtp-runs/validation --resume
+node scripts/rtp/run.mjs --rounds=1000000000 --workers=8 --seed=20261111 --batch=10000000 --dir=.rtp-runs/validation-v14 --resume
 ```
 
-Search uses 20 coarse plus 9 fine weight combinations, preserving Low > Mid > High, uniform regular indexes and fixed door odds. Search is exploratory and does not count toward the final held-out validation. Additional local pilots may use a frozen `--config=path.json`, generated with `config({weights,seed})`. A fresh paid-run directory must not already contain a manifest. Completed shards are skipped on resume; incomplete ones restore totals, counters, PRNG state and current room at a paid-round boundary. Full board/collection state need not be checkpointed between paid rounds.
+The v14 `calibrate.mjs` accepts a JSON profile array with optional weights/paytable/bonus settings: `--profiles=profiles.json --dir=new-output-dir --rounds=1000000 --workers=4 --seed=20261108`. It stores each exact config, raw record and observed/conditional summaries. The archived v14 search has84 profiles and303million completed exploratory chains, including a100million pilot; these are excluded from final validation. `screen.mjs` retains the older coarse/fine weight-only search. Additional pilots can use a frozen `--config=path.json`, generated with `config({weights,paytable,bonus,seed})`. A fresh paid-run directory must not already contain a manifest. Completed shards are skipped on resume; incomplete ones restore totals, counters, PRNG state and current room at a paid-round boundary. Full board/collection state need not be checkpointed between paid rounds.
 
 `progress.json` and per-worker JSON/JSONL checkpoints show actual completed paid rounds. `result.json` exists only after all requested rounds complete. It contains configuration/source/binary hashes, exact monetary totals as decimal strings, per-worker records, observed tier/prize/stage counts, empirical standard errors and approximate 95% intervals. Preserve the final report under `docs/game-rules/studies/`; temporary binaries and logs stay ignored. Native checks fail loudly at one million evaluations in a chain or monetary overflow: they never replace an unfinished chain with zero or silently cap a win. Game runtime itself has no such diagnostic limit.
 
@@ -44,7 +44,9 @@ Reported RTP percentages are `award cents / paid rounds` because each paid bet i
 
 `tests/permutations.test.mjs` checks all **120** regular-icon/room label permutations in each of five rooms (600 cases), preserving group awards, room bonuses, collection, removal and restricted refills. These are symmetry checks; they are not a claim to exhaustively enumerate every 16^25 board or every possible play sequence. Door buttons share one prize draw path and have identical odds.
 
-## Published study
+## Published studies
+
+The active v14 one-billion-chain calibration, component split, frozen parameters and provenance are in [module15](../../docs/game-rules/15-current-balance.md). Its independent validation seed is20261111; eight workers each complete125million paid chains. Primary cash awards are fully sampled; conditional diagnostics are separate. The source/configuration and raw records are audited by `tests/current-calibration.test.mjs`.
 
 Historical v8 [compact summary](../../docs/game-rules/studies/rtp-10b-summary.json), [full report](../../docs/game-rules/studies/rtp-10b.json), [convergence CSV](../../docs/game-rules/studies/rtp-10b-convergence.csv) and [rules/results](../../docs/game-rules/12-rtp-balance.md). Final seed 20261105, 10,000,000,000 paid chains, 95.979499% total (54.893894% base, 41.085605% door bonus); approximate 95% total interval 95.955903–96.003096%. Tuning used 34 profiles / 2,021,000,000 recorded chains, excluded from the final held-out sample.
 
@@ -54,6 +56,6 @@ After a run completes, export fixed round-count prefixes from worker journals:
 node scripts/rtp/convergence.mjs .rtp-runs/final-10b
 ```
 
-The final published-data test checks the current configuration and recomputes the report from its eight complete shards. Recalibrate when game math changes; preserve earlier studies as history.
+The current published-data test checks the active configuration and recomputes its eight complete shards. The separate historical v8 test checks the original archived configuration. Recalibrate when game math changes; preserve earlier studies as history.
 
-Current v10 adds raw Mystery 10%, preserving Scatter 7.16% and scaling regular tiers proportionally. All pending code16 Mysteries share one uniform current-room tier before Scatter/wins, including a visual-only preview reveal. No new balance study. Current configs include Mystery=10; absent Mystery means zero chance, preserving historical streams. Use original four-weight vectors/--mystery=off plus original retention flags for old JS studies.
+Historical v10 added raw Mystery 10%, preserving Scatter 7.16% and scaling regular tiers proportionally. All pending code16 Mysteries share one uniform current-room tier before Scatter/wins, including a visual-only preview reveal. No new balance study. Current configs include Mystery=10; absent Mystery means zero chance, preserving historical streams. Use original four-weight vectors/--mystery=off plus original retention flags for old JS studies.

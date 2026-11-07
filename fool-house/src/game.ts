@@ -5,13 +5,12 @@ export const BET_CENTS = 100;
 export const SYMBOL_TIERS = ['low', 'mid', 'high'] as const;
 export const PRE_MYSTERY_WEIGHTS = { low: 49.5, mid: 27.0875, high: 16.2525, scatter: 7.16 } as const;
 export const MYSTERY_WEIGHT = 10;
-const regularShare = (100 - PRE_MYSTERY_WEIGHTS.scatter - MYSTERY_WEIGHT) / (100 - PRE_MYSTERY_WEIGHTS.scatter);
-// Reserve Mystery's 10% while keeping Scatter and the relative regular-tier distribution.
+// Current calibrated raw draws. Historical pre-Mystery weights remain above for replay.
 export const SYMBOL_WEIGHTS = {
-  low: PRE_MYSTERY_WEIGHTS.low * regularShare,
-  mid: PRE_MYSTERY_WEIGHTS.mid * regularShare,
-  high: PRE_MYSTERY_WEIGHTS.high * regularShare,
-  scatter: PRE_MYSTERY_WEIGHTS.scatter,
+  low: 35,
+  mid: 32.5,
+  high: 19.5,
+  scatter: 3,
   mystery: MYSTERY_WEIGHT,
 } as const;
 export const KEEP_SCATTERS_ON_FLOOR_CHANGE = true;
@@ -24,11 +23,17 @@ export const ROOM_MULTIPLIERS = [
 ] as const;
 export const MIN_WIN_COUNT = 5;
 export const MIN_BONUS_SCATTERS = 6;
-export const PAYTABLE_CENTS = {
+export const PRE_BALANCE_PAYTABLE_CENTS = {
   low: { 5: 1, 6: 5, 7: 10 },
   mid: { 5: 5, 6: 10, 7: 25 },
   high: { 5: 10, 6: 25, 7: 50 },
 } as const;
+export const PAYTABLE_CENTS = {
+  low: { 5: 1, 6: 2, 7: 3 },
+  mid: { 5: 2, 6: 3, 7: 5 },
+  high: { 5: 3, 6: 5, 7: 10 },
+} as const;
+export type Paytable = Record<SymbolTier, Record<5 | 6 | 7, number>>;
 const MULTIPLIERS = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144] as const;
 
 export type SymbolTier = 'low' | 'mid' | 'high';
@@ -123,7 +128,7 @@ export function getMultiplier(respinNumber: number): number {
   return MULTIPLIERS[Math.min(Math.max(0, Math.floor(respinNumber)), MULTIPLIERS.length - 1)];
 }
 
-export function findWins(board: Board, multiplier = 1): WinGroup[] {
+export function findWins(board: Board, multiplier = 1, paytable: Paytable = PAYTABLE_CENTS): WinGroup[] {
   const groups = new Map<string, WinGroup>();
   board.forEach((row, rowIndex) => row.forEach((symbol, column) => {
     // Scatter awards bonus moves separately; it never joins paying regular groups.
@@ -139,7 +144,7 @@ export function findWins(board: Board, multiplier = 1): WinGroup[] {
   return [...groups.values()].filter((group) => group.cells.length >= MIN_WIN_COUNT).map((group) => {
     // One award per group; 7+ matches use the top paytable entry.
     const quantity = Math.min(group.cells.length, 7) as 5 | 6 | 7;
-    return { ...group, winCents: PAYTABLE_CENTS[group.symbol.tier][quantity] * multiplier };
+    return { ...group, winCents: paytable[group.symbol.tier][quantity] * multiplier };
   });
 }
 

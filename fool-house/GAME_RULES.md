@@ -1,61 +1,118 @@
----
-document_type: rules_index
-ruleset_id: fool-house-2026-11-01-v12
-status: implemented_prototype_snapshot
-verified_on: 2026-11-01
----
+# Fool House — How to play
 
-# Fool House — implemented game rules
+Explore the mansion, match symbols and collect each room’s treasures. Find enough mansion Scatters to unlock a bonus adventure behind three mysterious doors.
 
-This is the entry point for agents and market-analysis handoffs. It describes the current implementation, including exceptions and unfinished features. It is not a proposed design or an RTP certification. Runtime source takes precedence if this snapshot becomes stale.
+All amounts below are game credits.
 
-## Compact context packet
+## Start a round
 
-- **Format:** client-only, single-player, 5 columns × 5 rows; independent weighted cell draws, not reel strips or paylines.
-- **Pool:** 15 regular symbols (`low`, `mid`, `high`, each with indexes 0–4), one mansion Scatter and a code-drawn Mystery question mark.
-- **Raw weights:** Mystery 10%, Scatter 7.16%, Low≈44.168246%, Mid≈24.169846%, High≈14.501908%. Regular tiers keep their previous ratios. Global draws use uniform regular indexes; collected-room refills force the room index. Mystery groups transform before evaluation. Current RTP is unmeasured and balancing remains deferred.
-- **Mystery:** pink pulsing question marks transform into one shared current-floor Low/Mid/High icon, each 1/3 per wave. After results land, wait 2000 ms, then run the 1600 ms selector plus 450 ms reveal before regular wins. Keep the full results pause under reduced motion. Preview contains no Mystery; no Wild behavior or direct payment.
-- **Match:** at least 5 identical regular symbols anywhere. Identity includes both tier and index. Adjacency and reel position do not matter.
-- **Group awards at x1:** Low 5/6/7+ = 0.01/0.05/0.10; Mid = 0.05/0.10/0.25; High = 0.10/0.25/0.50. One award per group, multiplied by the stage multiplier. All matching members are removed, including counts above 7.
-- **Room award:** each winning group whose index matches the current room independently draws x2/x3/x5/x8 from the 30-slot bag (14/8/5/3 copies). Final group award = table award × stage multiplier × room multiplier. Other groups use room x1. Already-collected tiers remain eligible.
-- **Resolution:** highlight winners → reveal any room multipliers in a separate animation → shrink/remove → credit final awards and update collection → refill/re-evaluate or switch stages. There is no gravity.
-- **Collection:** removed winning room groups collect Low/Mid/High. Any collected tier activates room-only regular refills for all holes. If a partially collected room stalls, clear/refill regular cells for free in that room, preserving Scatters. With fewer than five regular slots left, settle after any eligible bonus instead of looping. Ordinary survivors stay fixed; extra clears award nothing. New background resets collection and restores the global pool.
-- **Free stages:** full collection displays “Switching to the next stage”, clears regular cells, preserves Scatters in place, changes background, and refills the other cells for free. Multipliers: x2, x3, x5, x8, x13, x21, x34, x55, x89, x144, then x144 for further free stages.
-- **Paid round:** one 1.00 wager covers its original deal, all refills, and all resulting free stages. A new paid round changes background, clears collection, and resets multiplier to x1.
-- **Session:** Spins counts paid deals plus free deals; refills do not count. Round win includes the entire paid-round chain. RTP displayed = cumulative awards / paid wagers × 100. Values are in unspecified prototype credit units.
-- **Scatter entry:** at the end of the entire paid-round chain, after cascades/features/free floors finish, 6+ final accumulated Scatters award exact-count moves once. Continue opens a 3-second corridor approach to three doors. Each choice consumes one move: Coin 35% (1.00 × floor), Multiplier 25% (bag `[2×5,3×2,5×2,8×1]`, multiplying the accumulated bonus pot), Stairs 5% (+1 floor, cap x6), Ghost 35% (zero win, approaches/fades). Credit only pot increases. Prize list reflects current floor; Return after the last reveal restores the settled base board; no base wins remain pending. No Scatter draws occur inside this door feature.
-- **Important exceptions:** the initial board is a static, regular-only nonwinning preview; no automatic sequence, growth, picker or awards. First input starts the paid result. Scatter never pays, substitutes, or collects. Input during a chain is discarded except the modal Continue action. Refresh resets everything including saved moves. A multiplier cap is implemented; a total-win, refill-count, or free-stage-count cap is not.
+- Tap or click the game to play. You can also focus the game and press Enter or Space.
+- Each new paid round costs **1.00** and fills a **5 × 5 board** with symbols.
+- That one bet covers all the extra symbol refills, free floors and bonus moves it unlocks.
+- The opening screen is only a preview. Nothing is won or charged until you start.
+- Wait for the current round to finish before starting another. Extra taps during the action do not start another round.
 
-## Load only the relevant context
+## Match symbols to win
 
-Bonus door visuals reset on every approach: previous selections/reveals and button focus are cleared. Hovering gives no selection glow; deliberate keyboard focus has a plain outline.
+Get **five or more copies of the exact same symbol anywhere on the board**. They do not need to touch or form a line. Different pictures do not match, even if both are Low, Mid or High.
 
-Each module begins with a local context packet, source-function names, and stable branch IDs. Read this index plus the selected module; loading the full source/history is unnecessary for ordinary analysis.
+| Symbol type | 5 matching | 6 matching | 7 or more matching |
+| --- | ---: | ---: | ---: |
+| Low | 0.01 | 0.02 | 0.03 |
+| Mid | 0.02 | 0.03 | 0.05 |
+| High | 0.03 | 0.05 | 0.10 |
 
-| Question | Read | Branch IDs |
-| --- | --- | --- |
-| Symbol probabilities, matching, paytable, room bonuses, refill | [01 — Math](docs/game-rules/01-math.md) | M01–M22 |
-| Startup, input, paid-round sequence, resolution and exit paths | [02 — Round flow](docs/game-rules/02-round-flow.md) | F01–F19 |
-| Rooms, collection, automatic free stages, multiplier/reset cases | [03 — Stages](docs/game-rules/03-stages.md) | C01–C14 |
-| Wagers, spins, awards, RTP, rounding, persistence | [04 — Accounting](docs/game-rules/04-accounting.md) | A01–A14 |
-| Animation, visual cues, accessibility, resizing, loading/errors | [05 — Runtime and UI](docs/game-rules/05-runtime-ui.md) | U01–U18, E01–E09 |
-| Market-analysis scope, simulation contract, examples, validation | [06 — Analysis handoff](docs/game-rules/06-analysis.md) | X01–X10 |
-| Structured facts and source fingerprints | [rules.json](docs/game-rules/rules.json) | No source scan needed for constants |
-| Historical High-heavy RTP study (superseded weights) | [07 — Calibration study](docs/game-rules/07-calibration.md) | R01–R08 |
-| Scatter moves, modal Continue, bonus scene, base handoff | [08 — Scatter bonus entry](docs/game-rules/08-scatter-bonus.md) | B01–B15 |
-| Historical tier-frequency correction and its original study | [09 — Tier frequency](docs/game-rules/09-tier-frequency.md) | K01–K06 |
-| Playable corridor, doors, prize branches, floors, exact credit and return | [10 — Door adventure](docs/game-rules/10-door-adventure.md) | D01–D18 |
-| Current-room refill pool, extra clears, space limit and historical RTP | [11 — Room refills](docs/game-rules/11-room-refills.md) | P01–P12 |
-| Historical v8 weight calibration and ten-billion-round validation | [12 — RTP balance](docs/game-rules/12-rtp-balance.md) | Q01–Q10 |
-| Scatter retention, floor-feature clears, one bonus per paid chain, space limit | [13 — Scatter persistence](docs/game-rules/13-scatter-persistence.md) | S01–S10 |
-| Mystery probability, shared floor outcome, pink animation and sequencing | [14 — Mystery](docs/game-rules/14-mystery.md) | T01–T11 |
+These are the starting prizes before any boosts. Each matching group pays once. Eight or more matching symbols use the same prize as seven.
 
-## Snapshot and maintenance
+Low symbols appear most often. Mid symbols have a light red tint, and High symbols have a light gold tint.
 
-- Ruleset `fool-house-2026-11-01-v12` adds a static nonwinning startup preview and a 2000 ms raw-results pause before each gameplay Mystery picker. Scatter entry still waits for all base wins/features/free floors. Shared 10% Mysteries and Scatter retention remain active. Scatter/payout/door odds are unchanged; regular probabilities fund Mystery and rebalancing remains deferred. Runtime source fingerprints identify audited files; historical studies retain original snapshots.
-- Authority: `src/game.ts` for math, `src/main.ts` for sequencing/accounting/rendering, `src/style.css` for CSS behavior. Source links and function names are provided in each module.
-- Presentation updated 2026-10-31: larger reel icons and tighter mobile layout; short portrait screens may shift the centered board upward to fit. Current source fingerprints reflect this UI update; calibration study hashes retain their original simulated snapshot.
-- All 40 tests and the production build passed. Current rules have **no measured RTP**; user deferred balancing. The v8 ten-billion-chain result (95.979499%) is historical and excludes Scatter persistence/paid-chain bonus deduplication and Mystery. See [14](docs/game-rules/14-mystery.md) and [13](docs/game-rules/13-scatter-persistence.md) for current behavior and [12](docs/game-rules/12-rtp-balance.md) for archived evidence.
-- Keep historical changelog entries as history. In particular, old 5×4 boards, 3/4/5+ awards, per-symbol payouts, and 60/25/15 total-pool weights are superseded.
-- After a behavior change, update the affected module, compact packet/JSON facts, source fingerprints, and changelog. Preserve stable branch IDs; append new IDs for new branches.
-- Runtime branches below assume valid internal symbols, a 5×5 board, and random numbers in `[0,1)`. Unsupported helper inputs are identified separately; they are not player options.
+After a win, the matching symbols disappear and new ones fill their spaces for free. The other symbols stay where they are. New matches can win again, and several different groups can win together.
+
+## Pink Mystery symbols
+
+A glowing pink question mark is a Mystery. Each newly drawn symbol has a **10% chance** to be a Mystery.
+
+After the symbols land, there is a short pause and a picker animation. **All Mysteries showing together turn into the same symbol from the current room.** It has an equal chance to be that room’s Low, Mid or High symbol.
+
+The revealed symbols can then make normal wins and help complete the room collection. A question mark does not pay before it changes.
+
+## Collect the room’s three symbols
+
+The mansion has five rooms: **Basement, Hall, Museum, Guests and Attic**. The three pictures below the board show the current room’s Low, Mid and High symbols.
+
+Winning with one of those pictures does two things:
+
+- It marks that picture as collected.
+- It gives that winning group a random **×2, ×3, ×5 or ×8 room boost**. The boost is shown before the symbols disappear. Smaller boosts are more common.
+
+A room picture can earn another boost on a later win, even after it has been collected. Other rooms’ pictures can still win, but do not collect anything or earn a room boost.
+
+Once you collect your first picture, new regular symbols in that room come from its own three pictures. Mysteries and Scatters can still appear.
+
+Once you have collected at least one picture, the game keeps helping you finish the set. If the wins stop before you collect all three, it clears the regular symbols and tries again for free. Scatters stay in place. If Scatters leave fewer than five spaces for regular symbols, these extra tries stop.
+
+Clearing symbols without a match does not pay a prize.
+
+## Complete a room for a free floor
+
+Collect all three room pictures to see **“Switching to the next stage.”**
+
+The game clears the regular symbols, keeps the Scatters and chooses a different room at random. You receive a free new board in the remaining spaces and start collecting that room’s three pictures.
+
+Each free floor makes its regular wins worth more:
+
+**×2 → ×3 → ×5 → ×8 → ×13 → ×21 → ×34 → ×55 → ×89 → ×144**
+
+Further free floors stay at ×144. You can keep moving between rooms by completing their collections.
+
+A floor boost and a room boost work together. For example, five matching Mid symbols pay 0.02. With a ×3 room boost on a ×2 free floor, that group pays **0.12**.
+
+A new paid round starts a fresh board in a different room, clears the collection and starts the floor boost again at ×1.
+
+## Mansion Scatters unlock the bonus
+
+The mansion picture with the special frame and **SCATTER** label is a Scatter. Each newly drawn symbol has a **3% chance** to be one.
+
+Scatters stay in their spaces through refills, room clears and free-floor changes. They do not pay a normal matching prize or count toward the three-picture collection.
+
+The game waits until **all regular wins, refills and free floors have finished**, then counts the Scatters:
+
+- **6 Scatters give 6 bonus moves.**
+- **7 Scatters give 7 bonus moves.**
+- Each extra Scatter gives one extra move, up to 25 moves.
+
+The bonus can be awarded only once during the round bought by that bet. Tap or click **Continue** on the bonus message to enter.
+
+## Choose doors in the bonus
+
+Your bonus starts with **everything already won in the current round**. Winnings from earlier rounds are not included. You start on bonus Floor 1, even if you visited several rooms before entering.
+
+For each move, you walk down a dark corridor for about three seconds, then choose the left, middle or right door. Every door has the same prize chances. Previous choices give no clue about the next prize.
+
+| Behind the door | Chance | What happens |
+| --- | ---: | --- |
+| Coin | 30% | Add 1.00 on Floor 1, 2.00 on Floor 2, and so on, up to 6.00 on Floor 6. |
+| Multiplier | 4.73% | Multiply everything won in this round so far by ×2, ×3, ×5 or ×8. ×2 is most common; ×8 is least common. |
+| Stairs | 15% | Move up one bonus floor. Future coin prizes increase by 1.00, up to Floor 6. |
+| Ghost | 50.27% | The ghost approaches and disappears. You gain nothing, but keep your winnings. |
+
+**Every door uses one move**, including a Ghost or Stairs. Stairs on Floor 6 leave you on Floor 6 and still use a move.
+
+For example, enter with 2.00 from the main game. A ×3 prize makes the round total 6.00. A Floor 1 Coin then makes it 7.00. After Stairs, a Coin adds 2.00, bringing it to 9.00.
+
+A multiplier also works on previous bonus prizes. Multiplying a total of zero still gives zero. Stairs increase coin prizes; they do not increase the multiplier numbers.
+
+The panel above the doors shows your current floor and available prizes. The bottom panel shows your moves, the latest move’s win and the whole round’s total.
+
+After the last move, select **Return to mansion**. Your round total already includes the main game and bonus winnings; returning does not add them a second time. Door play does not add more Scatters or extra moves.
+
+## Read the status bar
+
+- **Spins:** paid boards plus free-floor boards. Ordinary refills and bonus door moves do not add spins.
+- **Round win:** everything won from the current bet, including free floors and the bonus.
+- **Session win:** all prizes won since opening the game, before subtracting bets.
+- **RTP:** how much your prizes add up to compared with your paid bets so far.
+
+The game aims to return about **96 credits in prizes for every 100 credits bet over very many rounds**, counting the main game and bonus together. This is an average, not a promise for an individual round or session. Some rounds pay nothing.
+
+Refreshing or closing the game clears the session totals and any unfinished round or bonus.

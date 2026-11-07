@@ -230,14 +230,14 @@ test('five identical symbols win anywhere; four matches, tier alone, or index al
     { row: 0, column: 0 }, { row: 1, column: 3 }, { row: 2, column: 4 },
     { row: 3, column: 1 }, { row: 4, column: 2 },
   ]);
-  assert.equal(wins[0].winCents, 5);
+  assert.equal(wins[0].winCents, 2);
 });
 
 test('5/6/7+ groups pay once by quantity; 2–4 matches do not win', () => {
   const expected = {
-    low: { 5: 1, 6: 5, 7: 10 },
-    mid: { 5: 5, 6: 10, 7: 25 },
-    high: { 5: 10, 6: 25, 7: 50 },
+    low: { 5: 1, 6: 2, 7: 3 },
+    mid: { 5: 2, 6: 3, 7: 5 },
+    high: { 5: 3, 6: 5, 7: 10 },
   };
   for (const tier of ['low', 'mid', 'high']) {
     for (let quantity = 2; quantity <= 25; quantity++) {
@@ -267,8 +267,8 @@ test('simultaneous groups add their quantity awards before applying the stage mu
     Array.from({ length: 6 }, () => symbol('mid', 1)),
     Array.from({ length: 7 }, () => symbol('high', 2)),
   ];
-  assert.deepEqual(findWins(board).map((win) => win.winCents), [1, 10, 50]);
-  assert.equal(findWins(board, 3).reduce((sum, win) => sum + win.winCents, 0), 183);
+  assert.deepEqual(findWins(board).map((win) => win.winCents), [1, 3, 10]);
+  assert.equal(findWins(board, 3).reduce((sum, win) => sum + win.winCents, 0), 42);
   assert.equal(BET_CENTS, 100);
 });
 
@@ -324,7 +324,7 @@ test('replacement symbols can trigger another win, and resolution stops on a set
   const values = Array.from({ length: 7 }, (_, index) => [0.9, (index % 5 + 0.5) / 5]).flat();
   const settled = refillBoard(removeWins(secondBoard, second), () => values.shift());
   assert.equal(findWins(settled).length, 0);
-  assert.equal([...first, ...second].reduce((sum, win) => sum + win.winCents, 0), 55);
+  assert.equal([...first, ...second].reduce((sum, win) => sum + win.winCents, 0), 12);
 });
 
 test('collection grows only from removed background symbols and persists across cascades', () => {
@@ -357,10 +357,10 @@ test('room multiplier bag preserves all 30 equally likely slots and their duplic
   for (let slot = 0; slot < 30; slot++) {
     const boosted = applyRoomMultipliers(wins, 2, () => (slot + 0.5) / 30);
     assert.equal(boosted[0].roomMultiplier, ROOM_MULTIPLIERS[slot]);
-    assert.equal(boosted[0].unboostedWinCents, 30);
-    assert.equal(boosted[0].winCents, 30 * ROOM_MULTIPLIERS[slot]);
+    assert.equal(boosted[0].unboostedWinCents, 9);
+    assert.equal(boosted[0].winCents, 9 * ROOM_MULTIPLIERS[slot]);
   }
-  assert.equal(wins[0].winCents, 30);
+  assert.equal(wins[0].winCents, 9);
 });
 
 test('each matching-room group draws independently; other identities get no bonus or RNG draw', () => {
@@ -375,8 +375,8 @@ test('each matching-room group draws independently; other identities get no bonu
     return rolls.shift();
   });
   assert.deepEqual(boosted.map((win) => win.roomMultiplier), [2, 8, 1]);
-  assert.deepEqual(boosted.map((win) => win.winCents), [10, 200, 125]);
-  assert.deepEqual(wins.map((win) => win.winCents), [5, 25, 125]);
+  assert.deepEqual(boosted.map((win) => win.winCents), [10, 80, 25]);
+  assert.deepEqual(wins.map((win) => win.winCents), [5, 10, 25]);
   assert.deepEqual(applyRoomMultipliers([], 1, () => { throw new Error('No draw expected'); }), []);
 });
 
@@ -384,7 +384,7 @@ test('room bonus multiplies the capped stage award and can apply again in a late
   const wins = findWins([Array.from({ length: 7 }, () => symbol('high', 0))], 144);
   const first = applyRoomMultipliers(wins, 0, () => 0.99);
   const later = applyRoomMultipliers(wins, 0, () => 0);
-  assert.equal(first[0].winCents, 50 * 144 * 8);
-  assert.equal(later[0].winCents, 50 * 144 * 2);
+  assert.equal(first[0].winCents, 10 * 144 * 8);
+  assert.equal(later[0].winCents, 10 * 144 * 2);
   assert.equal(first[0].cells.length, 7);
 });

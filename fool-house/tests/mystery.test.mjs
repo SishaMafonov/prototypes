@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SYMBOL_WEIGHTS, PRE_MYSTERY_WEIGHTS, SYMBOL_TIERS, createPreviewBoard, drawSymbol, revealMysteries, findWins, getScatterBonusMoves, collectWins } from '../src/game.ts';
+import { SYMBOL_WEIGHTS, SYMBOL_TIERS, createPreviewBoard, drawSymbol, revealMysteries, findWins, getScatterBonusMoves, collectWins } from '../src/game.ts';
 const mystery=()=>({tier:'mystery',index:0});
 
 test('startup preview is a complete nonwinning regular-only board with no feature to resolve',()=>{
@@ -14,10 +14,10 @@ test('startup preview is a complete nonwinning regular-only board with no featur
   board[0][0].index=99;assert.ok(createPreviewBoard().flat().every(s=>s.index<5));
 });
 
-test('Mystery reserves 10% per draw, keeps Scatter odds and preserves regular proportions',()=>{
-  assert.equal(SYMBOL_WEIGHTS.mystery,10);assert.equal(SYMBOL_WEIGHTS.scatter,7.16);
+test('calibrated raw pool keeps 10% Mystery and Low > Mid > High, with 3% Scatter',()=>{
+  assert.deepEqual(SYMBOL_WEIGHTS,{low:35,mid:32.5,high:19.5,scatter:3,mystery:10});
   assert.ok(Math.abs(Object.values(SYMBOL_WEIGHTS).reduce((s,v)=>s+v,0)-100)<1e-9);
-  for(const a of SYMBOL_TIERS)for(const b of SYMBOL_TIERS)assert.ok(Math.abs(SYMBOL_WEIGHTS[a]/SYMBOL_WEIGHTS[b]-PRE_MYSTERY_WEIGHTS[a]/PRE_MYSTERY_WEIGHTS[b])<1e-12);
+  assert.ok(SYMBOL_WEIGHTS.low>SYMBOL_WEIGHTS.mid&&SYMBOL_WEIGHTS.mid>SYMBOL_WEIGHTS.high);
   for(const roll of [0,.05,.1-1e-10]){let calls=0;assert.deepEqual(drawSymbol(()=>{calls++;return roll;}),mystery());assert.equal(calls,1);}
   assert.deepEqual(drawSymbol(()=>.1),{tier:'low',index:0});
 });
