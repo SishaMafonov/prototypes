@@ -1,0 +1,25 @@
+{
+  "name": "xmas-madness",
+  "version": "1.0.0",
+  "description": "Standalone Xmas Madness browser prototype",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "test": "node --test",
+    "test:browser": "npm run build && playwright test",
+    "test:coverage": "node scripts/test-coverage.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "serve": "http-server dist --port 1234"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "http-server": "^14.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6"
+  }
+}
